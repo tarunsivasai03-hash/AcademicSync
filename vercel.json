@@ -1,0 +1,8 @@
+{
+  "outputDirectory": "academic_system",
+  "framework": null,
+  "buildCommand": "",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/$1" }
+  ]
+}
