@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <meta name="description" content="AcademicSync - Smart Academic Management">
+    <title>AcademicSync - Admin Dashboard</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter','sans-serif'], display: ['Inter','sans-serif'] },
+                    colors: {
+                        primary: { 50:'#f9fafb',100:'#f3f4f6',200:'#e5e7eb',300:'#d1d5db',400:'#9ca3af',500:'#6b7280',600:'#000000',700:'#1f2937',800:'#111827',900:'#000000' },
+                        gray:    { 50:'#f9fafb',100:'#f3f4f6',200:'#e5e7eb',300:'#d1d5db',400:'#9ca3af',500:'#6b7280',600:'#4b5563',700:'#374151',750:'#2d3748',800:'#1f2937',900:'#111827' }
+                    },
+                    animation: { 'fade-in-up': 'fadeInUp 0.5s ease-out forwards' },
+                    keyframes: { fadeInUp: { '0%': { opacity:'0', transform:'translateY(10px)' }, '100%': { opacity:'1', transform:'translateY(0)' } } }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/components/scrollbar.css">
+
+    <!-- API + Alpine (api first so it's available to Alpine component) -->
+    <script src="../assets/js/api.js?v=2"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        .dark .skeleton {
+            background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    </style>
+</head>
+
+<body class="h-full flex overflow-hidden font-sans antialiased bg-gray-50 dark:bg-gray-900 dark:text-gray-300 transition-colors duration-200"
+    x-data="adminDash()" x-init="init()" :class="darkMode ? 'dark' : ''" x-cloak>
+
+    <!-- Toast Notifications -->
+    <div class="fixed top-4 right-4 z-[200] space-y-2 pointer-events-none" aria-live="polite">
+        <template x-for="toast in toasts" :key="toast.id">
+            <div x-show="toast.visible"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 translate-x-8"
+                x-transition:enter-end="opacity-100 translate-x-0"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-x-0"
+                x-transition:leave-end="opacity-0 translate-x-8"
+                class="pointer-events-auto flex items-start gap-3 w-80 p-4 rounded-xl shadow-xl border bg-white dark:bg-gray-800"
+                :class="{
+                    'border-green-200 dark:border-green-800': toast.type === 'success',
+                    'border-red-200 dark:border-red-800': toast.type === 'error',
+                    'border-blue-200 dark:border-blue-800': toast.type === 'info',
+                    'border-yellow-200 dark:border-yellow-800': toast.type === 'warning'
+                }">
+                <div class="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm"
+                    :class="{
+                        'bg-green-100 text-green-600': toast.type === 'success',
+                        'bg-red-100 text-red-600': toast.type === 'error',
+                        'bg-blue-100 text-blue-600': toast.type === 'info',
+                        'bg-yellow-100 text-yellow-600': toast.type === 'warning'
+                    }">
+                    <i :class="{
+                        'ri-check-line': toast.type === 'success',
+                        'ri-error-warning-line': toast.type === 'error',
+                        'ri-information-line': toast.type === 'info',
+                        'ri-alert-line': toast.type === 'warning'
+                    }"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white" x-text="toast.title"></p>
+                    <p class="text-xs text-gray-500 mt-0.5" x-text="toast.message"></p>
+                </div>
+                <button @click="dismissToast(toast.id)" class="shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                    <i class="ri-close-line text-sm"></i>
+                </button>
+            </div>
+        </template>
+    </div>
+
+    <!-- Sidebar Overlay (mobile) -->
+    <div x-show="sidebarOpen" @click="sidebarOpen = false"
+        x-transition:enter="transition-opacity ease-linear duration-300"
+        x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+        x-transition:leave="transition-opacity ease-linear duration-300"
+        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+        class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden" aria-hidden="true" x-cloak>
+    </div>
+
+    <!-- Sidebar -->
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+        class="fixed inset-y-0 left-0 z-50 w-64 bg-white/90 dark:bg-gray-900/95 backdrop-blur-xl border-r border-gray-200/60 dark:border-gray-800/60 shadow-xl transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 flex flex-col h-full">
+
+        <!-- Logo -->
+        <div class="h-16 flex items-center justify-between px-5 border-b border-gray-100/60 dark:border-gray-800/60 shrink-0">
+            <a href="../index.html" class="flex items-center gap-2.5 group">
+                <div class="w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
+                    <i class="lni lni-graduation text-base"></i>
+                </div>
+                <span class="font-bold text-xl text-black dark:text-white tracking-tight">AcademicSync</span>
+            </a>
+            <button @click="sidebarOpen = false" class="lg:hidden text-gray-400 hover:text-black dark:hover:text-white transition-colors p-1">
+                <i class="lni lni-close text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Nav Links -->
+        <nav class="flex-1 overflow-y-auto py-5 px-3 space-y-0.5 custom-scrollbar">
+            <p class="px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Main Menu</p>
+
+            <a href="admin-dashboard.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold bg-black text-white dark:bg-white dark:text-black shadow-sm"
+                aria-current="page">
+                <i class="lni lni-grid-alt text-base shrink-0"></i> Dashboard
+            </a>
+            <a href="manage-users.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/70 hover:text-black dark:hover:text-white transition-colors">
+                <i class="lni lni-users text-base shrink-0"></i> Manage Users
+            </a>
+            <a href="admin-courses.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/70 hover:text-black dark:hover:text-white transition-colors">
+                <i class="lni lni-book text-base shrink-0"></i> Courses
+            </a>
+            <a href="departments.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/70 hover:text-black dark:hover:text-white transition-colors">
+                <i class="lni lni-apartment text-base shrink-0"></i> Departments
+            </a>
+            <a href="admin-analytics.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/70 hover:text-black dark:hover:text-white transition-colors">
+                <i class="lni lni-bar-chart text-base shrink-0"></i> Analytics
+            </a>
+
+            <div class="pt-4 pb-1">
+                <p class="px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">System</p>
+            </div>
+            <a href="system-settings.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/70 hover:text-black dark:hover:text-white transition-colors">
+                <i class="lni lni-cog text-base shrink-0"></i> System Settings
+            </a>
+            <a href="post-announcement.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/70 hover:text-black dark:hover:text-white transition-colors">
+                <i class="lni lni-bullhorn text-base shrink-0"></i> Announcements
+            </a>
+            <a href="admin-settings.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/70 hover:text-black dark:hover:text-white transition-colors">
+                <i class="lni lni-cog-2 text-base shrink-0"></i> Account Settings
+            </a>
+            <a href="admin-profile.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/70 hover:text-black dark:hover:text-white transition-colors">
+                <i class="lni lni-user text-base shrink-0"></i> Profile
+            </a>
+        </nav>
+
+        <!-- Sidebar Footer -->
+        <div class="p-4 border-t border-gray-100/60 dark:border-gray-800/60 shrink-0">
+            <button @click="darkMode = !darkMode"
+                class="w-full flex items-center justify-center gap-2 mb-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xs font-bold uppercase tracking-wider">
+                <i class="lni lni-sun" x-show="!darkMode"></i>
+                <i class="lni lni-night" x-show="darkMode" style="display:none"></i>
+                <span x-text="darkMode ? 'Light Mode' : 'Dark Mode'"></span>
+            </button>
+
+            <a href="admin-profile.html" class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group">
+                <div class="w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center font-bold text-xs text-gray-700 dark:text-gray-200 uppercase shrink-0"
+                    x-text="userInitials"></div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-black dark:text-white truncate" x-text="userName"></p>
+                    <p class="text-xs text-gray-400 truncate">System Administrator</p>
+                </div>
+                <i class="lni lni-chevron-right text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors text-xs"></i>
+            </a>
+
+            <button @click="handleLogout()"
+                class="mt-2 w-full flex items-center justify-center gap-2 text-xs font-bold text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 py-2 rounded-lg transition-all uppercase tracking-wider">
+                <i class="lni lni-exit"></i> Sign Out
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+        <!-- Mobile Top Bar -->
+        <div class="lg:hidden h-14 border-b border-gray-200/60 dark:border-gray-800/60 flex items-center justify-between px-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl z-20 sticky top-0 shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 bg-black dark:bg-white rounded-xl flex items-center justify-center text-white dark:text-black font-bold text-sm shadow-md">AS</div>
+                <span class="font-bold text-black dark:text-white">AcademicSync</span>
+            </div>
+            <button @click="sidebarOpen = !sidebarOpen" class="p-2 text-gray-500 hover:text-black dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <i class="ri-menu-line text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Page Scroller -->
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
+            <div class="max-w-7xl mx-auto space-y-8 pb-12 animate-fade-in-up">
+
+                <!-- --- Page Header --- -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Admin Panel</p>
+                        <h1 class="text-3xl font-bold text-black dark:text-white tracking-tight">Dashboard Overview</h1>
+                        <p class="text-sm text-gray-500 mt-1.5 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-green-500 inline-block shadow-sm shadow-green-300"></span>
+                            System operational
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <a href="manage-users.html"
+                            class="flex items-center gap-2 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-bold hover:bg-gray-800 dark:hover:bg-gray-100 transition-all shadow-md hover:-translate-y-0.5 transform">
+                            <i class="ri-user-add-line"></i> Add User
+                        </a>
+                        <a href="admin-courses.html"
+                            class="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-black dark:text-white rounded-xl text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700 shadow-sm">
+                            <i class="ri-book-open-line"></i> Courses
+                        </a>
+                    </div>
+                </div>
+
+                <!-- --- Stats Grid --- -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <!-- Loading skeletons -->
+                    <template x-if="isLoading">
+                        <template x-for="i in 4">
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                                <div class="skeleton h-11 w-11 rounded-xl mb-5"></div>
+                                <div class="skeleton h-8 w-24 rounded-lg mb-2.5"></div>
+                                <div class="skeleton h-3.5 w-28 rounded-full"></div>
+                            </div>
+                        </template>
+                    </template>
+
+                    <!-- Live stat cards -->
+                    <template x-if="!isLoading">
+                        <template x-for="stat in statCards" :key="stat.label">
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-300 group">
+                                <div class="flex items-start justify-between mb-5">
+                                    <div class="p-2.5 bg-gray-100 dark:bg-gray-700 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                                        <i :class="stat.icon + ' text-2xl text-black dark:text-white'"></i>
+                                    </div>
+                                    <span x-show="stat.badge"
+                                        class="text-xs font-bold text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-lg flex items-center gap-0.5">
+                                        <i class="ri-arrow-up-s-line"></i>
+                                        <span x-text="stat.badge"></span>
+                                    </span>
+                                </div>
+                                <p class="text-3xl font-bold text-black dark:text-white mb-1" x-text="stat.value"></p>
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider" x-text="stat.label"></p>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+
+                <!-- --- Activity + Recent Users --- -->
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+                    <!-- Recent Activity (2/3 width) -->
+                    <div class="xl:col-span-2 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col">
+                        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700/70 flex items-center justify-between shrink-0">
+                            <div>
+                                <h2 class="text-base font-bold text-black dark:text-white">Recent Activity</h2>
+                                <p class="text-xs text-gray-400 mt-0.5">Latest system audit log entries</p>
+                            </div>
+                            <a href="manage-users.html" class="text-xs font-bold text-gray-500 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1">
+                                View all <i class="ri-arrow-right-line"></i>
+                            </a>
+                        </div>
+
+                        <!-- Skeleton rows -->
+                        <div x-show="isLoading" class="divide-y divide-gray-100 dark:divide-gray-700/50">
+                            <template x-for="i in 6">
+                                <div class="px-6 py-4 flex items-center gap-4">
+                                    <div class="skeleton w-9 h-9 rounded-full shrink-0"></div>
+                                    <div class="flex-1 space-y-2">
+                                        <div class="skeleton h-3.5 w-40 rounded-full"></div>
+                                        <div class="skeleton h-3 w-24 rounded-full"></div>
+                                    </div>
+                                    <div class="skeleton h-6 w-16 rounded-lg shrink-0"></div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Live rows -->
+                        <div x-show="!isLoading" class="divide-y divide-gray-100 dark:divide-gray-700/50 flex-1">
+                            <div x-show="activities.length === 0" class="px-6 py-10 text-center text-sm text-gray-400">
+                                <i class="ri-folder-open-line text-2xl mb-2 block text-gray-300 dark:text-gray-600"></i>
+                                No recent activity found.
+                            </div>
+                            <template x-for="act in activities" :key="act.id || act.timestamp">
+                                <div class="px-6 py-4 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                    <div class="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center font-bold text-xs text-gray-600 dark:text-gray-300 uppercase shrink-0"
+                                        x-text="(act.user_name || act.user || '?').slice(0,2)"></div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate" x-text="act.user_name || act.user || '—'"></p>
+                                        <p class="text-xs text-gray-400 truncate" x-text="act.action || act.description || '—'"></p>
+                                    </div>
+                                    <div class="shrink-0 text-right space-y-1">
+                                        <p class="text-xs text-gray-400" x-text="act.timestamp ? new Date(act.timestamp).toLocaleDateString() : '—'"></p>
+                                        <span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-full capitalize"
+                                            :class="{
+                                                'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300': act.user_role === 'admin',
+                                                'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300': act.user_role === 'faculty',
+                                                'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300': !act.user_role || act.user_role === 'student'
+                                            }"
+                                            x-text="act.user_role || act.role || 'user'"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Recent Users (1/3 width) -->
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col">
+                        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700/70 flex items-center justify-between shrink-0">
+                            <div>
+                                <h2 class="text-base font-bold text-black dark:text-white">New Users</h2>
+                                <p class="text-xs text-gray-400 mt-0.5">Recently registered accounts</p>
+                            </div>
+                            <a href="manage-users.html" class="text-xs font-bold text-gray-500 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1">
+                                All <i class="ri-arrow-right-line"></i>
+                            </a>
+                        </div>
+
+                        <!-- Skeleton -->
+                        <div x-show="isLoading" class="p-4 space-y-3">
+                            <template x-for="i in 7">
+                                <div class="flex items-center gap-3">
+                                    <div class="skeleton w-9 h-9 rounded-full shrink-0"></div>
+                                    <div class="flex-1 space-y-1.5">
+                                        <div class="skeleton h-3.5 w-28 rounded-full"></div>
+                                        <div class="skeleton h-3 w-16 rounded-full"></div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Live users -->
+                        <div x-show="!isLoading" class="p-2 flex-1 overflow-y-auto custom-scrollbar">
+                            <div x-show="recentUsers.length === 0" class="py-10 text-center text-sm text-gray-400">
+                                <i class="ri-user-line text-2xl mb-2 block text-gray-300 dark:text-gray-600"></i>
+                                No users found.
+                            </div>
+                            <template x-for="u in recentUsers" :key="u.user_id || u.id">
+                                <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors">
+                                    <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs uppercase shrink-0"
+                                        :class="{
+                                            'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300': u.role === 'admin',
+                                            'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300': u.role === 'faculty',
+                                            'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300': u.role === 'student' || !u.role
+                                        }"
+                                        x-text="(u.full_name || u.user_id || '?').slice(0,2)"></div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate" x-text="u.full_name || u.user_id || '—'"></p>
+                                        <p class="text-xs text-gray-400 capitalize truncate" x-text="u.role || 'user'"></p>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- --- Quick Access --- -->
+                <div>
+                    <h2 class="text-base font-bold text-black dark:text-white mb-4">Quick Access</h2>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <template x-for="link in quickLinks" :key="link.label">
+                            <a :href="link.href"
+                                class="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 flex flex-col items-center gap-3 text-center hover:shadow-md hover:border-gray-400 dark:hover:border-gray-500 transition-all">
+                                <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300"
+                                    :class="link.iconBg">
+                                    <i :class="link.icon"></i>
+                                </div>
+                                <p class="text-sm font-bold text-gray-700 dark:text-gray-200" x-text="link.label"></p>
+                            </a>
+                        </template>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+    function adminDash() {
+        return {
+            sidebarOpen: false,
+            darkMode: localStorage.getItem('darkMode') === 'true',
+            isLoading: true,
+            toasts: [],
+            _toastId: 0,
+            userName: 'Loading…',
+            userInitials: '?',
+            statCards: [],
+            activities: [],
+            recentUsers: [],
+            quickLinks: [
+                { label: 'Manage Users',  href: 'manage-users.html',      icon: 'lni lni-users text-black dark:text-white',             iconBg: 'bg-gray-100 dark:bg-gray-700' },
+                { label: 'Courses',       href: 'admin-courses.html',     icon: 'lni lni-book text-blue-600 dark:text-blue-400',        iconBg: 'bg-blue-50 dark:bg-blue-900/30' },
+                { label: 'Departments',   href: 'departments.html',       icon: 'lni lni-apartment text-purple-600 dark:text-purple-400', iconBg: 'bg-purple-50 dark:bg-purple-900/30' },
+                { label: 'Announcements', href: 'post-announcement.html', icon: 'lni lni-bullhorn text-green-600 dark:text-green-400',  iconBg: 'bg-green-50 dark:bg-green-900/30' },
+            ],
+
+            async init() {
+                // Dark mode sync
+                this.$watch('darkMode', v => {
+                    localStorage.setItem('darkMode', v);
+                    document.documentElement.classList.toggle('dark', v);
+                });
+                document.documentElement.classList.toggle('dark', this.darkMode);
+
+                // Mobile sidebar body-lock
+                this.$watch('sidebarOpen', v => { document.body.style.overflow = v ? 'hidden' : ''; });
+
+                const api = window.api || new AcademicSyncAPI(window._apiBase || 'http://localhost:5000');
+                this._api = api;
+
+                // Auth guard
+                if (!api.checkAuth()) { window.location.href = 'admin-login.html'; return; }
+                const user = api.getUserData();
+                if (user && user.role !== 'admin') { api.clearToken(); window.location.href = 'admin-login.html'; return; }
+
+                if (user) {
+                    const name = user.full_name || user.user_id || 'Administrator';
+                    this.userName = name;
+                    this.userInitials = name.split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
+                }
+
+                await this.fetchData();
+            },
+
+            async fetchData() {
+                this.isLoading = true;
+                try {
+                    const [statsRes, activitiesRes, usersRes] = await Promise.allSettled([
+                        this._api.getAdminDashboardStats(),
+                        this._api.getAdminActivities(),
+                        this._api.getAdminUsers({ page: 1, per_page: 8 }),
+                    ]);
+
+                    // Stats
+                    if (statsRes.status === 'fulfilled') {
+                        const s = statsRes.value;
+                        this.statCards = [
+                            { label: 'Total Users',    value: s.users?.total    ?? s.total_users     ?? '—', icon: 'lni lni-users',       badge: null },
+                            { label: 'Students',       value: s.users?.students ?? s.active_students ?? '—', icon: 'lni lni-graduation',   badge: null },
+                            { label: 'Faculty',        value: s.users?.faculty  ?? s.total_faculty   ?? '—', icon: 'lni lni-pencil-alt',   badge: null },
+                            { label: 'Active Courses', value: s.courses_count   ?? s.total_courses   ?? '—', icon: 'lni lni-book',         badge: null },
+                        ];
+                    } else {
+                        this.statCards = [
+                            { label: 'Total Users',    value: '—', icon: 'lni lni-users',     badge: null },
+                            { label: 'Students',       value: '—', icon: 'lni lni-graduation', badge: null },
+                            { label: 'Faculty',        value: '—', icon: 'lni lni-pencil-alt', badge: null },
+                            { label: 'Active Courses', value: '—', icon: 'lni lni-book',       badge: null },
+                        ];
+                        this.addToast('Warning', 'Could not load dashboard statistics.', 'warning');
+                    }
+
+                    // Activities
+                    if (activitiesRes.status === 'fulfilled') {
+                        const raw = activitiesRes.value;
+                        const logs = Array.isArray(raw) ? raw : (raw.logs || raw.audit_logs || []);
+                        this.activities = logs.slice(0, 8);
+                    }
+
+                    // Recent users
+                    if (usersRes.status === 'fulfilled') {
+                        const raw = usersRes.value;
+                        const list = Array.isArray(raw) ? raw : (raw.users || raw.data || []);
+                        this.recentUsers = list.slice(0, 8);
+                    }
+
+                } catch (err) {
+                    console.error('Admin dashboard fetch error:', err);
+                    this.addToast('Error', 'Failed to load dashboard data.', 'error');
+                } finally {
+                    this.isLoading = false;
+                }
+            },
+
+            handleLogout() {
+                this.addToast('Signing out', 'See you next time!', 'info');
+                setTimeout(async () => {
+                    try { await this._api.logout(); } catch (_) {}
+                    window.location.href = 'admin-login.html';
+                }, 800);
+            },
+
+            addToast(title, message, type = 'info') {
+                const id = ++this._toastId;
+                this.toasts.push({ id, title, message, type, visible: false });
+                setTimeout(() => { const t = this.toasts.find(x => x.id === id); if (t) t.visible = true; }, 50);
+                setTimeout(() => this.dismissToast(id), 5000);
+            },
+
+            dismissToast(id) {
+                const t = this.toasts.find(x => x.id === id);
+                if (t) {
+                    t.visible = false;
+                    setTimeout(() => { this.toasts = this.toasts.filter(x => x.id !== id); }, 300);
+                }
+            },
+        };
+    }
+    </script>
+</body>
+
+</html>

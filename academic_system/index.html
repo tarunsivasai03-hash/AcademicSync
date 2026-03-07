@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <meta name="description" content="AcademicSync - Smart Academic Management">
+    <title>AcademicSync</title>
+
+    <!-- Fonts: Inter for that clean, professional Notion look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f9fafb',
+                            100: '#f3f4f6',
+                            200: '#e5e7eb',
+                            300: '#d1d5db',
+                            400: '#9ca3af',
+                            500: '#6b7280',
+                            600: '#000000',
+                            700: '#1f2937',
+                            800: '#111827',
+                            900: '#000000',
+                        },
+                        gray: {
+                            50: '#f9fafb',
+                            100: '#f3f4f6',
+                            200: '#e5e7eb',
+                            300: '#d1d5db',
+                            400: '#9ca3af',
+                            500: '#6b7280',
+                            600: '#4b5563',
+                            700: '#374151',
+                            750: '#2d3748',
+                            800: '#1f2937',
+                            900: '#111827',
+                        }
+                    },
+                    boxShadow: {
+                        'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                        'DEFAULT': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                        'md': '0 4px 12px rgba(0, 0, 0, 0.05)',
+                        'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03)',
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                        'float': 'float 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/components/scrollbar.css">
+
+    <!-- Alpine.js -->
+    <script src="assets/js/main.js" defer></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body
+    class="h-full flex overflow-hidden text-gray-600 font-sans antialiased bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors duration-200"
+    x-data="layout">
+
+    <!-- Toast Notifications -->
+    <div class="fixed top-6 right-6 z-50 flex flex-col gap-3 pointer-events-none">
+    </div>
+
+    <!-- Main Content Wrapper (Authenticated Sidebar skipped for landing) -->
+    <div class="flex-1 flex flex-col min-w-0 bg-white dark:bg-gray-900 relative transition-colors duration-200">
+        <main class="flex-1 overflow-y-auto scroll-smooth p-0" id="main-content">
+
+            <div
+                class="relative min-h-screen bg-white dark:bg-gray-900 font-sans selection:bg-gray-100 selection:text-black dark:selection:bg-gray-800 dark:selection:text-white transition-colors duration-200">
+
+                <!-- ================= Navbar (Landing Internal) ================= -->
+                <nav
+                    class="sticky top-0 z-50 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+                    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+                        <a href="index.html" class="flex items-center gap-2.5 group">
+                            <div
+                                class="w-10 h-10 bg-black dark:bg-white rounded-xl flex items-center justify-center text-white dark:text-black shadow-lg shadow-gray-200 dark:shadow-none group-hover:scale-105 transition-transform duration-300">
+                                <i class="lni lni-graduation text-xl"></i>
+                            </div>
+                            <span
+                                class="font-display font-bold text-xl text-black dark:text-white tracking-tight">AcademicSync</span>
+                        </a>
+
+                        <div class="flex items-center gap-4">
+                            <!-- Theme Toggle -->
+                            <button @click="darkMode = !darkMode" aria-label="Toggle Dark Mode"
+                                class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400">
+                                <i class="lni lni-sun" x-show="!darkMode"></i>
+                                <i class="lni lni-night" x-show="darkMode" style="display: none;"></i>
+                            </button>
+
+                            <a href="login.html"
+                                class="hidden sm:inline-block text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white font-bold text-sm transition-colors">Log
+                                In</a>
+                            <a href="register.html"
+                                class="hidden sm:inline-flex items-center justify-center px-6 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold text-sm hover:bg-gray-900 dark:hover:bg-gray-200 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+                                Sign Up
+                            </a>
+
+                            <!-- Mobile Menu Button -->
+                            <button @click="mobileMenuOpen = !mobileMenuOpen"
+                                class="md:hidden p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                                <i class="lni lni-menu text-xl" x-show="!mobileMenuOpen"></i>
+                                <i class="lni lni-close text-xl" x-show="mobileMenuOpen" x-cloak></i>
+                            </button>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- Mobile Menu -->
+                <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 -translate-y-2"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 -translate-y-2" @click.away="mobileMenuOpen = false"
+                    class="md:hidden absolute top-20 left-0 w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-xl z-40"
+                    x-cloak>
+                    <div class="p-4 space-y-4">
+                        <div class="pt-4 border-t border-gray-100 dark:border-gray-800 flex flex-col gap-3">
+                            <a href="login.html"
+                                class="w-full text-center py-3 rounded-xl font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-colors">Log
+                                In</a>
+                            <a href="register.html"
+                                class="w-full text-center py-3 rounded-xl font-bold bg-black dark:bg-white text-white dark:text-black hover:bg-gray-900 dark:hover:bg-gray-200 transition-colors shadow-lg">Sign
+                                Up</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= Header Section ================= -->
+                <header class="py-24 bg-gray-50 dark:bg-gray-900 relative overflow-hidden transition-colors">
+                    <div
+                        class="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-gray-100 dark:from-gray-800 to-transparent">
+                    </div>
+                    <div class="max-w-7xl mx-auto px-6 relative z-10 text-center">
+                        <span
+                            class="inline-block py-1 px-3 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-black dark:text-white text-xs font-bold uppercase tracking-wider mb-6">
+                            Platform Overview
+                        </span>
+                        <h1
+                            class="text-4xl md:text-6xl font-display font-bold text-black dark:text-white mb-6 leading-tight">
+                            Everything you need to <br> <span class="text-gray-500 dark:text-gray-400">succeed
+                                academically.</span>
+                        </h1>
+                        <p class="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
+                            Explore the powerful tools we've built to help students efficiently manage their time,
+                            grades, and
+                            resources.
+                        </p>
+                    </div>
+                </header>
+
+                <!-- ================= Feature 1: The Dashboard ================= -->
+                <section id="dashboard"
+                    class="py-24 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 transition-colors">
+                    <div class="max-w-7xl mx-auto px-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                            <div class="order-2 lg:order-1 relative">
+                                <div
+                                    class="absolute -inset-4 bg-gradient-to-r from-gray-100 dark:from-gray-800 to-gray-200 dark:to-gray-700 rounded-3xl transform -rotate-2 opacity-50 blur-lg">
+                                </div>
+                                <div
+                                    class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden p-2">
+                                    <!-- Mockup of Student Dashboard -->
+                                    <div
+                                        class="bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                                        <img src="https://placehold.co/800x600/f8fafc/000000?text=Student+Dashboard+UI"
+                                            alt="Dashboard Hub"
+                                            class="w-full h-auto grayscale opacity-80 dark:opacity-60 hover:opacity-100 transition-opacity">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="order-1 lg:order-2">
+                                <div
+                                    class="w-12 h-12 bg-black dark:bg-white text-white dark:text-black rounded-xl flex items-center justify-center text-xl mb-6">
+                                    <i class="lni lni-grid-alt"></i>
+                                </div>
+                                <h2 class="text-3xl font-bold text-black dark:text-white mb-4">Command Center for
+                                    Students</h2>
+                                <p class="text-lg text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
+                                    Your personalized dashboard gives you a real-time overview of your academic
+                                    standing.
+                                </p>
+                                <ul class="space-y-4">
+                                    <li class="flex items-start gap-4">
+                                        <div
+                                            class="mt-1 w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 text-black dark:text-white border border-gray-200 dark:border-gray-700 flex items-center justify-center shrink-0">
+                                            <i class="lni lni-checkmark text-xs font-bold"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-gray-900 dark:text-white">Live GPA Tracking</h4>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Monitor your
+                                                performance across
+                                                different
+                                                semesters instantly.</p>
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start gap-4">
+                                        <div
+                                            class="mt-1 w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 text-black dark:text-white border border-gray-200 dark:border-gray-700 flex items-center justify-center shrink-0">
+                                            <i class="lni lni-checkmark text-xs font-bold"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-gray-900 dark:text-white">Attendance Monitoring
+                                            </h4>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Keep track of your
+                                                attendance and get
+                                                alerts when
+                                                you're running low.</p>
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start gap-4">
+                                        <div
+                                            class="mt-1 w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 text-black dark:text-white border border-gray-200 dark:border-gray-700 flex items-center justify-center shrink-0">
+                                            <i class="lni lni-checkmark text-xs font-bold"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-gray-900 dark:text-white">Quick Stats</h4>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">See total
+                                                assignments, overdue tasks,
+                                                and credits
+                                                earned at a glance.</p>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= Feature 2: Smart Scheduling ================= -->
+                <section id="scheduling"
+                    class="py-24 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 transition-colors">
+                    <div class="max-w-7xl mx-auto px-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                            <div>
+                                <div
+                                    class="w-12 h-12 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-black dark:text-white rounded-xl flex items-center justify-center text-xl mb-6 shadow-sm">
+                                    <i class="lni lni-calendar"></i>
+                                </div>
+                                <h2 class="text-3xl font-bold text-black dark:text-white mb-4">Never Miss a Class</h2>
+                                <p class="text-lg text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
+                                    A dynamic timetable that adapts to your week. Manage lectures, labs, and study
+                                    sessions
+                                    effortlessly.
+                                </p>
+                                <ul class="space-y-4">
+                                    <li class="flex items-start gap-4">
+                                        <div
+                                            class="mt-1 w-6 h-6 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shrink-0">
+                                            <i class="lni lni-star text-xs font-bold"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-gray-900 dark:text-white">Visual Weekly View</h4>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Clear blocks for
+                                                different subjects
+                                                make
+                                                specialized planning easy.</p>
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start gap-4">
+                                        <div
+                                            class="mt-1 w-6 h-6 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shrink-0">
+                                            <i class="lni lni-star text-xs font-bold"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-gray-900 dark:text-white">Smart Conflicts</h4>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">The system
+                                                automatically warns you if
+                                                you try to
+                                                book overlapping classes.</p>
+                                        </div>
+                                    </li>
+                                </ul>
+                                <div class="mt-8">
+                                    <a href="#"
+                                        class="text-black dark:text-white font-bold hover:text-gray-700 dark:hover:text-gray-300 hover:underline flex items-center gap-2">
+                                        Create your schedule <i class="lni lni-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <!-- Visual -->
+                            <div class="relative">
+                                <div
+                                    class="absolute -inset-4 bg-gradient-to-l from-gray-200 dark:from-gray-700 to-gray-100 dark:to-gray-800 rounded-3xl transform rotate-2 opacity-50 blur-lg">
+                                </div>
+                                <div
+                                    class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 p-6">
+                                    <!-- CSS Grid Calendar Mockup -->
+                                    <div
+                                        class="grid grid-cols-5 gap-2 text-center text-xs font-bold text-gray-400 mb-2">
+                                        <div>MON</div>
+                                        <div>TUE</div>
+                                        <div>WED</div>
+                                        <div>THU</div>
+                                        <div>FRI</div>
+                                    </div>
+                                    <div class="grid grid-cols-5 gap-2 h-64">
+                                        <div
+                                            class="bg-gray-100 dark:bg-gray-700 rounded-lg p-2 text-left relative group cursor-pointer hover:border-black dark:hover:border-white border border-transparent transition-all">
+                                            <div class="w-1.5 h-1.5 rounded-full bg-black dark:bg-white mb-1"></div>
+                                            <div class="h-2 w-12 bg-gray-300 dark:bg-gray-500 rounded mb-1"></div>
+                                            <div class="h-1.5 w-8 bg-gray-200 dark:bg-gray-600 rounded"></div>
+                                        </div>
+                                        <div
+                                            class="row-span-2 bg-black dark:bg-white text-white dark:text-black rounded-lg p-2 text-left mt-8 relative group cursor-pointer hover:scale-105 transition-transform">
+                                            <div class="w-1.5 h-1.5 rounded-full bg-white dark:bg-black mb-1"></div>
+                                            <div class="h-2 w-10 bg-gray-400 dark:bg-gray-400 rounded mb-1"></div>
+                                            <div class="h-1.5 w-14 bg-gray-600 dark:bg-gray-300 rounded"></div>
+                                        </div>
+                                        <div></div>
+                                        <div
+                                            class="bg-gray-100 dark:bg-gray-700 rounded-lg p-2 text-left mt-4 relative group cursor-pointer hover:border-black dark:hover:border-white border border-transparent transition-all">
+                                            <div class="w-1.5 h-1.5 rounded-full bg-black dark:bg-white mb-1"></div>
+                                            <div class="h-2 w-12 bg-gray-300 dark:bg-gray-500 rounded mb-1"></div>
+                                        </div>
+                                        <div
+                                            class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-left mt-12 relative group cursor-pointer hover:border-black dark:hover:border-white transition-all">
+                                            <div class="w-1.5 h-1.5 rounded-full bg-gray-400 mb-1"></div>
+                                            <div class="h-2 w-10 bg-gray-200 dark:bg-gray-500 rounded mb-1"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= Feature 3: Task Management ================= -->
+                <section
+                    class="py-24 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 transition-colors">
+                    <div class="max-w-7xl mx-auto px-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                            <div class="order-2 lg:order-1 relative">
+                                <div
+                                    class="absolute -inset-4 bg-gradient-to-r from-gray-100 dark:from-gray-800 to-gray-200 dark:to-gray-700 rounded-3xl transform -rotate-1 opacity-50 blur-lg">
+                                </div>
+                                <div
+                                    class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-8">
+                                    <div class="space-y-4">
+                                        <div
+                                            class="flex items-center gap-3 p-3 bg-white dark:bg-gray-750 border border-gray-100 dark:border-gray-600 shadow-sm rounded-xl">
+                                            <div class="w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-500">
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="h-2 w-32 bg-gray-200 dark:bg-gray-600 rounded"></div>
+                                            </div>
+                                            <div
+                                                class="px-2 py-1 bg-white dark:bg-gray-700 border border-black dark:border-white text-black dark:text-white text-[10px] font-bold rounded">
+                                                HIGH</div>
+                                        </div>
+                                        <div
+                                            class="flex items-center gap-3 p-3 bg-white dark:bg-gray-750 border border-gray-100 dark:border-gray-600 shadow-sm rounded-xl opacity-60">
+                                            <div
+                                                class="w-5 h-5 rounded bg-black dark:bg-white flex items-center justify-center text-white dark:text-black text-xs">
+                                                <i class="lni lni-checkmark"></i>
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="h-2 w-24 bg-gray-200 dark:bg-gray-600 rounded line-through">
+                                                </div>
+                                            </div>
+                                            <div
+                                                class="px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-[10px] font-bold rounded">
+                                                DONE
+                                            </div>
+                                        </div>
+                                        <div
+                                            class="flex items-center gap-3 p-3 bg-white dark:bg-gray-750 border border-gray-100 dark:border-gray-600 shadow-sm rounded-xl">
+                                            <div class="w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-500">
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="h-2 w-40 bg-gray-200 dark:bg-gray-600 rounded"></div>
+                                            </div>
+                                            <div
+                                                class="px-2 py-1 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-500 text-[10px] font-bold rounded">
+                                                MED</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="order-1 lg:order-2">
+                                <div
+                                    class="w-12 h-12 bg-gray-100 dark:bg-gray-800 text-black dark:text-white border border-gray-200 dark:border-gray-700 rounded-xl flex items-center justify-center text-xl mb-6">
+                                    <i class="lni lni-list"></i>
+                                </div>
+                                <h2 class="text-3xl font-bold text-black dark:text-white mb-4">Stay on Top of
+                                    Assignments</h2>
+                                <p class="text-lg text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
+                                    A robust task manager built effectively for students. Sort by priority, due date, or
+                                    subject.
+                                </p>
+                                <p class="text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
+                                    Stop using sticky notes. Our task system integrates directly with your subjects, so
+                                    you know
+                                    exactly what is due for which class.
+                                </p>
+                                <div class="flex gap-3">
+                                    <span
+                                        class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-xs font-bold text-gray-600 dark:text-gray-300">Priority
+                                        Levels</span>
+                                    <span
+                                        class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-xs font-bold text-gray-600 dark:text-gray-300">Due
+                                        Date
+                                        Tracking</span>
+                                    <span
+                                        class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-xs font-bold text-gray-600 dark:text-gray-300">Progress
+                                        Bars</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= Feature 4: Resources & Faculty ================= -->
+                <section id="resources" class="py-24 bg-black text-white relative overflow-hidden">
+                    <div
+                        class="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+                    </div>
+                    <div class="max-w-7xl mx-auto px-6 relative z-10">
+                        <div class="text-center max-w-3xl mx-auto mb-16">
+                            <h2 class="text-3xl md:text-5xl font-bold mb-6">Everything else included.</h2>
+                            <p class="text-gray-400 text-lg">We didn't stop at just grades and schedules. We built a
+                                complete
+                                ecosystem.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div
+                                class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-colors group">
+                                <i
+                                    class="lni lni-cloud-download text-4xl text-white mb-6 group-hover:scale-110 transition-transform block w-fit"></i>
+                                <h3 class="text-2xl font-bold mb-3">Resource Hub</h3>
+                                <p class="text-gray-400 leading-relaxed">
+                                    Upload and organize PDFs, lecture notes, and videos. Share resources with peers or
+                                    keep a
+                                    private library for your research.
+                                </p>
+                            </div>
+                            <div
+                                class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-colors group">
+                                <i
+                                    class="lni lni-users text-4xl text-white mb-6 group-hover:scale-110 transition-transform block w-fit"></i>
+                                <h3 class="text-2xl font-bold mb-3">Faculty Connection</h3>
+                                <p class="text-gray-400 leading-relaxed">
+                                    Direct lines of communication with your professors. Receive announcements, view
+                                    faculty
+                                    profiles, and schedule consultations.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= CTA ================= -->
+                <section class="py-24 bg-white dark:bg-gray-900 transition-colors">
+                    <div class="max-w-4xl mx-auto px-6 text-center">
+                        <h2 class="text-4xl font-bold text-black dark:text-white mb-6">Ready to upgrade your academic
+                            life?</h2>
+                        <p class="text-xl text-gray-500 dark:text-gray-400 mb-10">Join AcademicSync today and experience
+                            the difference.
+                        </p>
+                        <div class="flex justify-center gap-4">
+                            <a href="#"
+                                class="px-8 py-4 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold text-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-all shadow-xl shadow-gray-400/20 dark:shadow-none hover:-translate-y-1">
+                                Get Started Now
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= Footer ================= -->
+                <footer
+                    class="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 py-12 transition-colors">
+                    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-black text-sm">
+                                <i class="lni lni-graduation"></i>
+                            </div>
+                            <span class="font-bold text-black dark:text-white">AcademicSync</span>
+                        </div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">© 2024 AcademicSync. All rights reserved.
+                        </p>
+                    </div>
+                </footer>
+
+            </div>
+        </main>
+    </div>
+
+    <script></script>
+</body>
+
+</html>

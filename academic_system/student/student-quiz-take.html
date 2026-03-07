@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <title>Take Quiz - AcademicSync</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+
+    <style>
+        [x-cloak]{display:none!important}
+        @keyframes shake {
+            0%,100%{transform:translateX(0)}
+            20%{transform:translateX(-6px)}
+            40%{transform:translateX(6px)}
+            60%{transform:translateX(-4px)}
+            80%{transform:translateX(4px)}
+        }
+        .shake{animation:shake 0.45s ease;}
+        @keyframes toast-in {
+            from{opacity:0;transform:translateY(12px);}
+            to{opacity:1;transform:translateY(0);}
+        }
+        .toast-in{animation:toast-in 0.3s ease;}
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: {
+                            50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db',
+                            400: '#9ca3af', 500: '#6b7280', 600: '#000000', 700: '#1f2937',
+                            800: '#111827', 900: '#000000',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <script src="../assets/js/api.js?v=2"></script>
+</head>
+
+<body class="h-full font-sans bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 text-gray-600 dark:text-gray-300 transition-colors duration-200">
+
+<div x-data="quizTake()" x-init="init()" class="min-h-screen">
+
+    <!-- Toast Notifications -->
+    <div class="fixed top-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none" aria-live="polite">
+        <template x-for="toast in toasts" :key="toast.id">
+            <div x-show="toast.visible"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 translate-x-8"
+                x-transition:enter-end="opacity-100 translate-x-0"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-x-0"
+                x-transition:leave-end="opacity-0 translate-x-8"
+                :class="{
+                    'bg-green-50 border-green-200 dark:bg-green-900/40 dark:border-green-700': toast.type==='success',
+                    'bg-red-50 border-red-200 dark:bg-red-900/40 dark:border-red-700': toast.type==='error',
+                    'bg-blue-50 border-blue-200 dark:bg-blue-900/40 dark:border-blue-700': toast.type==='info',
+                    'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/40 dark:border-yellow-700': toast.type==='warning'
+                }"
+                class="pointer-events-auto flex items-start gap-3 w-80 px-4 py-3 rounded-xl border shadow-lg">
+                <i :class="{
+                    'lni lni-checkmark-circle text-green-500': toast.type==='success',
+                    'lni lni-close-circle text-red-500': toast.type==='error',
+                    'lni lni-information text-blue-500': toast.type==='info',
+                    'lni lni-warning text-yellow-500': toast.type==='warning'
+                }" class="mt-0.5 text-lg flex-shrink-0"></i>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-black dark:text-white" x-text="toast.title"></p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5" x-text="toast.message"></p>
+                </div>
+                <button @click="dismissToast(toast.id)" class="text-gray-400 hover:text-black dark:hover:text-white transition-colors flex-shrink-0">
+                    <i class="lni lni-close text-xs"></i>
+                </button>
+            </div>
+        </template>
+    </div>
+
+    <!-- Top bar -->
+    <header class="sticky top-0 z-30 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 shadow-sm">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16 gap-4">
+            <div class="flex items-center gap-3 min-w-0">
+                <a :href="backUrl" aria-label="Go back" class="shrink-0 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <i class="ri-arrow-left-line text-xl"></i>
+                </a>
+                <div class="min-w-0">
+                    <h1 class="text-base font-semibold truncate" x-text="quiz.title || 'Loading quiz…'"></h1>
+                    <p class="text-xs text-gray-500 dark:text-gray-400" x-text="quiz.course_name || ''"></p>
+                </div>
+            </div>
+
+            <!-- Timer — gray → amber (<2 min) → red pulse (<1 min) -->
+            <div x-show="timerActive" class="shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl font-mono text-sm font-semibold"
+                 :class="timerWarning ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 animate-pulse' : timerAmber ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200'">
+                <i class="ri-timer-line"></i>
+                <span x-text="formattedTimer"></span>
+            </div>
+
+            <!-- Progress -->
+            <div x-show="phase === 'quiz'" class="shrink-0 text-sm text-gray-500 dark:text-gray-400">
+                <span x-text="answeredCount"></span>/<span x-text="quiz.questions ? quiz.questions.length : 0"></span> answered
+            </div>
+
+            <!-- Dark mode toggle -->
+            <button @click="toggleDark()" aria-label="Toggle dark mode" class="shrink-0 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <i :class="dark ? 'ri-sun-line' : 'ri-moon-line'" class="text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Progress bar -->
+        <div x-show="phase === 'quiz' && quiz.questions && quiz.questions.length" class="h-1 bg-gray-200 dark:bg-gray-800">
+            <!-- Guard against division-by-zero when questions array is empty -->
+            <div class="h-1 bg-black dark:bg-white transition-all duration-300"
+                 :style="`width:${quiz.questions && quiz.questions.length ? Math.round(answeredCount / quiz.questions.length * 100) : 0}%`"></div>
+        </div>
+    </header>
+
+    <!-- Main content — pb-28 on mobile so sticky bar never hides the last question -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 pb-28 sm:pb-8">
+
+        <!-- PHASE: LOADING -->
+        <div x-show="phase === 'loading'" class="flex flex-col items-center justify-center py-32 gap-4">
+            <div class="w-12 h-12 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-gray-500 dark:text-gray-400">Loading quiz…</p>
+        </div>
+
+        <!-- PHASE: ERROR -->
+        <div x-show="phase === 'error'" class="flex flex-col items-center justify-center py-32 gap-4 text-center">
+            <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+                <i class="ri-error-warning-line text-3xl text-red-500"></i>
+            </div>
+            <h2 class="text-xl font-semibold">Could not load quiz</h2>
+            <p class="text-gray-500 dark:text-gray-400 max-w-sm" x-text="errorMsg"></p>
+            <a :href="backUrl" class="mt-2 px-6 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-xl font-medium hover:opacity-80 transition-opacity">
+                Go Back
+            </a>
+        </div>
+
+        <!-- PHASE: START SCREEN (info before starting) -->
+        <div x-show="phase === 'start'" class="max-w-lg mx-auto">
+            <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                <!-- Header -->
+                <div class="bg-black dark:bg-gray-800 text-white px-6 py-8 text-center">
+                    <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <i class="ri-questionnaire-line text-3xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold" x-text="quiz.title"></h2>
+                    <!-- Course name badge — mirrors the sticky header -->
+                    <p x-show="quiz.course_name"
+                       class="mt-1 inline-block text-xs font-medium text-white/60 uppercase tracking-widest"
+                       x-text="quiz.course_name"></p>
+                    <!-- Description — only shown when it's actually meaningful (> 10 chars) -->
+                    <p x-show="quiz.description && quiz.description.trim().length > 10"
+                       class="mt-2 text-gray-300 text-sm"
+                       x-text="quiz.description"></p>
+                </div>
+
+                <!-- Stats grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 p-6 border-b border-gray-200 dark:border-gray-800">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold" x-text="quiz.questions ? quiz.questions.length : 0"></div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Questions</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold" x-text="quiz.time_limit_minutes ? quiz.time_limit_minutes + ' min' : '∞'"></div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Time Limit</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold" x-text="quiz.pass_score !== null ? quiz.pass_score + '%' : 'N/A'"></div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Pass Score</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold" x-text="totalPoints"></div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Points</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold" x-text="quiz.max_attempts ? quiz.max_attempts : '∞'"></div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Max Attempts</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold" x-text="attemptNumber"></div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">This Attempt</div>
+                    </div>
+                </div>
+
+                <!-- Instructions -->
+                <div class="p-6 space-y-3">
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Before you begin:</p>
+                    <ul class="space-y-2">
+                        <template x-for="tip in instructions" :key="tip">
+                            <li class="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                <i class="ri-checkbox-circle-line text-green-500 mt-0.5 shrink-0"></i>
+                                <span x-text="tip"></span>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+
+                <div class="px-6 pb-6">
+                    <button @click="beginQuiz()"
+                            class="w-full py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl font-semibold text-sm hover:opacity-80 active:scale-95 transition-all">
+                        Start Quiz
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PHASE: QUIZ (questions) -->
+        <div x-show="phase === 'quiz'" class="space-y-6">
+
+            <!-- ① Question navigation pills -->
+            <div class="flex flex-wrap gap-2 mb-2">
+                <template x-for="(q, i) in (quiz.questions || [])" :key="q.id">
+                    <button
+                        @click="document.getElementById('q'+q.id).scrollIntoView({behavior:'smooth',block:'center'})"
+                        class="w-9 h-9 rounded-lg text-sm font-semibold transition-all"
+                        :class="answers[q.id] !== undefined
+                            ? 'bg-black dark:bg-white text-white dark:text-black'
+                            : highlightUnanswered
+                                ? 'bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 ring-1 ring-red-400'
+                                : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'"
+                        x-text="i+1">
+                    </button>
+                </template>
+            </div>
+
+            <!-- ⑩ Completion toast -->
+            <div x-show="showCompletionToast" x-cloak
+                 class="toast-in flex items-center gap-3 px-4 py-3 bg-green-500 text-white rounded-xl shadow-lg text-sm font-medium">
+                <i class="ri-checkbox-circle-fill text-lg"></i>
+                All questions answered — ready to submit!
+            </div>
+
+            <template x-for="(question, qIdx) in (quiz.questions || [])" :key="question.id">
+                <!-- ④ card hover lift; ② red ring when highlight mode and unanswered -->
+                <div :id="'q'+question.id"
+                     class="bg-white dark:bg-gray-900 rounded-2xl border dark:border-gray-800 shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md hover:-translate-y-px"
+                     :class="answers[question.id] !== undefined
+                         ? 'border-black dark:border-gray-600'
+                         : highlightUnanswered
+                             ? 'border-red-400 dark:border-red-500 shake'
+                             : 'border-gray-200'">
+                    <!-- Question header -->
+                    <div class="flex items-start gap-4 px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+                        <span class="shrink-0 w-8 h-8 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center text-sm font-bold"
+                              x-text="qIdx + 1"></span>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-medium leading-relaxed" x-text="question.question_text"></p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                <span x-text="question.points || 1"></span> pt<span x-show="(question.points || 1) !== 1">s</span>
+                                &nbsp;·&nbsp;
+                                <span x-text="question.question_type === 'true_false' ? 'True / False' : 'Multiple Choice'"></span>
+                            </p>
+                        </div>
+                        <!-- Answered indicator -->
+                        <span x-show="answers[question.id] !== undefined"
+                              class="shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                            <i class="ri-check-line text-white text-xs"></i>
+                        </span>
+                    </div>
+
+                    <!-- Options -->
+                    <div class="p-6 space-y-3">
+                        <template x-for="option in (question.options || [])" :key="option.id">
+                            <!-- ⑤ active scale + ⑨ min-h for bigger tap targets on mobile -->
+                            <label class="flex items-center gap-3 p-3.5 min-h-[52px] rounded-xl border cursor-pointer transition-all select-none active:scale-[0.98]"
+                                   :class="answers[question.id] === option.id
+                                       ? 'border-black dark:border-white bg-black/5 dark:bg-white/10'
+                                       : 'border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'">
+                                <!-- Spread-replace so Alpine 3 detects key addition; also clear highlight & check completion -->
+                                <input type="radio"
+                                       :name="'q_' + question.id"
+                                       :value="option.id"
+                                       class="sr-only"
+                                       @change="answers = { ...answers, [question.id]: option.id }; highlightUnanswered = false; checkCompletion()">
+                                <span class="shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
+                                      :class="answers[question.id] === option.id
+                                          ? 'border-black dark:border-white'
+                                          : 'border-gray-300 dark:border-gray-600'">
+                                    <span x-show="answers[question.id] === option.id"
+                                          class="w-2.5 h-2.5 rounded-full bg-black dark:bg-white"></span>
+                                </span>
+                                <span class="text-sm" x-text="option.option_text"></span>
+                            </label>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Submit bar -->
+            <div class="sticky bottom-4">
+                <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-lg p-4 flex items-center justify-between gap-4">
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                        <span class="font-semibold text-gray-900 dark:text-white" x-text="answeredCount"></span>
+                        of <span x-text="quiz.questions ? quiz.questions.length : 0"></span> answered
+                        <span x-show="unansweredCount > 0" class="text-amber-600 dark:text-amber-400">
+                            — <span x-text="unansweredCount"></span> remaining
+                        </span>
+                    </div>
+                    <!-- ⑥ Also disabled when nothing is answered yet -->
+                    <button @click="confirmAndSubmit()"
+                            :disabled="submitting || answeredCount === 0"
+                            class="px-6 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-xl font-semibold text-sm hover:opacity-80 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                        <span x-show="submitting" class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+                        <span x-text="submitting ? 'Submitting…' : 'Submit Quiz'"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PHASE: RESULTS -->
+        <div x-show="phase === 'results'" class="space-y-6">
+            <!-- Score card -->
+            <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                <div class="px-6 py-8 text-center"
+                     :class="result.passed ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'">
+                    <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl"
+                         :class="result.passed ? 'bg-green-500' : 'bg-red-500'">
+                        <i :class="result.passed ? 'ri-trophy-line text-white' : 'ri-close-circle-line text-white'"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold" :class="result.passed ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'"
+                        x-text="result.passed ? 'Passed! 🎉' : 'Not Passed'"></h2>
+                    <p class="text-4xl font-bold mt-3 text-gray-900 dark:text-white"
+                       x-text="result.percentage !== undefined ? result.percentage.toFixed(1) + '%' : '--'"></p>
+                    <p class="text-gray-500 dark:text-gray-400 mt-1 text-sm">
+                        <span x-text="result.score || 0"></span> / <span x-text="result.max_score || totalPoints"></span> points
+                    </p>
+                    <template x-if="quiz.pass_score !== null && quiz.pass_score !== undefined">
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Pass score: <span x-text="quiz.pass_score"></span>%</p>
+                    </template>
+                </div>
+
+                <div class="px-6 py-4 flex gap-3 border-t border-gray-100 dark:border-gray-800 flex-wrap">
+                    <a :href="backUrl"
+                       class="flex-1 py-2.5 border border-gray-300 dark:border-gray-700 rounded-xl text-sm font-medium text-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                        Back to Course
+                    </a>
+                    <button x-show="canRetry"
+                            @click="retryQuiz()"
+                            class="flex-1 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-medium hover:opacity-80 transition-opacity">
+                        Retry Quiz
+                    </button>
+                </div>
+            </div>
+
+            <!-- Per-question breakdown (shown if show_answers_after is true) -->
+            <template x-if="result.answers && result.answers.length">
+                <div class="space-y-4">
+                    <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Answer Review</h3>
+                    <template x-for="(ans, idx) in result.answers" :key="ans.question_id">
+                        <div class="bg-white dark:bg-gray-900 rounded-2xl border dark:border-gray-800 overflow-hidden"
+                             :class="ans.is_correct ? 'border-green-200' : 'border-red-200'">
+                            <div class="flex items-start gap-3 px-5 py-4 border-b dark:border-gray-800"
+                                 :class="ans.is_correct ? 'border-green-100' : 'border-red-100'">
+                                <span class="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold"
+                                      :class="ans.is_correct ? 'bg-green-500 text-white' : 'bg-red-500 text-white'"
+                                      x-text="idx + 1"></span>
+                                <p class="font-medium text-sm leading-relaxed flex-1" x-text="ans.question_text"></p>
+                                <span class="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full"
+                                      :class="ans.is_correct ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'"
+                                      x-text="ans.is_correct ? '+' + (ans.points_earned || 0) + ' pt' : '0 pt'"></span>
+                            </div>
+                            <div class="px-5 py-4 space-y-2">
+                                <!-- ⑦ skipped badge shown when ans has no selected option -->
+                                <template x-if="!ans.selected_option_id">
+                                    <div class="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-lg">
+                                        <i class="ri-skip-forward-line"></i>
+                                        <span>Skipped / not answered</span>
+                                    </div>
+                                </template>
+                                <template x-for="opt in (ans.options || [])" :key="opt.id">
+                                    <div class="flex items-center gap-2.5 text-sm py-1.5 px-3 rounded-lg"
+                                         :class="{
+                                            'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300': opt.is_correct,
+                                            'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300': !opt.is_correct && opt.id === ans.selected_option_id,
+                                            'text-gray-500 dark:text-gray-400': !opt.is_correct && opt.id !== ans.selected_option_id
+                                         }">
+                                        <i :class="{
+                                            'ri-checkbox-circle-fill text-green-500': opt.is_correct,
+                                            'ri-close-circle-fill text-red-500': !opt.is_correct && opt.id === ans.selected_option_id,
+                                            'ri-circle-line text-gray-300': !opt.is_correct && opt.id !== ans.selected_option_id
+                                        }"></i>
+                                        <span x-text="opt.option_text"></span>
+                                        <span x-show="opt.id === ans.selected_option_id && !opt.is_correct"
+                                              class="ml-auto text-xs">(your answer)</span>
+                                    </div>
+                                </template>
+                                <!-- Explanation -->
+                                <template x-if="ans.explanation">
+                                    <div class="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
+                                        <p class="text-xs text-blue-700 dark:text-blue-300">
+                                            <span class="font-semibold">Explanation: </span>
+                                            <span x-text="ans.explanation"></span>
+                                        </p>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+    </main>
+</div>
+
+<!-- Confirm-submit modal -->
+<!-- x-cloak prevents FOUC; x-show on the inner panel drives the visible transition -->
+<div x-data x-cloak x-show="$store.confirmModal.open" @keydown.window.escape="$store.confirmModal.cancel(); $store.confirmModal.open = false" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+    <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xl max-w-sm w-full p-6">
+        <h3 class="text-lg font-semibold mb-2">Submit Quiz?</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1" x-text="$store.confirmModal.msg"></p>
+        <p class="text-sm text-amber-600 dark:text-amber-400 mb-5" x-show="$store.confirmModal.warn" x-text="$store.confirmModal.warn"></p>
+        <div class="flex gap-3">
+            <!-- Cancel must resolve the promise with false so confirmAndSubmit() does not hang -->
+            <button @click="$store.confirmModal.cancel(); $store.confirmModal.open = false"
+                    class="flex-1 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                Cancel
+            </button>
+            <button @click="$store.confirmModal.confirm(); $store.confirmModal.open = false"
+                    class="flex-1 py-2 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-medium hover:opacity-80 transition-opacity">
+                Submit
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        // Shared confirm modal store
+        Alpine.store('confirmModal', {
+            open: false,
+            msg: '',
+            warn: '',
+            resolve: null,
+            confirm() { if (this.resolve) { this.resolve(true);  this.resolve = null; } },
+            // cancel() resolves the promise with false so awaiting callers are not left hanging
+            cancel() { if (this.resolve) { this.resolve(false); this.resolve = null; } },
+            show(msg, warn = '') {
+                this.msg = msg;
+                this.warn = warn;
+                this.open = true;
+                return new Promise(res => { this.resolve = res; });
+            }
+        });
+
+        Alpine.data('quizTake', () => ({
+            dark: false,
+            phase: 'loading', // loading | error | start | quiz | results
+            errorMsg: '',
+            quiz: {},
+            attemptId: null,
+            attemptNumber: 1,
+            answers: {},       // { question_id: option_id }
+            submitting: false,
+            result: {},
+            backUrl: 'course-detail.html',
+
+            // Timer
+            timerActive: false,
+            timerSeconds: 0,
+            timerInterval: null,
+            timerWarning: false,   // < 60s  → red pulse
+            timerAmber: false,     // < 120s → amber
+
+            // Persisted session
+            quizId: null,          // set in init() from URL param
+
+            // UX state
+            highlightUnanswered: false,  // ② shake unanswered on submit attempt
+            showCompletionToast: false,  // ⑩ toast when all answered
+            toasts: [], _toastId: 0,
+
+            get instructions() {
+                const tips = ['Read each question carefully before selecting your answer.'];
+                if (this.quiz.time_limit_minutes) tips.push(`You have ${this.quiz.time_limit_minutes} minutes to complete this quiz.`);
+                if (this.quiz.max_attempts) tips.push(`You have ${this.quiz.max_attempts} attempt(s) total.`);
+                if (!(this.quiz.show_answers_after)) tips.push('Correct answers will not be shown after submission.');
+                else tips.push('Correct answers and explanations will be shown after submission.');
+                tips.push('You can change your answers any time before submitting.');
+                return tips;
+            },
+            get totalPoints() {
+                return (this.quiz.questions || []).reduce((s, q) => s + (q.points || 1), 0);
+            },
+            get answeredCount() {
+                return Object.keys(this.answers).length;
+            },
+            get unansweredCount() {
+                return (this.quiz.questions || []).length - this.answeredCount;
+            },
+            get canRetry() {
+                if (!this.quiz.max_attempts) return true;
+                return this.attemptNumber < this.quiz.max_attempts;
+            },
+            get formattedTimer() {
+                const m = Math.floor(this.timerSeconds / 60);
+                const s = this.timerSeconds % 60;
+                return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            },
+
+            async init() {
+                // Dark mode
+                this.dark = localStorage.getItem('darkMode') === 'true';
+                if (this.dark) document.documentElement.classList.add('dark');
+
+                // Auth guard
+                if (typeof window.api !== 'undefined') {
+                    if (!window.api.checkAuth()) { window.location.href = 'student-login.html'; return; }
+                    const u = window.api.getUserData();
+                    if (u && u.role !== 'student') { window.api.clearToken(); window.location.href = 'student-login.html'; return; }
+                }
+
+                // Read URL params
+                const params = new URLSearchParams(window.location.search);
+                const quizId = params.get('quiz_id');
+                const courseId = params.get('course_id');
+                this.quizId = quizId;
+
+                if (courseId) {
+                    this.backUrl = `course-detail.html?id=${courseId}`;
+                }
+
+                if (!quizId) {
+                    this.phase = 'error';
+                    this.errorMsg = 'No quiz specified. Please go back and try again.';
+                    return;
+                }
+
+                // Load quiz
+                try {
+                    const data = await window.api.getStudentQuiz(quizId);
+                    this.quiz = data.quiz || data;
+                    this.attemptNumber = (this.quiz.student_attempts_count || 0) + 1;
+
+                    if (!this.quiz.questions || this.quiz.questions.length === 0) {
+                        this.phase = 'error';
+                        this.errorMsg = 'This quiz has no questions yet. Please check back later.';
+                        return;
+                    }
+
+                    // ── Restore persisted session if one exists ────────────────
+                    const saved = this._loadSession(quizId);
+                    if (saved && saved.attemptId) {
+                        if (this.quiz.time_limit_minutes) {
+                            // Recompute how many seconds are left
+                            const elapsed = Math.floor((Date.now() - saved.startTime) / 1000);
+                            const totalSec = this.quiz.time_limit_minutes * 60;
+                            const remaining = totalSec - elapsed;
+
+                            if (remaining <= 0) {
+                                // Time expired while away — auto-submit with saved answers
+                                this._clearSession(quizId);
+                                this.attemptId = saved.attemptId;
+                                this.answers   = saved.answers || {};
+                                this.phase     = 'quiz';
+                                window.api?.showNotification('Time expired — submitting your quiz automatically…', 'warning', 4000);
+                                await this.submitQuiz();
+                                return;
+                            }
+
+                            // Timer still running — resume in-quiz
+                            this.attemptId   = saved.attemptId;
+                            this.answers     = saved.answers || {};
+                            this.phase       = 'quiz';
+                            this._startTimer(remaining);
+                            window.api?.showNotification('Quiz session restored — timer continues from where you left off.', 'info', 3500);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                            return;
+                        } else {
+                            // No time limit — just restore answers so the student
+                            // doesn't have to start over after an accidental refresh
+                            this.attemptId = saved.attemptId;
+                            this.answers   = saved.answers || {};
+                            this.phase     = 'quiz';
+                            window.api?.showNotification('Quiz session restored.', 'info', 3000);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                            return;
+                        }
+                    }
+                    // ── No saved session: normal start-screen ─────────────────
+
+                    this.phase = 'start';
+                } catch(e) {
+                    this.phase = 'error';
+                    this.errorMsg = e.message || 'Failed to load quiz. Please try again.';
+                }
+            },
+
+            // ── Session persistence helpers ───────────────────────────────────
+            _sessionKey(id) { return `quiz_session_${id}`; },
+
+            _saveSession() {
+                if (!this.quizId || !this.attemptId) return;
+                try {
+                    const data = {
+                        attemptId: this.attemptId,
+                        startTime: this._sessionStartTime || Date.now(),
+                        answers: this.answers
+                    };
+                    localStorage.setItem(this._sessionKey(this.quizId), JSON.stringify(data));
+                } catch(_) { /* storage full / private mode — silently skip */ }
+            },
+
+            _loadSession(quizId) {
+                try {
+                    const raw = localStorage.getItem(this._sessionKey(quizId));
+                    return raw ? JSON.parse(raw) : null;
+                } catch(_) { return null; }
+            },
+
+            _clearSession(quizId) {
+                try { localStorage.removeItem(this._sessionKey(quizId || this.quizId)); } catch(_) {}
+            },
+
+            // ── Shared timer starter ─────────────────────────────────────────
+            _startTimer(seconds) {
+                if (this.timerInterval) { clearInterval(this.timerInterval); this.timerInterval = null; }
+                this.timerSeconds = seconds;
+                this.timerActive  = true;
+                this.timerWarning = seconds <= 60;
+                this.timerAmber   = seconds > 60 && seconds <= 120;
+                this.timerInterval = setInterval(() => {
+                    if (this.timerSeconds <= 0) {
+                        clearInterval(this.timerInterval);
+                        this.timerInterval = null;
+                        this.timerActive   = false;
+                        if (!this.submitting) this.submitQuiz();
+                        return;
+                    }
+                    this.timerSeconds--;
+                    this._saveSession();   // keep startTime drift-corrected on every tick
+                    this.timerWarning = this.timerSeconds <= 60;
+                    this.timerAmber   = this.timerSeconds > 60 && this.timerSeconds <= 120;
+                }, 1000);
+            },
+
+            async beginQuiz() {
+                if (!window.api) { this.phase = 'error'; this.errorMsg = 'API unavailable.'; return; }
+                try {
+                    const res = await window.api.startQuiz(this.quiz.id);
+                    this.attemptId = res.attempt_id;
+                    this.answers = {};
+                    this.phase = 'quiz';
+
+                    // Stamp the real wall-clock start time so _saveSession() can recompute remaining
+                    this._sessionStartTime = Date.now();
+                    this._saveSession();
+
+                    if (this.quiz.time_limit_minutes) {
+                        this._startTimer(this.quiz.time_limit_minutes * 60);
+                    }
+
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } catch(e) {
+                    window.api?.showNotification('Could not start quiz: ' + (e.message || 'Unknown error'), 'error');
+                }
+            },
+
+            async confirmAndSubmit() {
+                const total = (this.quiz.questions || []).length;
+                const answered = this.answeredCount;
+                const missing = total - answered;
+
+                // ② Highlight and scroll to the first unanswered question
+                if (missing > 0) {
+                    this.highlightUnanswered = true;
+                    const first = (this.quiz.questions || []).find(q => this.answers[q.id] === undefined);
+                    if (first) {
+                        const el = document.getElementById('q' + first.id);
+                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    // Auto-clear the shake highlight after animation completes
+                    setTimeout(() => { this.highlightUnanswered = false; }, 600);
+                }
+
+                let warnMsg = '';
+                if (missing > 0) warnMsg = `${missing} question(s) are unanswered and will be marked as incorrect.`;
+
+                const confirmed = await Alpine.store('confirmModal').show(
+                    `You are about to submit your quiz. This action cannot be undone.`,
+                    warnMsg
+                );
+                if (confirmed) this.submitQuiz();
+            },
+
+            // ⑩ Trigger completion toast when every question has been answered
+            // Also persists answers to localStorage on every selection
+            checkCompletion() {
+                this._saveSession();
+                const total = (this.quiz.questions || []).length;
+                if (total > 0 && this.answeredCount === total) {
+                    this.showCompletionToast = true;
+                    setTimeout(() => { this.showCompletionToast = false; }, 3000);
+                }
+            },
+
+            async submitQuiz() {
+                if (this.submitting) return;
+                this.submitting = true;
+
+                // Stop and nullify the interval immediately to prevent duplicate auto-submits
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                    this.timerInterval = null;
+                    this.timerActive = false;
+                }
+
+                try {
+                    const payload = {
+                        attempt_id: this.attemptId,
+                        answers: this.answers
+                    };
+                    const res = await window.api.submitQuiz(this.quiz.id, payload);
+                    this.result = res.attempt || res;
+                    // Fetch detailed result with per-question breakdown
+                    try {
+                        const detailed = await window.api.getQuizResult(this.quiz.id);
+                        this.result = detailed.attempt || detailed;
+                    } catch(e2) { /* use basic result */ }
+                    this._clearSession();  // wipe saved session on successful submit
+                    this.phase = 'results';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } catch(e) {
+                    window.api?.showNotification('Submission failed: ' + (e.message || 'Unknown error. Please try again.'), 'error');
+                } finally {
+                    this.submitting = false;
+                }
+            },
+
+            retryQuiz() {
+                this._clearSession();    // clear old session so retry gets a clean slate
+                this.answers = {};
+                this.highlightUnanswered = false;
+                this.showCompletionToast = false;
+                this._sessionStartTime = null;
+                // Do NOT increment attemptNumber here — the backend controls attempt count.
+                // The updated attempt number will be read from the API on the next beginQuiz() call.
+                this.result = {};
+                this.phase = 'start';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
+
+            addToast(title, message, type = 'info') {
+                const id = ++this._toastId;
+                this.toasts.push({ id, title, message, type, visible: false });
+                setTimeout(() => { const t = this.toasts.find(x => x.id===id); if(t) t.visible = true; }, 50);
+                setTimeout(() => this.dismissToast(id), 5000);
+            },
+            dismissToast(id) {
+                const t = this.toasts.find(x => x.id===id);
+                if (t) { t.visible = false; setTimeout(() => { this.toasts = this.toasts.filter(x => x.id!==id); }, 300); }
+            },
+            toggleDark() {
+                this.dark = !this.dark;
+                document.documentElement.classList.toggle('dark', this.dark);
+                localStorage.setItem('darkMode', this.dark);
+            }
+        }));
+    });
+</script>
+
+</body>
+</html>

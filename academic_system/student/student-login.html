@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <title>Student Login - AcademicSync</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../assets/js/main.js" defer></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Inter', 'sans-serif'] },
+                    animation: { 'fade-in-up': 'fadeInUp 0.5s ease-out forwards', 'blob': 'blob 7s infinite' },
+                    keyframes: {
+                        fadeInUp: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        blob: { '0%': { transform: 'translate(0px, 0px) scale(1)' }, '33%': { transform: 'translate(30px, -50px) scale(1.1)' }, '66%': { transform: 'translate(-20px, 20px) scale(0.9)' }, '100%': { transform: 'translate(0px, 0px) scale(1)' } }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body
+    class="h-full flex overflow-hidden text-gray-600 font-sans antialiased bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors duration-200"
+    x-data="layout">
+
+    <!-- Theme Toggle -->
+    <button @click="darkMode = !darkMode" aria-label="Toggle dark mode"
+        class="fixed top-6 right-6 z-50 p-3 rounded-full bg-white/10 backdrop-blur-md border border-gray-200 dark:border-gray-700 shadow-lg text-gray-600 dark:text-gray-300 hover:scale-110 active:scale-95 transition-all">
+        <i class="lni lni-sun text-xl" x-show="!darkMode"></i>
+        <i class="lni lni-night text-xl" x-show="darkMode" style="display: none;"></i>
+    </button>
+
+    <div class="flex-1 flex flex-col min-w-0 bg-white dark:bg-gray-900 relative transition-colors duration-200">
+        <main class="flex-1 overflow-y-auto scroll-smooth p-0">
+            <div
+                class="min-h-screen relative flex items-center justify-center p-4 overflow-hidden bg-white dark:bg-gray-900 transition-colors">
+
+                <!-- Background Elements -->
+                <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                    <div
+                        class="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-blue-100 dark:bg-blue-900/20 rounded-full blur-[100px] animate-blob">
+                    </div>
+                    <div
+                        class="absolute top-[20%] -right-[10%] w-[40%] h-[60%] bg-indigo-100 dark:bg-indigo-900/20 rounded-full blur-[100px] animate-blob animation-delay-2000">
+                    </div>
+                </div>
+
+                <!-- Login Card -->
+                <div class="relative w-full max-w-md animate-fade-in-up">
+                    <div class="text-center mb-8">
+                        <a href="../login.html"
+                            class="inline-flex items-center gap-2 mb-6 group cursor-pointer hover:-translate-x-1 transition-transform">
+                            <i
+                                class="lni lni-arrow-left text-gray-500 dark:text-gray-400 group-hover:text-black dark:group-hover:text-white"></i>
+                            <span
+                                class="text-sm font-bold text-gray-500 dark:text-gray-400 group-hover:text-black dark:group-hover:text-white">Back
+                                to Roles</span>
+                        </a>
+                        <h2 class="text-3xl font-display font-bold text-black dark:text-white mb-2">Student Portal</h2>
+                        <p class="text-gray-500 dark:text-gray-400">Access your courses, grades, and schedule.</p>
+                    </div>
+
+                    <div
+                        class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/50 dark:border-gray-700/50 shadow-2xl shadow-gray-200/50 dark:shadow-none rounded-3xl p-6 sm:p-10 hover:scale-[1.01] transition-transform">
+                        <form class="space-y-6" id="loginForm" onsubmit="event.preventDefault(); loginStudent();">
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Student
+                                    ID</label>
+                                <div class="relative group">
+                                    <div
+                                        class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-black dark:group-focus-within:text-white transition-colors">
+                                        <i class="lni lni-user text-lg"></i>
+                                    </div>
+                                    <input type="text" id="user_id" name="user_id" required autocomplete="username"
+                                        class="block w-full pl-11 pr-4 py-3.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-black dark:text-white placeholder-gray-400 focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                                        placeholder="Enter Student ID">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Password</label>
+                                <div class="relative group">
+                                    <div
+                                        class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-black dark:group-focus-within:text-white transition-colors">
+                                        <i class="lni lni-lock text-lg"></i>
+                                    </div>
+                                    <input type="password" id="password" name="password" required
+                                        autocomplete="current-password"
+                                        class="block w-full pl-11 pr-4 py-3.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-black dark:text-white placeholder-gray-400 focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                                        placeholder="Enter password">
+                                </div>
+                            </div>
+
+                            <button type="submit"
+                                class="w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-lg shadow-blue-500/30 dark:shadow-none text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all transform hover:-translate-y-0.5">
+                                Secure Login
+                            </button>
+                        </form>
+
+                        <!-- Demo Credential -->
+                        <div
+                            class="mt-5 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/40">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p
+                                        class="text-xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider mb-1">
+                                        Demo Account</p>
+                                    <p class="text-sm text-blue-900 dark:text-blue-200 font-mono"><span
+                                            class="font-bold">STU001</span> &nbsp;/&nbsp; student123</p>
+                                </div>
+                                <button type="button"
+                                    onclick="document.getElementById('user_id').value='STU001'; document.getElementById('password').value='student123';"
+                                    class="px-3 py-1.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                                    Use Demo
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 pt-8 border-t border-gray-100 dark:border-gray-700/50 text-center">
+                            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                                New Student?
+                                <a href="../register.html"
+                                    class="font-bold text-blue-600 dark:text-blue-400 hover:underline transition-colors ml-1">
+                                    Create an account
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <!-- Custom Scripts -->
+    <script src="../assets/js/api.js?v=2"></script>
+    <script>
+        const api = new AcademicSyncAPI(window._apiBase || 'http://localhost:5000');
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            if (api.checkAuth()) {
+                try {
+                    const res = await api.getCurrentUser();
+                    const user = res.user || res;
+                    if (user?.role === 'student') {
+                        api.setUserData(user);
+                        window.location.href = 'student-dashboard.html';
+                    } else {
+                        api.clearToken(); // wrong role stale token
+                    }
+                } catch (_) {
+                    api.clearToken(); // expired / invalid token
+                }
+            }
+        });
+
+        async function loginStudent() {
+            const userID = document.getElementById('user_id').value.trim();
+            const password = document.getElementById('password').value;
+            const btn = document.querySelector('#loginForm button[type="submit"]');
+
+            if (!userID || !password) {
+                api.showNotification('Please enter both User ID and password', 'error');
+                return;
+            }
+
+            const origText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Signing in�';
+
+            try {
+                const response = await api.login({ user_id: userID, password });
+                const user = response.user;
+
+                if (user && user.role !== 'student') {
+                    api.clearToken();
+                    api.showNotification('This portal is for students only. Use the correct login.', 'warning');
+                    btn.disabled = false;
+                    btn.textContent = origText;
+                    return;
+                }
+
+                api.showNotification('Login successful! Redirecting�', 'success');
+                setTimeout(() => { window.location.href = 'student-dashboard.html'; }, 900);
+
+            } catch (error) {
+                console.error('Login error:', error);
+                api.showNotification(error.message || 'Invalid credentials', 'error');
+                btn.disabled = false;
+                btn.textContent = origText;
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <meta name="description" content="AcademicSync - Smart Academic Management">
+    <title>AcademicSync - Faculty Resources</title>
+
+    <!-- Fonts: Inter for that clean, professional Notion look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f9fafb',
+                            100: '#f3f4f6',
+                            200: '#e5e7eb',
+                            300: '#d1d5db',
+                            400: '#9ca3af',
+                            500: '#6b7280',
+                            600: '#000000',
+                            700: '#1f2937',
+                            800: '#111827',
+                            900: '#000000',
+                        },
+                        gray: {
+                            50: '#f9fafb',
+                            100: '#f3f4f6',
+                            200: '#e5e7eb',
+                            300: '#d1d5db',
+                            400: '#9ca3af',
+                            500: '#6b7280',
+                            600: '#4b5563',
+                            700: '#374151',
+                            750: '#2d3748',
+                            800: '#1f2937',
+                            900: '#111827',
+                            55: '#f9fafb',
+                        }
+                    },
+                    boxShadow: {
+                        'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                        'DEFAULT': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                        'md': '0 4px 12px rgba(0, 0, 0, 0.05)',
+                        'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03)',
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                        'float': 'float 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/components/scrollbar.css">
+
+    <!-- Custom JS -->
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #e5e7eb;
+            border-radius: 20px;
+        }
+
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #374151;
+        }
+    </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 font-sans"
+    x-data="facultyResources()" x-init="init()"
+    @keydown.window.escape="closeAllModals()">
+
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+            class="fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-800/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transform transition-transform duration-300 ease-in-out flex flex-col h-full">
+
+            <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100/50 dark:border-gray-800/50">
+                <a href="../index.html" class="flex items-center gap-2.5 group">
+                    <div class="w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-lg shadow-gray-200/50 dark:shadow-none group-hover:scale-105 transition-transform">
+                        <i class="lni lni-graduation"></i>
+                    </div>
+                    <span class="font-display font-bold text-xl text-black dark:text-white tracking-tight">AcademicSync</span>
+                </a>
+                <button @click="sidebarOpen = false" aria-label="Close Sidebar"
+                    class="lg:hidden text-gray-400 hover:text-black transition-colors">
+                    <i class="lni lni-close text-xl"></i>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
+                <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Faculty Menu</p>
+
+                <a href="faculty-dashboard.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                    <i class="lni lni-grid-alt text-lg group-hover:text-black dark:group-hover:text-white"></i> Dashboard
+                </a>
+
+                <a href="faculty-courses.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                    <i class="lni lni-library text-lg group-hover:text-black dark:group-hover:text-white"></i> My Courses
+                </a>
+
+                <a href="faculty-schedule.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                    <i class="lni lni-calendar text-lg group-hover:text-black dark:group-hover:text-white"></i> Schedule
+                </a>
+
+                <a href="faculty-students.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                    <i class="lni lni-users text-lg group-hover:text-black dark:group-hover:text-white"></i> Students
+                </a>
+
+                <a href="faculty-attendance.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                    <i class="lni lni-checkmark-circle text-lg group-hover:text-black dark:group-hover:text-white"></i> Attendance
+                </a>
+
+                <a href="faculty-grades.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                    <i class="lni lni-clipboard text-lg group-hover:text-black dark:group-hover:text-white"></i> Grades
+                </a>
+
+                <a href="faculty-assignments.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                    <i class="lni lni-list text-lg group-hover:text-black dark:group-hover:text-white"></i> Assignments
+                </a>
+
+                <a href="faculty-quiz.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                    <i class="lni lni-pencil-alt text-lg group-hover:text-black dark:group-hover:text-white"></i> Quizzes
+                </a>
+
+                <a href="faculty-resources.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group bg-white/60 dark:bg-white/10 text-black dark:text-white shadow-sm border border-white/40 dark:border-white/5 backdrop-blur-sm"
+                    aria-current="page">
+                    <i class="lni lni-folder text-lg"></i> Resources
+                </a>
+
+                <a href="faculty-profile.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-700 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                    <i class="lni lni-user text-lg group-hover:text-black dark:group-hover:text-white"></i> Profile
+                </a>
+            </div>
+
+            <div class="p-4 border-t border-gray-100/50 dark:border-gray-800/50 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md">
+                <button @click="toggleDarkMode()" aria-label="Toggle Dark Mode"
+                    class="w-full flex items-center justify-center gap-2 mb-3 py-2 rounded-lg bg-white/50 dark:bg-gray-800/50 border border-white/20 dark:border-gray-700/30 text-gray-600 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-800/80 transition-colors shadow-sm">
+                    <i class="lni" :class="darkMode ? 'lni-night' : 'lni-sun'"></i>
+                    <span class="text-xs font-bold uppercase tracking-wider" x-text="darkMode ? 'Dark Mode' : 'Light Mode'"></span>
+                </button>
+
+                <a href="faculty-profile.html" class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors group">
+                    <div class="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-gray-200 dark:border-gray-700 text-gray-400 font-bold text-xs uppercase shadow-sm group-hover:bg-white dark:group-hover:bg-gray-700 group-hover:shadow-md transition-all">
+                        SJ</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-black dark:text-white truncate">Dr. Sarah Johnson</p>
+                        <p class="text-xs text-gray-500 truncate">Computer Science</p>
+                    </div>
+                    <i class="lni lni-cog text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors"></i>
+                </a>
+                
+                <div class="mt-2 text-center">
+                    <a href="../index.html"
+                        class="w-full flex items-center justify-center gap-2 text-xs font-bold text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 py-2 rounded-lg transition-all border border-transparent hover:border-gray-200 dark:hover:border-gray-700 uppercase tracking-tighter">
+                        <i class="lni lni-exit"></i><span>Sign Out</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col min-w-0 relative">
+            <!-- Mobile Header -->
+            <div class="lg:hidden h-14 border-b border-gray-100/50 dark:border-gray-800/50 flex items-center justify-between px-4 sticky top-0 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl z-20 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-black font-bold text-sm shadow-sm">AS</div>
+                    <span class="font-semibold text-black dark:text-white">Resources</span>
+                </div>
+                <button @click="sidebarOpen = !sidebarOpen"
+                    class="p-2 -mr-2 text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md">
+                    <i class="ri-menu-line text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <main class="flex-1 overflow-y-auto scroll-smooth p-4 sm:p-6 lg:p-8" id="main-content">
+                <!-- Skeleton loading -->
+                <div x-show="loading" class="max-w-7xl mx-auto pb-12 animate-pulse space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div class="space-y-2"><div class="h-8 w-52 bg-gray-200 dark:bg-gray-700 rounded-xl"></div><div class="h-4 w-72 bg-gray-200 dark:bg-gray-700 rounded"></div></div>
+                        <div class="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                    </div>
+                    <div class="flex gap-3 overflow-x-auto pb-1">
+                        <div class="h-9 w-28 bg-gray-200 dark:bg-gray-700 rounded-full shrink-0"></div>
+                        <div class="h-9 w-24 bg-gray-200 dark:bg-gray-700 rounded-full shrink-0"></div>
+                        <div class="h-9 w-28 bg-gray-200 dark:bg-gray-700 rounded-full shrink-0"></div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-4"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-xl"></div><div class="space-y-1 flex-1"><div class="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div></div></div><div class="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-4/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="flex justify-between pt-1"><div class="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div></div></div>
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-4"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-xl"></div><div class="space-y-1 flex-1"><div class="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div></div></div><div class="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-4/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="flex justify-between pt-1"><div class="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div></div></div>
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-4"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-xl"></div><div class="space-y-1 flex-1"><div class="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div></div></div><div class="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-4/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="flex justify-between pt-1"><div class="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div></div></div>
+                    </div>
+                </div>
+                <div class="max-w-7xl mx-auto space-y-8 animate-fade-in-up pb-12" x-show="!loading">
+                <!-- Header -->
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div>
+                        <h1 class="text-3xl font-display font-bold text-black dark:text-white tracking-tight">
+                            Resource Management
+                        </h1>
+                        <p class="text-gray-500 mt-1">Manage and share course materials with students across all your courses.</p>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button @click="selectedUploadCourse=''; showUploadModal = true"
+                            class="flex items-center gap-2 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-bold hover:bg-gray-800 dark:hover:bg-gray-200 hover:shadow-lg hover:shadow-gray-200 dark:hover:shadow-none transition-all">
+                            <i class="ri-upload-line text-lg"></i>
+                            <span>Upload Resource</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Row -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                                <i class="ri-file-line text-lg"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-black dark:text-white" x-text="resources.length"></h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Resources</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center">
+                                <i class="ri-book-open-line text-lg"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-black dark:text-white" x-text="courses.length"></h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Active Courses</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                                <i class="ri-user-3-line text-lg"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-black dark:text-white" x-text="totalStudents"></h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Enrolled Students</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center">
+                                <i class="ri-folder-open-line text-lg"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-black dark:text-white" x-text="getTypeCount('lecture') + getTypeCount('video')"></h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Lectures &amp; Videos</p>
+                    </div>
+                </div>
+
+                <!-- Resources Content -->
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    
+                    <!-- Main Resources Column -->
+                    <div class="xl:col-span-2 space-y-6">
+
+                        <!-- Search & Filter Bar -->
+                        <div class="flex flex-col sm:flex-row items-center gap-3 bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                            <div class="relative flex-1 w-full">
+                                <i class="ri-search-line absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" placeholder="Search resources by title or type…"
+                                    x-model="searchQuery"
+                                    class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 border-transparent focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 text-sm outline-none placeholder-gray-400 dark:placeholder-gray-500 text-black dark:text-white">
+                            </div>
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <select x-model="selectedCourse"
+                                    class="w-full sm:w-auto bg-gray-50 dark:bg-gray-900 border-transparent rounded-xl text-sm text-gray-600 dark:text-gray-300 px-4 py-2.5 outline-none cursor-pointer">
+                                    <option value="">All Courses</option>
+                                    <template x-for="c in courses" :key="c.id">
+                                        <option :value="c.name" x-text="c.name"></option>
+                                    </template>
+                                </select>
+                                <select x-model="selectedType"
+                                    class="w-full sm:w-auto bg-gray-50 dark:bg-gray-900 border-transparent rounded-xl text-sm text-gray-600 dark:text-gray-300 px-4 py-2.5 outline-none cursor-pointer">
+                                    <option value="">All Types</option>
+                                    <option value="lecture">Lecture Notes</option>
+                                    <option value="assignment">Assignment</option>
+                                    <option value="video">Video</option>
+                                    <option value="reference">Reference</option>
+                                    <option value="exam">Exam</option>
+                                    <option value="template">Template</option>
+                                </select>
+                                <button x-show="searchQuery||selectedCourse||selectedType" @click="searchQuery='';selectedCourse='';selectedType=''"
+                                    class="px-3 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-500 hover:text-black dark:hover:text-white text-sm font-medium transition-colors flex items-center gap-1">
+                                    <i class="ri-close-line"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <template x-for="course in filteredCourses" :key="course.id">
+                            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden">
+                                <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-xl flex items-center justify-center"
+                                             :class="course.colorClasses">
+                                            <span class="text-lg font-bold" x-text="course.code"></span>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-lg text-black dark:text-white" x-text="course.name"></h3>
+                                            <p class="text-sm text-gray-400"><span x-text="getResourceCount(course.name)"></span> resources available</p>
+                                        </div>
+                                    </div>
+                                    <button @click="selectedUploadCourse = course.name; uploadForm.course = course.name; showUploadModal = true"
+                                        class="flex items-center gap-2 px-3 py-2 text-sm font-bold text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                                        <i class="ri-add-line"></i>
+                                        Add Resource
+                                    </button>
+                                </div>
+
+                                <div class="p-6">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <template x-for="resource in getFilteredCourseResources(course.name)" :key="resource.id">
+                                            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 hover:shadow-md transition-all duration-200 group border border-gray-100 dark:border-gray-600">
+                                                <div class="flex items-start gap-3 mb-3">
+                                                    <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                                                         :class="getResourceIcon(resource.type).bg">
+                                                        <i :class="getResourceIcon(resource.type).icon" class="text-lg"></i>
+                                                    </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <h4 class="font-bold text-black dark:text-white text-sm line-clamp-2" x-text="resource.title"></h4>
+                                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 capitalize" x-text="resource.type"></p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-3">
+                                                    <span x-text="resource.size"></span>
+                                                    <span x-text="resource.uploadDate"></span>
+                                                </div>
+
+                                                <div class="flex gap-2">
+                                                    <button @click="viewResource(resource)"
+                                                        class="flex-1 px-3 py-2 bg-white dark:bg-gray-600 hover:bg-gray-100 dark:hover:bg-gray-500 text-black dark:text-white rounded-lg text-xs font-bold transition-colors">
+                                                        View
+                                                    </button>
+                                                    <button @click="shareResource(resource)"
+                                                        class="px-3 py-2 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg text-xs font-bold transition-colors">
+                                                        <i class="ri-share-line"></i>
+                                                    </button>
+                                                    <button @click="deleteResource(resource.id)"
+                                                        class="px-3 py-2 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 rounded-lg text-xs font-bold transition-colors">
+                                                        <i class="ri-delete-bin-line"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        <!-- Empty State -->
+                                        <div x-show="getFilteredCourseResources(course.name).length === 0" 
+                                             class="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">
+                                            <i class="ri-folder-open-line text-3xl mb-3"></i>
+                                            <p class="font-medium mb-1" x-text="searchQuery||selectedType ? 'No resources match your filter.' : 'No resources yet'"></p>
+                                            <p class="text-sm" x-show="!searchQuery && !selectedType">Upload your first resource for this course</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- All-courses empty state (no resources at all) -->
+                        <div x-show="filteredCourses.length === 0 && selectedCourse" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-12 text-center text-gray-500">
+                            <i class="ri-filter-off-line text-3xl mb-3"></i>
+                            <p class="font-medium">No courses match your filter</p>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar Column -->
+                    <div class="xl:col-span-1 space-y-6">
+                        
+                        <!-- Quick Actions -->
+                        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
+                            <h3 class="font-bold text-lg text-black dark:text-white mb-4">Quick Actions</h3>
+                            <div class="space-y-3">
+                                <button @click="selectedUploadCourse=''; showUploadModal = true" 
+                                    class="w-full flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors group">
+                                    <div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                                        <i class="ri-upload-line"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <p class="text-sm font-bold text-black dark:text-white">Upload Resource</p>
+                                        <p class="text-xs text-gray-500">Add new course material</p>
+                                    </div>
+                                </button>
+                                
+                                <button @click="showTemplateModal = true" class="w-full flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors group">
+                                    <div class="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center">
+                                        <i class="ri-file-text-line"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <p class="text-sm font-bold text-black dark:text-white">Create Template</p>
+                                        <p class="text-xs text-gray-500">Syllabus or assignment template</p>
+                                    </div>
+                                </button>
+                                
+                                <button @click="showBulkShareModal = true" class="w-full flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors group">
+                                    <div class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                                        <i class="ri-share-line"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <p class="text-sm font-bold text-black dark:text-white">Bulk Share</p>
+                                        <p class="text-xs text-gray-500">Share multiple resources</p>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
+                            <h3 class="font-bold text-lg text-black dark:text-white mb-4">Recent Activity</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm">
+                                        <i class="ri-download-line"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-black dark:text-white font-medium">Neural Network Basics downloaded by Alex Thompson</p>
+                                        <p class="text-xs text-gray-500">2 minutes ago</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center text-sm">
+                                        <i class="ri-upload-line"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-black dark:text-white font-medium">You uploaded Assignment 2 - Graph Analysis</p>
+                                        <p class="text-xs text-gray-500">15 minutes ago</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center text-sm">
+                                        <i class="ri-share-line"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-black dark:text-white font-medium">Database Design Tutorial shared with CS-302</p>
+                                        <p class="text-xs text-gray-500">1 hour ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Modal -->
+                <div x-show="showUploadModal" x-cloak class="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                     @click.self="showUploadModal = false"
+                     x-init="$watch('showUploadModal', v => { if(v) { uploadForm.course = selectedUploadCourse || ''; uploadForm.title=''; uploadForm.type=''; uploadForm.file=null; uploadForm.fileName=''; uploadForm.description=''; } })">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl w-full max-w-md"
+                         @click.stop>
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-xl font-bold text-black dark:text-white">Upload New Resource</h3>
+                                <button @click="showUploadModal = false"
+                                    class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                                    <i class="ri-close-line text-lg"></i>
+                                </button>
+                            </div>
+
+                            <form @submit.prevent="uploadResource()">
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-black dark:text-white mb-2">Course</label>
+                                        <select x-model="uploadForm.course" required
+                                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent">
+                                            <option value="">Select Course</option>
+                                            <template x-for="course in courses" :key="course.id">
+                                                <option :value="course.name" x-text="course.name"></option>
+                                            </template>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-black dark:text-white mb-2">Resource Title</label>
+                                        <input type="text" x-model="uploadForm.title" required
+                                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent"
+                                            placeholder="Enter resource title">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-black dark:text-white mb-2">Resource Type</label>
+                                        <select x-model="uploadForm.type" required
+                                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent">
+                                            <option value="">Select Type</option>
+                                            <option value="lecture">Lecture Notes</option>
+                                            <option value="assignment">Assignment</option>
+                                            <option value="video">Video</option>
+                                            <option value="reference">Reference Material</option>
+                                            <option value="exam">Exam</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-black dark:text-white mb-2">File</label>
+                                        <div class="border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-xl p-6 text-center hover:border-black dark:hover:border-white transition-colors">
+                                            <input type="file" @change="handleFileSelect($event)" accept=".pdf,.doc,.docx,.ppt,.pptx,.mp4,.avi,.mov,.jpg,.png" class="hidden" x-ref="fileInput">
+                                            <button type="button" @click="$refs.fileInput.click()"
+                                                class="flex flex-col items-center gap-2 text-gray-500 hover:text-black dark:hover:text-white">
+                                                <i class="ri-upload-cloud-line text-2xl"></i>
+                                                <span class="text-sm font-medium">Click to upload file</span>
+                                                <span class="text-xs">PDF, DOC, PPT, Video, Image files</span>
+                                            </button>
+                                            <div x-show="uploadForm.fileName" class="mt-3 text-sm text-black dark:text-white">
+                                                Selected: <span x-text="uploadForm.fileName"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-black dark:text-white mb-2">Description (Optional)</label>
+                                        <textarea x-model="uploadForm.description" rows="3"
+                                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent"
+                                            placeholder="Add a description for this resource..."></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-3 mt-6">
+                                    <button type="button" @click="showUploadModal = false"
+                                        class="flex-1 px-4 py-2.5 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                        Cancel
+                                    </button>
+                                    <button type="submit"
+                                        class="flex-1 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-xl font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
+                                        Upload Resource
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ── Create Template Modal ────────────────────────────────────────── -->
+    <div x-show="showTemplateModal" x-cloak class="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+         @click.self="showTemplateModal = false">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl w-full max-w-md" @click.stop>
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center">
+                            <i class="ri-file-text-line text-lg"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-black dark:text-white">Create Template</h3>
+                    </div>
+                    <button @click="showTemplateModal = false"
+                        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                        <i class="ri-close-line text-lg"></i>
+                    </button>
+                </div>
+
+                <form @submit.prevent="createTemplate()">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-black dark:text-white mb-2">Template Type</label>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                <template x-for="t in ['Syllabus','Assignment','Rubric']" :key="t">
+                                    <label class="cursor-pointer">
+                                        <input type="radio" :value="t" x-model="templateForm.templateType" class="sr-only peer">
+                                        <div class="text-center p-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 peer-checked:border-green-500 peer-checked:bg-green-50 dark:peer-checked:bg-green-900/20 transition-all text-sm font-medium text-gray-700 dark:text-gray-300 peer-checked:text-green-700 dark:peer-checked:text-green-400">
+                                            <i :class="{'ri-book-2-line': t==='Syllabus','ri-file-edit-line': t==='Assignment','ri-list-check-2': t==='Rubric'}" class="text-lg block mb-1"></i>
+                                            <span x-text="t"></span>
+                                        </div>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-black dark:text-white mb-2">Course</label>
+                            <select x-model="templateForm.course_id" required
+                                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                <option value="">Select Course</option>
+                                <template x-for="course in courses" :key="course.id">
+                                    <option :value="course.id" x-text="course.name"></option>
+                                </template>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-black dark:text-white mb-2">Template Title</label>
+                            <input type="text" x-model="templateForm.title" required
+                                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                placeholder="e.g. CS301 Course Syllabus Template">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-black dark:text-white mb-2">Description</label>
+                            <textarea x-model="templateForm.description" rows="3"
+                                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                placeholder="Describe what this template is for..."></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-black dark:text-white mb-2">Attach File <span class="text-gray-400 font-normal">(optional)</span></label>
+                            <div class="border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-xl p-5 text-center hover:border-green-400 transition-colors">
+                                <input type="file" @change="handleTemplateFile($event)" accept=".pdf,.doc,.docx,.xls,.xlsx" class="hidden" x-ref="templateFileInput">
+                                <button type="button" @click="$refs.templateFileInput.click()"
+                                    class="flex flex-col items-center gap-2 text-gray-500 hover:text-black dark:hover:text-white w-full">
+                                    <i class="ri-attachment-line text-2xl"></i>
+                                    <span class="text-sm font-medium">Click to attach file</span>
+                                    <span class="text-xs">PDF, DOC, XLS</span>
+                                </button>
+                                <div x-show="templateForm.fileName" class="mt-2 text-sm text-green-600 dark:text-green-400 font-medium" x-text="'Attached: ' + templateForm.fileName"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div x-show="templateMsg" class="mt-4 p-3 rounded-xl text-sm font-medium"
+                         :class="templateSuccess ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'"
+                         x-text="templateMsg"></div>
+
+                    <div class="flex gap-3 mt-6">
+                        <button type="button" @click="showTemplateModal = false"
+                            class="flex-1 px-4 py-2.5 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit" :disabled="templateLoading"
+                            class="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors disabled:opacity-60">
+                            <span x-show="!templateLoading">Create Template</span>
+                            <span x-show="templateLoading">Creating...</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Bulk Share Modal ──────────────────────────────────────────────── -->
+    <div x-show="showBulkShareModal" x-cloak class="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+         @click.self="showBulkShareModal = false">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto" @click.stop>
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                            <i class="ri-share-line text-lg"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-black dark:text-white">Bulk Share Resources</h3>
+                    </div>
+                    <button @click="showBulkShareModal = false"
+                        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                        <i class="ri-close-line text-lg"></i>
+                    </button>
+                </div>
+
+                <form @submit.prevent="submitBulkShare()">
+                    <!-- Step 1: Pick Resources -->
+                    <div class="mb-5">
+                        <p class="text-sm font-bold text-black dark:text-white mb-3">1. Select Resources to Share</p>
+                        <div class="space-y-2 max-h-44 overflow-y-auto pr-1">
+                            <template x-for="resource in resources" :key="resource.id">
+                                <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                    <input type="checkbox" :value="resource.id" x-model="bulkShareForm.selectedResourceIds" class="w-4 h-4 accent-purple-600">
+                                    <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                                         :class="getResourceIcon(resource.type).bg">
+                                        <i :class="getResourceIcon(resource.type).icon" class="text-sm"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-black dark:text-white truncate" x-text="resource.title"></p>
+                                        <p class="text-xs text-gray-500" x-text="resource.course + ' · ' + resource.type"></p>
+                                    </div>
+                                </label>
+                            </template>
+                            <div x-show="resources.length === 0" class="text-center py-6 text-gray-400 text-sm">No resources available</div>
+                        </div>
+                        <p class="text-xs text-purple-600 dark:text-purple-400 font-medium mt-2" x-show="bulkShareForm.selectedResourceIds.length > 0">
+                            <span x-text="bulkShareForm.selectedResourceIds.length"></span> resource(s) selected
+                        </p>
+                    </div>
+
+                    <!-- Step 2: Target Courses -->
+                    <div class="mb-5">
+                        <p class="text-sm font-bold text-black dark:text-white mb-3">2. Share With Courses</p>
+                        <div class="space-y-2">
+                            <template x-for="course in courses" :key="course.id">
+                                <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                    <input type="checkbox" :value="course.id" x-model="bulkShareForm.selectedCourseIds" class="w-4 h-4 accent-purple-600">
+                                    <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                                         :class="course.colorClasses">
+                                        <span class="text-xs font-bold" x-text="course.code"></span>
+                                    </div>
+                                    <p class="text-sm font-medium text-black dark:text-white" x-text="course.name"></p>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Optional message -->
+                    <div class="mb-5">
+                        <p class="text-sm font-bold text-black dark:text-white mb-2">3. Message <span class="text-gray-400 font-normal">(optional)</span></p>
+                        <textarea x-model="bulkShareForm.message" rows="2" maxlength="300"
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                            placeholder="Add a note for students (optional)..."></textarea>
+                    </div>
+
+                    <div x-show="bulkShareMsg" class="mb-4 p-3 rounded-xl text-sm font-medium"
+                         :class="bulkShareSuccess ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'"
+                         x-text="bulkShareMsg"></div>
+
+                    <div class="flex gap-3">
+                        <button type="button" @click="showBulkShareModal = false"
+                            class="flex-1 px-4 py-2.5 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit" :disabled="bulkShareLoading || bulkShareForm.selectedResourceIds.length === 0 || bulkShareForm.selectedCourseIds.length === 0"
+                            class="flex-1 px-4 py-2.5 bg-purple-600 text-white rounded-xl font-medium hover:bg-purple-700 transition-colors disabled:opacity-60">
+                            <span x-show="!bulkShareLoading">
+                                Share <span x-show="bulkShareForm.selectedResourceIds.length > 0">(<span x-text="bulkShareForm.selectedResourceIds.length"></span>)</span>
+                            </span>
+                            <span x-show="bulkShareLoading">Sharing...</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="../assets/js/api.js?v=2"></script>
+    <script>
+        function facultyResources() {
+            return {
+                sidebarOpen: false,
+                loading: true,
+                darkMode: localStorage.getItem('darkMode') === 'true' || false,
+                showUploadModal: false,
+                showTemplateModal: false,
+                showBulkShareModal: false,
+                selectedUploadCourse: '',
+                searchQuery: '',
+                selectedCourse: '',
+                selectedType: '',
+                totalStudents: 0,
+
+                // ── Template modal state ──
+                templateForm: { templateType: 'Syllabus', course_id: '', title: '', description: '', file: null, fileName: '' },
+                templateLoading: false,
+                templateMsg: '',
+                templateSuccess: false,
+
+                // ── Bulk Share modal state ──
+                bulkShareForm: { selectedResourceIds: [], selectedCourseIds: [], message: '' },
+                bulkShareLoading: false,
+                bulkShareMsg: '',
+                bulkShareSuccess: false,
+                
+                courses: [],
+                
+                resources: [],
+                
+                uploadForm: {
+                    course: '',
+                    title: '',
+                    type: '',
+                    file: null,
+                    fileName: '',
+                    description: ''
+                },
+
+                closeAllModals() { this.showUploadModal = false; this.showTemplateModal = false; this.showBulkShareModal = false; },
+                
+                async init() {
+                    // Initialize dark mode
+                    if (this.darkMode) {
+                        document.documentElement.classList.add('dark');
+                    }
+                    
+                    // Watch for dark mode changes
+                    this.$watch('darkMode', value => {
+                        localStorage.setItem('darkMode', value);
+                        if (value) {
+                            document.documentElement.classList.add('dark');
+                        } else {
+                            document.documentElement.classList.remove('dark');
+                        }
+                    });
+
+                    // Set course if pre-selected
+                    this.uploadForm.course = this.selectedUploadCourse;
+
+                    if (typeof window.api !== 'undefined') {
+                        if (!window.api.checkAuth()) { window.location.href = 'faculty-login.html'; return; }
+                        const user = window.api.getUserData();
+                        if (user && user.role !== 'faculty') { window.api.clearToken(); window.location.href = 'faculty-login.html'; return; }
+                        if (user) window.api.populateSidebar(user);
+                        const colors = [
+                            'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700',
+                            'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700',
+                            'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-700',
+                            'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-700'
+                        ];
+                        try {
+                            const [courseData, resourceData] = await Promise.all([
+                                window.api.getFacultyCourses().catch(() => []),
+                                window.api.getFacultyResources().catch(() => [])
+                            ]);
+                            const courseList = Array.isArray(courseData) ? courseData : (courseData.courses || []);
+                            if (courseList.length > 0) {
+                                this.courses = courseList.map((c, i) => ({
+                                    id: c.id,
+                                    name: c.course_name || c.name || 'Unknown',
+                                    code: (c.course_code || c.name || 'XX').substring(0, 2).toUpperCase(),
+                                    colorClasses: colors[i % colors.length],
+                                    student_count: c.student_count || 0
+                                }));
+                                this.totalStudents = courseList.reduce((s, c) => s + (c.student_count || 0), 0);
+                            }
+                            const fmtBytes = (b) => {
+                                if (!b) return '';
+                                const k = 1024, sz = ['B','KB','MB','GB'];
+                                const i = Math.floor(Math.log(b) / Math.log(k));
+                                return (b / Math.pow(k, i)).toFixed(1) + ' ' + sz[i];
+                            };
+                            const resList = Array.isArray(resourceData) ? resourceData : (resourceData.resources || []);
+                            if (resList.length > 0) {
+                                this.resources = resList.map(r => ({
+                                    id: r.id,
+                                    title: r.title || r.resource_name || 'Untitled',
+                                    course: r.course_name || r.course || '',
+                                    type: r.resource_type || r.type || 'document',
+                                    size: fmtBytes(r.file_size),
+                                    uploadDate: r.uploaded_at ? new Date(r.uploaded_at).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : '',
+                                    description: r.description || '',
+                                    fileUrl: r.file_path ? `\${window._apiBase||"http://localhost:5000"}/api/uploads/${r.file_path}` : (r.external_url || null)
+                                }));
+                            }
+                        } catch(e) { console.warn('Could not load resources from API:', e); }
+                    }
+                    this.loading = false;
+                },
+
+                toggleDarkMode() {
+                    this.darkMode = !this.darkMode;
+                },
+                
+                getCourseResources(courseName) {
+                    return this.resources.filter(resource => resource.course === courseName);
+                },
+
+                // Filtered resources per course (respects searchQuery + selectedType)
+                getFilteredCourseResources(courseName) {
+                    const q = (this.searchQuery || '').toLowerCase().trim();
+                    const t = this.selectedType;
+                    return this.resources.filter(r => {
+                        if (r.course !== courseName) return false;
+                        if (t && r.type !== t) return false;
+                        if (q && !(r.title || '').toLowerCase().includes(q) && !(r.type || '').toLowerCase().includes(q) && !(r.description || '').toLowerCase().includes(q)) return false;
+                        return true;
+                    });
+                },
+
+                // Courses visible in the main list (filter by selectedCourse)
+                get filteredCourses() {
+                    if (!this.selectedCourse) return this.courses;
+                    return this.courses.filter(c => c.name === this.selectedCourse);
+                },
+                
+                getResourceCount(courseName) {
+                    return this.getFilteredCourseResources(courseName).length;
+                },
+
+                getTypeCount(type) {
+                    return this.resources.filter(r => r.type === type).length;
+                },
+                
+                getResourceIcon(type) {
+                    const icons = {
+                        lecture: { icon: 'ri-file-text-line', bg: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' },
+                        assignment: { icon: 'ri-file-edit-line', bg: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400' },
+                        video: { icon: 'ri-video-line', bg: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' },
+                        reference: { icon: 'ri-book-open-line', bg: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' },
+                        exam: { icon: 'ri-file-list-3-line', bg: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' },
+                        template: { icon: 'ri-file-copy-line', bg: 'bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400' }
+                    };
+                    return icons[type] || icons.lecture;
+                },
+                
+                filterResources() { /* reactive — computed getters handle filtering */ },
+                
+                handleFileSelect(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        this.uploadForm.file = file;
+                        this.uploadForm.fileName = file.name;
+                    }
+                },
+                
+                async uploadResource() {
+                    const missing = [];
+                    if (!this.uploadForm.course) missing.push('Course');
+                    if (!this.uploadForm.title) missing.push('Title');
+                    if (!this.uploadForm.type) missing.push('Resource Type');
+                    if (missing.length) {
+                        window.api?.showNotification('Please fill in: ' + missing.join(', '), 'error');
+                        return;
+                    }
+
+                    // Find course object to get the ID
+                    const courseObj = this.courses.find(c => c.name === this.uploadForm.course);
+                    if (!courseObj) { window.api?.showNotification('Could not find selected course.', 'error'); return; }
+
+                    const formData = new FormData();
+                    formData.append('title', this.uploadForm.title);
+                    formData.append('course_id', courseObj.id);
+                    formData.append('resource_type', this.uploadForm.type);
+                    if (this.uploadForm.description) formData.append('description', this.uploadForm.description);
+                    if (this.uploadForm.file) formData.append('file', this.uploadForm.file);
+
+                    try {
+                        if (window.api) {
+                            const token = window.api.getToken ? window.api.getToken() : localStorage.getItem('academicsync_token');
+                            const res = await fetch((window._apiBase||'http://localhost:5000')+'/api/faculty/resources', {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${token}` },
+                                body: formData
+                            });
+                            const data = await res.json();
+                            if (!res.ok) throw new Error(data.error || 'Upload failed');
+                        }
+                        // Add to local list
+                        this.resources.push({
+                            id: Date.now(),
+                            title: this.uploadForm.title,
+                            course: this.uploadForm.course,
+                            type: this.uploadForm.type,
+                            size: this.uploadForm.file ? this.formatFileSize(this.uploadForm.file.size) : '',
+                            uploadDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+                            description: this.uploadForm.description || '',
+                            fileUrl: null
+                        });
+                        this.uploadForm = { course: '', title: '', type: '', file: null, fileName: '', description: '' };
+                        this.selectedUploadCourse = '';
+                        this.showUploadModal = false;
+                        window.api?.showNotification('Resource uploaded successfully! Students can now access this resource.', 'success');
+                    } catch(err) {
+                        window.api?.showNotification('Upload failed: ' + err.message, 'error');
+                    }
+                },
+                
+                _openWithAuth(resource) {
+                    const token = window.api && window.api.getToken ? window.api.getToken() : localStorage.getItem('academicsync_token');
+                    fetch(resource.fileUrl, { headers: { 'Authorization': 'Bearer ' + token } })
+                        .then(function(res) { if (!res.ok) throw new Error('Fetch failed (' + res.status + ')'); return res.blob(); })
+                        .then(function(blob) {
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            if (resource.type === 'video' || blob.type.startsWith('image/')) {
+                                a.target = '_blank'; a.rel = 'noopener';
+                            } else {
+                                a.download = resource.title || 'resource';
+                            }
+                            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                            setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
+                        })
+                        .catch(function(err) { window.api && window.api.showNotification('Could not open file: ' + err.message, 'error'); });
+                },
+
+                viewResource(resource) {
+                    if (resource.fileUrl) {
+                        this._openWithAuth(resource);
+                    } else {
+                        window.api && window.api.showNotification('"' + resource.title + '" - No file attached. This may be a link-type resource.', 'info');
+                    }
+                },
+
+                shareResource(resource) {
+                    const link = resource.fileUrl || `https://academicsync.edu/resources/${resource.id}`;
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(link).then(() => {
+                            window.api?.showNotification('Resource link copied to clipboard!', 'success');
+                        }).catch(() => window.api?.showNotification(`Link: ${link}`, 'info'));
+                    } else {
+                        window.api?.showNotification(`Link: ${link}`, 'info');
+                    }
+                },
+
+                async deleteResource(resourceId) {
+                    if (!confirm('Delete this resource? Students will lose access to it.')) return;
+                    try {
+                        await window.api.deleteFacultyResource(resourceId);
+                        this.resources = this.resources.filter(r => r.id !== resourceId);
+                        window.api?.showNotification('Resource deleted.', 'success');
+                    } catch(e) {
+                        window.api?.showNotification('Delete failed: ' + e.message, 'error');
+                    }
+                },
+                
+                handleTemplateFile(event) {
+                    const file = event.target.files[0];
+                    if (file) { this.templateForm.file = file; this.templateForm.fileName = file.name; }
+                },
+
+                async createTemplate() {
+                    if (!this.templateForm.course_id || !this.templateForm.title) {
+                        this.templateMsg = 'Please select a course and enter a title.';
+                        this.templateSuccess = false;
+                        return;
+                    }
+                    this.templateLoading = true;
+                    this.templateMsg = '';
+                    try {
+                        const formData = new FormData();
+                        formData.append('title', `[${this.templateForm.templateType} Template] ${this.templateForm.title}`);
+                        formData.append('course_id', this.templateForm.course_id);
+                        formData.append('resource_type', 'template');
+                        formData.append('description', this.templateForm.description || `${this.templateForm.templateType} template`);
+                        if (this.templateForm.file) formData.append('file', this.templateForm.file);
+
+                        let success = true;
+                        if (window.api) {
+                            const token = window.api.getToken ? window.api.getToken() : localStorage.getItem('academicsync_token');
+                            const res = await fetch((window._apiBase||'http://localhost:5000')+'/api/faculty/resources', {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${token}` },
+                                body: formData
+                            });
+                            const data = await res.json();
+                            if (!res.ok) { success = false; this.templateMsg = data.error || 'Failed to create template.'; }
+                        }
+                        if (success) {
+                            const courseObj = this.courses.find(c => c.id == this.templateForm.course_id);
+                            this.resources.push({
+                                id: Date.now(),
+                                title: `[${this.templateForm.templateType} Template] ${this.templateForm.title}`,
+                                course: courseObj ? courseObj.name : '',
+                                type: 'template',
+                                size: this.templateForm.file ? this.formatFileSize(this.templateForm.file.size) : '',
+                                uploadDate: new Date().toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' }),
+                                description: this.templateForm.description || ''
+                            });
+                            this.templateMsg = `${this.templateForm.templateType} template created successfully!`;
+                            this.templateSuccess = true;
+                            this.templateForm = { templateType: 'Syllabus', course_id: '', title: '', description: '', file: null, fileName: '' };
+                            setTimeout(() => { this.showTemplateModal = false; this.templateMsg = ''; }, 1800);
+                        }
+                    } catch(err) {
+                        this.templateMsg = 'Error: ' + err.message;
+                        this.templateSuccess = false;
+                    } finally {
+                        this.templateLoading = false;
+                    }
+                },
+
+                async submitBulkShare() {
+                    if (this.bulkShareForm.selectedResourceIds.length === 0 || this.bulkShareForm.selectedCourseIds.length === 0) {
+                        this.bulkShareMsg = 'Select at least one resource and one course.';
+                        this.bulkShareSuccess = false;
+                        return;
+                    }
+                    this.bulkShareLoading = true;
+                    this.bulkShareMsg = '';
+                    try {
+                        let msg = '';
+                        if (window.api) {
+                            const token = window.api.getToken ? window.api.getToken() : localStorage.getItem('academicsync_token');
+                            const res = await fetch((window._apiBase||'http://localhost:5000')+'/api/faculty/resources/bulk-share', {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    resource_ids: this.bulkShareForm.selectedResourceIds,
+                                    course_ids: this.bulkShareForm.selectedCourseIds,
+                                    message: this.bulkShareForm.message
+                                })
+                            });
+                            const data = await res.json();
+                            if (!res.ok) throw new Error(data.error || 'Share failed');
+                            msg = data.message || 'Resources shared successfully!';
+                        } else {
+                            msg = `${this.bulkShareForm.selectedResourceIds.length} resource(s) shared with ${this.bulkShareForm.selectedCourseIds.length} course(s).`;
+                        }
+                        this.bulkShareMsg = msg;
+                        this.bulkShareSuccess = true;
+                        this.bulkShareForm = { selectedResourceIds: [], selectedCourseIds: [], message: '' };
+                        setTimeout(() => { this.showBulkShareModal = false; this.bulkShareMsg = ''; }, 2000);
+                    } catch(err) {
+                        this.bulkShareMsg = 'Error: ' + err.message;
+                        this.bulkShareSuccess = false;
+                    } finally {
+                        this.bulkShareLoading = false;
+                    }
+                },
+
+                formatFileSize(bytes) {
+                    if (bytes === 0) return '0 Bytes';
+                    const k = 1024;
+                    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>

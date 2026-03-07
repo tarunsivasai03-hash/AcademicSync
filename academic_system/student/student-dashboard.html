@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white antialiased dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <meta name="description" content="AcademicSync - Smart Academic Management">
+    <title>Student Dashboard - AcademicSync</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db',
+                            400: '#9ca3af', 500: '#6b7280', 600: '#000000', 700: '#1f2937',
+                            800: '#111827', 900: '#000000',
+                        },
+                        gray: {
+                            750: '#2d3748',
+                        }
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom JS -->
+    <script src="../assets/js/main.js" defer></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../assets/css/styles.css">
+
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #e5e7eb;
+            border-radius: 20px;
+        }
+
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #374151;
+        }
+
+        /* Skeleton Loading Shimmer */
+        .skeleton {
+            background: #f3f4f6;
+            background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+        .dark .skeleton {
+            background: #374151;
+            background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+            background-size: 200% 100%;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+
+<body
+    class="h-full flex overflow-hidden text-gray-600 font-sans antialiased bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 dark:text-gray-300 transition-colors duration-200"
+    x-data="layout">
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-300"
+        x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+        x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0" @click="sidebarOpen = false"
+        class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden" aria-hidden="true" x-cloak>
+    </div>
+
+    <!-- Sidebar -->
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+        class="fixed inset-y-0 left-0 z-50 w-64 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-800/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 flex flex-col h-full">
+
+        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100/50 dark:border-gray-800/50">
+            <a href="../index.html" class="flex items-center gap-2.5 group">
+                <div
+                    class="w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-lg shadow-gray-200/50 dark:shadow-none group-hover:scale-105 transition-transform">
+                    <i class="lni lni-graduation"></i>
+                </div>
+                <span
+                    class="font-display font-bold text-xl text-black dark:text-white tracking-tight">AcademicSync</span>
+            </a>
+            <button @click="sidebarOpen = false" aria-label="Close Sidebar"
+                class="lg:hidden text-gray-400 hover:text-black transition-colors">
+                <i class="lni lni-close text-xl"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Menu</p>
+
+            <a href="student-dashboard.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group bg-white/60 dark:bg-white/10 text-black dark:text-white shadow-sm border border-white/40 dark:border-white/5 backdrop-blur-sm"
+                aria-current="page">
+                <i class="lni lni-grid-alt text-lg"></i>
+                Dashboard
+            </a>
+
+            <a href="schedules.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-calendar text-lg group-hover:text-black dark:group-hover:text-white"></i>
+                Schedule
+            </a>
+
+            <a href="tasks.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-list text-lg group-hover:text-black dark:group-hover:text-white"></i>
+                Tasks
+            </a>
+
+            <a href="courses.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-graduation text-lg group-hover:text-black dark:group-hover:text-white"></i>
+                Courses
+            </a>
+
+            <a href="student-attendance.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-checkmark-circle text-lg group-hover:text-black dark:group-hover:text-white"></i>
+                Attendance
+            </a>
+
+            <a href="student-grades.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-star text-lg group-hover:text-black dark:group-hover:text-white"></i>
+                Grades
+            </a>
+
+            <a href="student-assignments.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-list text-lg group-hover:text-black dark:group-hover:text-white"></i>
+                Assignments
+            </a>
+
+            <a href="student-announcements.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-bullhorn text-lg group-hover:text-black dark:group-hover:text-white"></i>
+                <span>Announcements</span>
+                <span id="sidebar-ann-badge" class="hidden ml-auto min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold items-center justify-center"></span>
+            </a>
+
+            <a href="resources.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-library text-lg group-hover:text-black dark:group-hover:text-white"></i>
+                Resources
+            </a>
+
+            <a href="student-profile.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-user text-lg group-hover:text-black dark:group-hover:text-white"></i>
+                Profile
+            </a>
+        </div>
+
+        <div
+            class="p-4 border-t border-gray-100/50 dark:border-gray-800/50 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md">
+            <button @click="darkMode = !darkMode" aria-label="Toggle Dark Mode"
+                class="w-full flex items-center justify-center gap-2 mb-3 py-2 rounded-lg bg-white/50 dark:bg-gray-800/50 border border-white/20 dark:border-gray-700/30 text-gray-600 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-800/80 transition-colors shadow-sm">
+                <i class="lni" :class="darkMode ? 'lni-night' : 'lni-sun'"></i>
+                <span class="text-xs font-bold uppercase tracking-wider"
+                    x-text="darkMode ? 'Dark Mode' : 'Light Mode'"></span>
+            </button>
+
+            <a href="student-profile.html"
+                class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors group">
+                <div
+                    class="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-gray-200 dark:border-gray-700 text-gray-400 font-bold text-xs uppercase shadow-sm group-hover:bg-white dark:group-hover:bg-gray-700 group-hover:shadow-md transition-all">
+                    <span data-user-initials>AT</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-black dark:text-white truncate" data-user-name>Alex Thompson
+                    </p>
+                    <p class="text-xs text-gray-500 truncate" data-user-role>CS Student - Year 3</p>
+                </div>
+                <i
+                    class="lni lni-cog text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors"></i>
+            </a>
+
+            <div class="mt-2 text-center">
+                <button @click="logout()"
+                    class="w-full flex items-center justify-center gap-2 text-xs font-bold text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 py-2 rounded-lg transition-all uppercase tracking-tighter">
+                    <i class="lni lni-exit"></i>
+                    <span>Sign Out</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="flex-1 flex flex-col min-w-0 relative">
+
+        <!-- Mobile Header -->
+        <div
+            class="lg:hidden h-14 border-b border-gray-100/50 dark:border-gray-800/50 flex items-center justify-between px-4 sticky top-0 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl z-20 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+            <div class="flex items-center gap-2">
+                <div
+                    class="w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-black font-bold text-sm shadow-sm">
+                    AS</div>
+                <span class="font-semibold text-black dark:text-white">AcademicSync</span>
+            </div>
+            <button @click="sidebarOpen = !sidebarOpen"
+                class="p-2 -mr-2 text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md">
+                <i class="ri-menu-line text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Content Scroller -->
+        <main class="flex-1 overflow-y-auto scroll-smooth p-4 sm:p-6 lg:p-8" id="main-content">
+
+            <div class="max-w-7xl mx-auto space-y-8 animate-fade-in-up pb-12">
+
+                <!-- Header -->
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div>
+                        <div class="flex items-center gap-2 text-sm text-gray-500 font-medium mb-1">
+                            <span
+                                class="px-2 py-0.5 rounded-md bg-gray-100 text-gray-900 border border-gray-200 text-xs uppercase tracking-wide">Today</span>
+                            <span>January 24th, 2024</span>
+                        </div>
+                        <h1 class="text-3xl font-display font-bold text-black dark:text-white tracking-tight">
+                            Welcome back, <span data-welcome-name>Student</span>!
+                        </h1>
+                        <p class="text-gray-500 mt-1">You have <span data-pending-tasks
+                                class="font-bold text-black dark:text-white border-b-2 border-black/20 dark:border-white/20">0
+                                tasks</span> pending.</p>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button onclick="generateReport()"
+                            class="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-900 dark:hover:border-gray-500 transition-all shadow-sm">
+                            <i class="ri-file-download-line text-lg"></i>
+                            <span class="hidden sm:inline">Report</span>
+                        </button>
+                        <a href="schedules.html"
+                            class="flex items-center gap-2 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-bold hover:bg-gray-800 dark:hover:bg-gray-200 hover:shadow-lg hover:shadow-gray-200 dark:hover:shadow-none transition-all">
+                            <i class="ri-add-line text-lg"></i>
+                            <span>Add Class</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <!-- GPA Card -->
+                    <div
+                        class="relative bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-black dark:hover:border-white transition-all group overflow-hidden">
+                        <div data-stat-skeleton class="absolute inset-0 bg-white dark:bg-gray-800 z-10 p-6 flex flex-col justify-between rounded-2xl">
+                            <div class="flex justify-between items-start">
+                                <div class="w-24 h-3 rounded-lg skeleton mb-3"></div>
+                                <div class="w-10 h-10 rounded-xl skeleton"></div>
+                            </div>
+                            <div>
+                                <div class="w-20 h-8 rounded-lg skeleton mb-2"></div>
+                                <div class="w-28 h-3 rounded-lg skeleton"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-start relative z-10">
+                            <div>
+                                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Current GPA</p>
+                                <h3 class="text-3xl font-bold text-black dark:text-white mt-2" data-gpa>—</h3>
+                            </div>
+                            <div
+                                class="w-10 h-10 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-lg shadow-gray-200 dark:shadow-none group-hover:scale-110 transition-transform">
+                                <i class="ri-graduation-cap-fill text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 relative z-10">
+                            <div class="flex items-center gap-2">
+                                <span
+                                    class="inline-flex items-center gap-1 text-xs font-bold text-black dark:text-white bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-2 py-1 rounded-lg">
+                                    <i class="ri-arrow-up-line"></i> +0.2
+                                </span>
+                                <span class="text-xs text-gray-500">vs last semester</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attendance Card -->
+                    <div
+                        class="relative bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-black dark:hover:border-white transition-all group overflow-hidden">
+                        <div data-stat-skeleton class="absolute inset-0 bg-white dark:bg-gray-800 z-10 p-6 flex flex-col justify-between rounded-2xl">
+                            <div class="flex justify-between items-start">
+                                <div class="w-24 h-3 rounded-lg skeleton mb-3"></div>
+                                <div class="w-10 h-10 rounded-xl skeleton"></div>
+                            </div>
+                            <div>
+                                <div class="w-20 h-8 rounded-lg skeleton mb-2"></div>
+                                <div class="w-full h-2 rounded-full skeleton"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-start relative z-10">
+                            <div>
+                                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Attendance</p>
+                                <h3 class="text-3xl font-bold text-black dark:text-white mt-2" data-attendance>—</h3>
+                            </div>
+                            <div
+                                class="w-10 h-10 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-lg shadow-gray-200 dark:shadow-none group-hover:scale-110 transition-transform">
+                                <i class="ri-checkbox-circle-fill text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 relative z-10">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-gray-500 font-medium">Goal: 85%</span>
+                                <span class="text-black dark:text-white font-bold">Good</span>
+                            </div>
+                            <div
+                                class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 border border-gray-100 dark:border-gray-700 overflow-hidden shadow-inner">
+                                <div data-attendance-bar class="bg-black dark:bg-white h-full rounded-full"
+                                    style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assignments Card -->
+                    <div
+                        class="relative bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-black dark:hover:border-white transition-all group overflow-hidden">
+                        <div data-stat-skeleton class="absolute inset-0 bg-white dark:bg-gray-800 z-10 p-6 flex flex-col justify-between rounded-2xl">
+                            <div class="flex justify-between items-start">
+                                <div class="w-24 h-3 rounded-lg skeleton mb-3"></div>
+                                <div class="w-10 h-10 rounded-xl skeleton"></div>
+                            </div>
+                            <div>
+                                <div class="w-20 h-8 rounded-lg skeleton mb-2"></div>
+                                <div class="flex gap-1.5">
+                                    <div class="w-6 h-6 rounded-full skeleton"></div>
+                                    <div class="w-6 h-6 rounded-full skeleton"></div>
+                                    <div class="w-6 h-6 rounded-full skeleton"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-start relative z-10">
+                            <div>
+                                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Assignments</p>
+                                <h3 class="text-3xl font-bold text-black dark:text-white mt-2"><span
+                                        data-pending-assignments>—</span> <span
+                                        class="text-sm text-gray-500 font-medium ml-1">pending</span></h3>
+                            </div>
+                            <div
+                                class="w-10 h-10 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-lg shadow-gray-200 dark:shadow-none group-hover:scale-110 transition-transform">
+                                <i class="ri-task-fill text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 relative z-10">
+                            <div class="flex -space-x-2">
+                                <div class="w-6 h-6 rounded-full bg-gray-200 border-2 border-white shadow-sm"></div>
+                                <div class="w-6 h-6 rounded-full bg-gray-300 border-2 border-white shadow-sm"></div>
+                                <div
+                                    class="w-6 h-6 rounded-full bg-black border-2 border-white shadow-md flex items-center justify-center text-[8px] text-white font-bold">
+                                    +2</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Credits Card -->
+                    <div
+                        class="relative bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-black dark:hover:border-white transition-all group overflow-hidden">
+                        <div data-stat-skeleton class="absolute inset-0 bg-white dark:bg-gray-800 z-10 p-6 flex flex-col justify-between rounded-2xl">
+                            <div class="flex justify-between items-start">
+                                <div class="w-24 h-3 rounded-lg skeleton mb-3"></div>
+                                <div class="w-10 h-10 rounded-xl skeleton"></div>
+                            </div>
+                            <div>
+                                <div class="w-20 h-8 rounded-lg skeleton mb-2"></div>
+                                <div class="w-full h-1.5 rounded-full skeleton"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-start relative z-10">
+                            <div>
+                                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Enrolled Courses</p>
+                                <h3 class="text-3xl font-bold text-black dark:text-white mt-2"><span
+                                        data-enrolled-courses>—</span> <span
+                                        class="text-sm text-gray-400 ml-1">courses</span></h3>
+                            </div>
+                            <div
+                                class="w-10 h-10 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-lg shadow-gray-200 dark:shadow-none group-hover:scale-110 transition-transform">
+                                <i class="ri-book-mark-fill text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 relative z-10">
+                            <div
+                                class="w-full bg-gray-100 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden border border-gray-100 dark:border-gray-700 shadow-inner">
+                                <div class="bg-black dark:bg-white h-full rounded-full" style="width: 35%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    <!-- Left Column -->
+                    <div class="xl:col-span-2 space-y-8">
+                        <!-- Timeline Section -->
+                        <section
+                            class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col h-full">
+                            <div
+                                class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-white dark:bg-gray-800">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-8 h-8 rounded-lg bg-black dark:bg-white text-white dark:text-black flex items-center justify-center">
+                                        <i class="ri-calendar-event-fill"></i>
+                                    </div>
+                                    <h2 id="timeline-day-label" class="text-lg font-bold text-black dark:text-white">Today's Timeline</h2>
+                                </div>
+                                <a href="schedules.html"
+                                    class="text-xs font-bold uppercase tracking-wide text-gray-400 hover:text-black dark:hover:text-white transition-colors">View
+                                    All</a>
+                            </div>
+
+                            <div class="p-6">
+                                <div class="relative space-y-0" data-schedule-container>
+                                    <div class="space-y-4">
+                                        <div class="flex gap-4 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                                            <div class="w-16 h-12 skeleton rounded-lg shrink-0"></div>
+                                            <div class="flex-1 space-y-2">
+                                                <div class="w-1/2 h-4 skeleton rounded"></div>
+                                                <div class="w-1/3 h-3 skeleton rounded"></div>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-4 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                                            <div class="w-16 h-12 skeleton rounded-lg shrink-0"></div>
+                                            <div class="flex-1 space-y-2">
+                                                <div class="w-2/3 h-4 skeleton rounded"></div>
+                                                <div class="w-1/4 h-3 skeleton rounded"></div>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-4 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                                            <div class="w-16 h-12 skeleton rounded-lg shrink-0"></div>
+                                            <div class="flex-1 space-y-2">
+                                                <div class="w-1/2 h-4 skeleton rounded"></div>
+                                                <div class="w-2/5 h-3 skeleton rounded"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="flex flex-col h-full space-y-6">
+
+                        <!-- Announcements Widget -->
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                            <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between rounded-t-2xl">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 rounded-lg bg-black dark:bg-white text-white dark:text-black flex items-center justify-center">
+                                        <i class="lni lni-bullhorn text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-black dark:text-white leading-tight">Announcements</h3>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">From admin &amp; faculty</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span id="ann-unread-badge" class="hidden min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center"></span>
+                                    <a href="student-announcements.html" class="text-xs font-bold uppercase tracking-wide text-gray-400 hover:text-black dark:hover:text-white transition-colors">See All</a>
+                                </div>
+                            </div>
+                            <div id="ann-list" class="divide-y divide-gray-100 dark:divide-gray-700 max-h-72 overflow-y-auto custom-scrollbar">
+                                <div class="p-4 space-y-3">
+                                    <div class="flex gap-3">
+                                        <div class="w-8 h-8 skeleton rounded-lg shrink-0"></div>
+                                        <div class="flex-1 space-y-2">
+                                            <div class="w-1/4 h-3 skeleton rounded"></div>
+                                            <div class="w-3/4 h-4 skeleton rounded"></div>
+                                            <div class="w-full h-3 skeleton rounded"></div>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-3">
+                                        <div class="w-8 h-8 skeleton rounded-lg shrink-0"></div>
+                                        <div class="flex-1 space-y-2">
+                                            <div class="w-1/3 h-3 skeleton rounded"></div>
+                                            <div class="w-2/3 h-4 skeleton rounded"></div>
+                                            <div class="w-4/5 h-3 skeleton rounded"></div>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-3">
+                                        <div class="w-8 h-8 skeleton rounded-lg shrink-0"></div>
+                                        <div class="flex-1 space-y-2">
+                                            <div class="w-1/4 h-3 skeleton rounded"></div>
+                                            <div class="w-1/2 h-4 skeleton rounded"></div>
+                                            <div class="w-3/4 h-3 skeleton rounded"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tasks Widget -->
+                        <div
+                            class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col h-full">
+                            <div
+                                class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-white dark:bg-gray-800 rounded-t-2xl">
+                                <div>
+                                    <h3 class="font-bold text-black dark:text-white">Tasks</h3>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Keep track of your
+                                        workload</p>
+                                </div>
+                                <a href="tasks.html"
+                                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-black dark:text-white hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all">
+                                    <i class="ri-add-line text-lg"></i>
+                                </a>
+                            </div>
+
+                            <div class="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar" data-tasks-widget>
+                                <div class="space-y-3">
+                                    <div class="flex gap-3 p-3.5 rounded-xl border border-gray-100 dark:border-gray-700">
+                                        <div class="w-5 h-5 skeleton rounded mt-0.5 shrink-0"></div>
+                                        <div class="flex-1 space-y-2">
+                                            <div class="w-3/4 h-4 skeleton rounded"></div>
+                                            <div class="w-1/2 h-3 skeleton rounded"></div>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-3 p-3.5 rounded-xl border border-gray-100 dark:border-gray-700">
+                                        <div class="w-5 h-5 skeleton rounded mt-0.5 shrink-0"></div>
+                                        <div class="flex-1 space-y-2">
+                                            <div class="w-2/3 h-4 skeleton rounded"></div>
+                                            <div class="w-2/5 h-3 skeleton rounded"></div>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-3 p-3.5 rounded-xl border border-gray-100 dark:border-gray-700">
+                                        <div class="w-5 h-5 skeleton rounded mt-0.5 shrink-0"></div>
+                                        <div class="flex-1 space-y-2">
+                                            <div class="w-1/2 h-4 skeleton rounded"></div>
+                                            <div class="w-1/3 h-3 skeleton rounded"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+    <!-- Custom Scripts -->
+    <script src="../assets/js/api.js?v=2"></script>
+    <script>
+        const api = window.api; // reuse global instance created by api.js
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Auth guard
+            if (!api.checkAuth()) { window.location.href = 'student-login.html'; return; }
+            const user = api.getUserData();
+            if (user && user.role !== 'student') { api.clearToken(); window.location.href = 'student-login.html'; return; }
+
+            // Populate sidebar user info immediately from cache
+            if (user) {
+                api.populateSidebar(user);
+                const welcomeEl = document.querySelector('[data-welcome-name]');
+                if (welcomeEl) welcomeEl.textContent = (user.full_name || user.user_id || 'Student').split(' ')[0];
+            }
+
+            // Update today's date
+            const dateEl = document.querySelector('.text-gray-500.font-medium span:last-child');
+            if (dateEl) dateEl.textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+            // Load dashboard data
+            await loadStudentDashboard();
+
+            // ── Real-time notification updates via SSE ────────────────────
+            // The global api.js already opens the SSE stream; we just listen
+            // to the custom event it dispatches and update dashboard UI.
+            window.addEventListener('academicsync:notifications', (e) => {
+                const { unread_count, notifications = [] } = e.detail;
+
+                // Update both the widget badge and the sidebar badge
+                const badge     = document.getElementById('ann-unread-badge');
+                const sideBadge = document.getElementById('sidebar-ann-badge');
+                [badge, sideBadge].forEach(el => {
+                    if (!el) return;
+                    if (unread_count > 0) {
+                        el.textContent = unread_count > 99 ? '99+' : unread_count;
+                        el.classList.remove('hidden');
+                        el.classList.add('flex');
+                    } else {
+                        el.classList.add('hidden');
+                        el.classList.remove('flex');
+                    }
+                });
+
+                // Reload the announcements widget if new announcement-type
+                // notifications arrived
+                const hasAnnouncement = notifications.some(
+                    n => n.notification_type?.startsWith('announce')
+                );
+                if (hasAnnouncement) loadAnnouncementsWidget();
+            });
+        });
+
+        async function loadStudentDashboard() {
+            try {
+                const stats = await api.getDashboardStats();
+
+                // Stats cards
+                const gpaEl = document.querySelector('[data-gpa]');
+                const attEl = document.querySelector('[data-attendance]');
+                const barEl = document.querySelector('[data-attendance-bar]');
+                const asnEl = document.querySelector('[data-pending-assignments]');
+                const crsEl = document.querySelector('[data-enrolled-courses]');
+                const taskEl = document.querySelector('[data-pending-tasks]');
+
+                if (gpaEl) gpaEl.textContent = stats.gpa != null ? Number(stats.gpa).toFixed(2) : '—';
+                if (attEl) attEl.textContent = stats.attendance_percentage != null ? stats.attendance_percentage.toFixed(1) + '%' : '—';
+                if (barEl) barEl.style.width = (stats.attendance_percentage || 0) + '%';
+                if (asnEl) asnEl.textContent = stats.pending_assignments ?? '—';
+                if (crsEl) crsEl.textContent = stats.enrollment_count ?? '—';
+                if (taskEl) taskEl.textContent = stats.pending_assignments ?? '0';
+
+                // Remove stat card skeleton overlays now that data is loaded
+                document.querySelectorAll('[data-stat-skeleton]').forEach(el => el.remove());
+
+                // Load and render tasks widget
+                loadTasksWidget();
+
+                // Load and render today's schedule
+                loadScheduleWidget();
+
+                // Load announcements
+                loadAnnouncementsWidget();
+
+            } catch (error) {
+                console.error('Dashboard load error:', error);
+                api.showNotification('Could not load dashboard data', 'error');
+            }
+        }
+
+        // In-memory task cache — allows instant optimistic UI updates on toggle
+        let _tasks = [];
+
+        function renderTasksWidget() {
+            const container = document.querySelector('[data-tasks-widget]');
+            if (!container) return;
+
+            const priorityWeight = { high: 0, medium: 1, low: 2 };
+            const pending   = _tasks.filter(t => !t.completed).sort((a, b) =>
+                (priorityWeight[a.priority] ?? 1) - (priorityWeight[b.priority] ?? 1));
+            const completed = _tasks.filter(t =>  t.completed);
+            const visible   = [...pending, ...completed].slice(0, 6);
+
+            if (!visible.length) {
+                container.innerHTML = '<p class="text-sm text-gray-400 text-center py-4">No tasks yet. <a href="tasks.html" class="underline hover:text-gray-600 dark:hover:text-gray-300">Add one</a></p>';
+                return;
+            }
+
+            const priorityColour = { high: 'text-red-600 dark:text-red-400', medium: 'text-yellow-600 dark:text-yellow-400', low: 'text-gray-500' };
+            container.innerHTML = visible.map(t => `
+                <div class="group relative flex items-start gap-3 p-3.5 rounded-xl border ${t.completed ? 'border-green-100 dark:border-green-900/30 opacity-60' : 'border-gray-100 dark:border-gray-700'} bg-white dark:bg-gray-750/30 hover:border-black dark:hover:border-white hover:shadow-sm hover:scale-[1.01] transition-all cursor-pointer"
+                     data-task-id="${t.id}" onclick="toggleTask(${t.id})">
+                    <div class="mt-1">
+                        <div class="h-5 w-5 rounded border ${t.completed ? 'bg-black dark:bg-white border-black' : 'border-gray-300 dark:border-gray-600'} flex items-center justify-center transition-all">
+                            ${t.completed ? '<svg class="w-3 h-3 text-white dark:text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>' : ''}
+                        </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold text-gray-800 dark:text-gray-200 ${t.completed ? 'line-through' : ''}">${t.title}</p>
+                        ${t.description ? `<p class="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">${t.description}</p>` : ''}
+                        <div class="flex items-center gap-2 mt-2">
+                            ${t.priority ? `<span class="text-[10px] font-bold uppercase tracking-wider ${priorityColour[t.priority] || ''}">${t.priority}</span>` : ''}
+                            ${t.due_date ? `<span class="text-[10px] text-gray-400">${new Date(t.due_date).toLocaleDateString()}</span>` : ''}
+                        </div>
+                    </div>
+                </div>`).join('');
+        }
+
+        async function loadTasksWidget() {
+            const container = document.querySelector('[data-tasks-widget]');
+            if (!container) return;
+
+            // Show skeleton only on first load (when cache is empty)
+            if (!_tasks.length) {
+                container.innerHTML = '<div class="space-y-3"><div class="flex gap-3 p-3.5 rounded-xl border border-gray-100 dark:border-gray-700"><div class="w-5 h-5 skeleton rounded mt-0.5 shrink-0"></div><div class="flex-1 space-y-2"><div class="w-3/4 h-4 skeleton rounded"></div><div class="w-1/2 h-3 skeleton rounded"></div></div></div><div class="flex gap-3 p-3.5 rounded-xl border border-gray-100 dark:border-gray-700"><div class="w-5 h-5 skeleton rounded mt-0.5 shrink-0"></div><div class="flex-1 space-y-2"><div class="w-2/3 h-4 skeleton rounded"></div><div class="w-2/5 h-3 skeleton rounded"></div></div></div></div>';
+            }
+
+            try {
+                const raw = await api.getTasks();
+                // Normalize: backend returns a raw array, guard against wrapped responses
+                _tasks = Array.isArray(raw) ? raw : (raw.tasks || raw.data || []);
+                renderTasksWidget();
+            } catch (e) {
+                console.warn('Tasks widget:', e);
+                if (!_tasks.length) {
+                    container.innerHTML = '<p class="text-sm text-gray-400 text-center py-4">Could not load tasks.</p>';
+                }
+            }
+        }
+
+        async function toggleTask(id) {
+            // Find task in cache
+            const task = _tasks.find(t => t.id === id);
+            if (!task) return;
+
+            // Optimistic update: flip state in memory and re-render instantly
+            task.completed = !task.completed;
+            renderTasksWidget();
+
+            try {
+                await api.updateTask(id, { completed: task.completed });
+            } catch (e) {
+                // Revert optimistic update on failure
+                task.completed = !task.completed;
+                renderTasksWidget();
+                api.showNotification('Could not update task', 'error');
+            }
+        }
+
+        async function loadScheduleWidget() {
+            const container = document.querySelector('[data-schedule-container]');
+            if (!container) return;
+
+            // Header label element (we'll update it to show which day is displayed)
+            const headerLabel = document.querySelector('#timeline-day-label');
+
+            try {
+                const sessions = await api.getSchedule();
+                if (!sessions || !sessions.length) {
+                    container.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">No schedule found. Enroll in courses to see your timetable.</p>';
+                    return;
+                }
+
+                const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+                const todayName = DAYS[new Date().getDay()];
+
+                // Try today first; if empty look ahead up to 6 days for the next class day
+                let displayDay = todayName;
+                let displaySessions = sessions.filter(s => s.day_of_week === todayName);
+
+                if (!displaySessions.length) {
+                    for (let offset = 1; offset <= 6; offset++) {
+                        const nextDay = DAYS[(new Date().getDay() + offset) % 7];
+                        const nextSessions = sessions.filter(s => s.day_of_week === nextDay);
+                        if (nextSessions.length) {
+                            displayDay = nextDay;
+                            displaySessions = nextSessions;
+                            break;
+                        }
+                    }
+                }
+
+                if (!displaySessions.length) {
+                    container.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">No classes scheduled this week.</p>';
+                    return;
+                }
+
+                // Sort by start time
+                displaySessions.sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''));
+
+                // Update header label if present
+                if (headerLabel) {
+                    headerLabel.textContent = displayDay === todayName ? "Today's Timeline" : `Next Classes \u2014 ${displayDay}`;
+                }
+
+                const isToday = displayDay === todayName;
+                const line = '<div class="absolute left-4 top-2 bottom-6 w-0.5 bg-gray-100 dark:bg-gray-700"></div>';
+                container.innerHTML = line + displaySessions.map((s, i) => {
+                    const isFirst = i === 0;
+                    const dotClass = isFirst
+                        ? 'bg-black dark:bg-white'
+                        : 'bg-gray-200 dark:bg-gray-600';
+                    const pingDot = isFirst && isToday
+                        ? `<span class="absolute left-[11px] top-1.5 flex h-4 w-4">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-gray-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-4 w-4 bg-black dark:bg-white border-2 border-white dark:border-gray-800"></span>
+                           </span>`
+                        : `<div class="absolute left-3.5 top-2 w-3 h-3 ${dotClass} rounded-full border-2 border-white dark:border-gray-800 transition-colors"></div>`;
+                    return `
+                    <div class="relative pl-12 pb-8 last:pb-0 group">
+                        ${pingDot}
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-750/30 hover:bg-white dark:hover:bg-gray-750 hover:shadow-md hover:border-black dark:hover:border-white transition-all cursor-pointer group-hover:scale-[1.01]">
+                            <div class="shrink-0 min-w-[80px]">
+                                <p class="text-sm font-bold text-black dark:text-white">${s.start_time || '\u2014'}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">${s.end_time || ''}</p>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-black dark:text-white text-base">${s.course_name || s.course_code || 'Class'}</h3>
+                                <div class="flex items-center gap-3 mt-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    ${s.room ? `<span class="flex items-center gap-1 bg-white dark:bg-gray-700 px-2 py-1 rounded border border-gray-200 dark:border-gray-600 shadow-sm"><i class="ri-map-pin-line text-black dark:text-white"></i> ${s.room}</span>` : ''}
+                                    ${s.faculty_name ? `<span class="flex items-center gap-1"><i class="ri-user-smile-line"></i> ${s.faculty_name}</span>` : ''}
+                                    <span class="capitalize text-gray-400">${s.session_type || ''}</span>
+                                </div>
+                            </div>
+                            ${isFirst ? '<div class="hidden sm:block"><span class="px-3 py-1 bg-black dark:bg-white text-white dark:text-black text-xs font-bold rounded-full shadow-md shadow-gray-200 dark:shadow-none">' + (isToday ? 'Next Up' : displayDay) + '</span></div>' : ''}
+                        </div>
+                    </div>`;
+                }).join('');
+
+            } catch (e) {
+                console.warn('Schedule widget:', e);
+                container.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">Could not load schedule.</p>';
+            }
+        }
+
+        async function loadAnnouncementsWidget() {
+            const container = document.getElementById('ann-list');
+            const badge     = document.getElementById('ann-unread-badge');
+            const sideBadge = document.getElementById('sidebar-ann-badge');
+            if (!container) return;
+            try {
+                const data  = await api.getNotifications();
+                const all   = Array.isArray(data) ? data : (data.notifications || []);
+                const announcements = all.filter(n =>
+                    n.notification_type && n.notification_type.startsWith('announce')
+                );
+
+                // Unread count
+                const unread = announcements.filter(n => !n.is_read).length;
+                [badge, sideBadge].forEach(el => {
+                    if (!el) return;
+                    if (unread > 0) {
+                        el.textContent = unread > 99 ? '99+' : unread;
+                        el.classList.remove('hidden');
+                        el.classList.add('flex');
+                    } else {
+                        el.classList.add('hidden');
+                        el.classList.remove('flex');
+                    }
+                });
+
+                if (!announcements.length) {
+                    container.innerHTML = `
+                        <div class="text-center py-8 px-4">
+                            <i class="lni lni-bullhorn text-2xl text-gray-300 dark:text-gray-600"></i>
+                            <p class="text-sm text-gray-400 mt-2">No announcements yet.</p>
+                        </div>`;
+                    return;
+                }
+
+                container.innerHTML = announcements.slice(0, 8).map(n => {
+                    const isUrgent   = n.title && n.title.includes('[URGENT]');
+                    const isFaculty  = n.notification_type === 'announce_faculty';
+                    const cleanTitle = (n.title || '')
+                        .replace(/^\[Announcement\]\s*/i, '')
+                        .replace(/^\[URGENT\]\s*/i, '')
+                        .trim() || '(no title)';
+
+                    // Parse sender name and course from related_type
+                    // faculty: "faculty:Dr. Smith|CS101" or admin: "admin:John Admin"
+                    let senderName = isFaculty ? 'Faculty' : 'Admin';
+                    let courseName = '';
+                    if (n.related_type) {
+                        if (n.related_type.startsWith('faculty:')) {
+                            const parts = n.related_type.slice(8).split('|');
+                            senderName  = parts[0] || 'Faculty';
+                            courseName  = parts[1] || '';
+                        } else if (n.related_type.startsWith('admin:')) {
+                            senderName  = n.related_type.slice(6) || 'Admin';
+                        }
+                    }
+
+                    const senderBadgeClass = isFaculty
+                        ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800'
+                        : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800';
+                    const senderIcon = isFaculty ? 'ri-user-star-line' : 'lni lni-graduation';
+
+                    const timeStr = n.created_at
+                        ? new Date(n.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                        : '';
+
+                    return `
+                    <div class="flex items-start gap-3 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors cursor-default ${n.is_read ? 'opacity-60' : ''}"
+                         onclick="markAnnRead(${n.id}, this)">
+                        <div class="mt-0.5 shrink-0 w-8 h-8 rounded-lg flex items-center justify-center
+                            ${isUrgent ? 'bg-red-100 dark:bg-red-900/30' : isFaculty ? 'bg-purple-100 dark:bg-purple-900/20' : 'bg-blue-100 dark:bg-blue-900/20'}">
+                            <i class="lni lni-bullhorn text-sm ${isUrgent ? 'text-red-600 dark:text-red-400' : isFaculty ? 'text-purple-600 dark:text-purple-400' : 'text-blue-600 dark:text-blue-400'}"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1.5 mb-1 flex-wrap">
+                                ${isUrgent ? '<span class="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"><i class="ri-alarm-warning-line"></i>URGENT</span>' : ''}
+                                <span class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full border ${senderBadgeClass}">
+                                    <i class="${senderIcon} text-[10px]"></i>${senderName}
+                                </span>
+                                ${courseName ? `<span class="text-[10px] text-gray-400">${courseName}</span>` : ''}
+                                ${!n.is_read ? '<span data-unread-dot class="w-1.5 h-1.5 rounded-full bg-black dark:bg-white inline-block ml-1"></span>' : ''}
+                            </div>
+                            <p class="text-sm font-semibold text-black dark:text-white leading-snug line-clamp-1">${cleanTitle}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">${n.message || ''}</p>
+                            <p class="text-[10px] text-gray-400 mt-1">${timeStr}</p>
+                        </div>
+                    </div>`;
+                }).join('');
+
+            } catch (e) {
+                console.warn('Announcements widget:', e);
+                if (container) container.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">Could not load announcements.</p>';
+            }
+        }
+
+        async function markAnnRead(id, row) {
+            if (!id) return;
+            try {
+                await api.markNotificationRead(id);
+                // Dim the row and remove unread dot
+                row.classList.add('opacity-70');
+                const dot = row.querySelector('[data-unread-dot]');
+                if (dot) dot.remove();
+                // Decrement both widget badge and sidebar badge
+                ['ann-unread-badge', 'sidebar-ann-badge'].forEach(elId => {
+                    const el = document.getElementById(elId);
+                    if (!el) return;
+                    const cur = parseInt(el.textContent) || 0;
+                    if (cur <= 1) { el.textContent = ''; el.classList.add('hidden'); el.classList.remove('flex'); }
+                    else el.textContent = cur - 1;
+                });
+            } catch (_) {}
+        }
+
+        async function logout() {
+            await api.logout();
+            window.location.href = 'student-login.html';
+        }
+
+        async function generateReport() {
+            const btn = document.querySelector('[onclick="generateReport()"]');
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ri-loader-4-line animate-spin text-lg"></i><span class="hidden sm:inline">Generating…</span>'; }
+
+            try {
+                const [stats, profile, courses, assignments, schedule] = await Promise.allSettled([
+                    api.getDashboardStats(),
+                    api.getProfile(),
+                    api.getCourses(),
+                    api.getAssignments(),
+                    api.getSchedule()
+                ]);
+
+                const s   = stats.status === 'fulfilled' ? stats.value : {};
+                const p   = profile.status === 'fulfilled' ? (profile.value.profile || profile.value) : {};
+                const crs = courses.status === 'fulfilled' ? (Array.isArray(courses.value) ? courses.value : []) : [];
+                const asn = assignments.status === 'fulfilled' ? (Array.isArray(assignments.value) ? assignments.value : []) : [];
+                const sch = schedule.status === 'fulfilled' ? (Array.isArray(schedule.value) ? schedule.value : []) : [];
+
+                const user = api.getUserData() || {};
+                const name = p.full_name || user.full_name || 'Student';
+                const sid  = p.student_id || user.user_id || '—';
+                const now  = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+                const dayOrder = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+                const scheduleRows = sch.length
+                    ? [...sch].sort((a,b) => dayOrder.indexOf(a.day_of_week) - dayOrder.indexOf(b.day_of_week))
+                        .map(r => `<tr><td>${r.day_of_week||'—'}</td><td>${r.course_name||r.course_code||'—'}</td><td>${r.start_time||'—'} – ${r.end_time||'—'}</td><td>${r.room||'—'}</td><td>${r.faculty_name||'—'}</td></tr>`).join('')
+                    : '<tr><td colspan="5" class="empty">No schedule data available.</td></tr>';
+
+                const courseRows = crs.length
+                    ? crs.map(c => `<tr><td>${c.course_code||'—'}</td><td>${c.course_name||'—'}</td><td>${c.faculty_name||'—'}</td><td>${c.credits||'—'}</td><td>${c.schedule||'—'}</td></tr>`).join('')
+                    : '<tr><td colspan="5" class="empty">No enrolled courses found.</td></tr>';
+
+                const pendingAsn = asn.filter(a => !a.submitted_at);
+                const submittedAsn = asn.filter(a => a.submitted_at);
+
+                const asnRows = asn.length
+                    ? asn.map(a => {
+                        const status = a.submitted_at ? 'Submitted' : (new Date(a.due_date) < new Date() ? 'Overdue' : 'Pending');
+                        const color = status === 'Submitted' ? '#16a34a' : status === 'Overdue' ? '#dc2626' : '#d97706';
+                        return `<tr><td>${a.title||'—'}</td><td>${a.course_name||'—'}</td><td>${a.due_date ? new Date(a.due_date).toLocaleDateString() : '—'}</td><td style="color:${color};font-weight:700">${status}</td><td>${a.grade ?? '—'}</td></tr>`;
+                      }).join('')
+                    : '<tr><td colspan="5" class="empty">No assignments found.</td></tr>';
+
+                const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Academic Report – ${name}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #111; background: #fff; font-size: 13px; }
+  .page { max-width: 860px; margin: 0 auto; padding: 40px 36px; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #111; padding-bottom: 20px; margin-bottom: 28px; }
+  .header h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .header p { font-size: 12px; color: #555; margin-top: 4px; }
+  .badge { display: inline-block; background: #111; color: #fff; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 50px; letter-spacing: 1px; text-transform: uppercase; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 32px; }
+  .stat-card { background: #f8f8f8; border: 1px solid #e5e5e5; border-radius: 10px; padding: 16px; text-align: center; }
+  .stat-card .val { font-size: 26px; font-weight: 800; color: #111; }
+  .stat-card .lbl { font-size: 10px; color: #777; text-transform: uppercase; letter-spacing: 0.8px; margin-top: 4px; }
+  section { margin-bottom: 32px; }
+  section h2 { font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; border-left: 4px solid #111; padding-left: 10px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th { background: #111; color: #fff; text-align: left; padding: 8px 12px; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  tbody tr:nth-child(even) td { background: #f8f8f8; }
+  tbody td { border-bottom: 1px solid #eee; padding: 8px 12px; }
+  td.empty { text-align: center; color: #999; padding: 18px; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; font-size: 12px; margin-bottom: 8px; }
+  .info-grid .row { display: flex; gap: 8px; }
+  .info-grid .lbl { color: #777; min-width: 110px; font-weight: 600; }
+  .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #e5e5e5; text-align: center; font-size: 11px; color: #999; }
+  @media print { body { font-size: 12px; } .page { padding: 20px; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <span class="badge">Academic Report</span>
+      <h1 style="margin-top:10px">${name}</h1>
+      <p>Student ID: ${sid} &nbsp;|&nbsp; Major: ${p.major || s.major || '—'} &nbsp;|&nbsp; Year: ${p.academic_year || '—'}</p>
+    </div>
+    <div style="text-align:right">
+      <p style="font-size:12px;color:#555">Generated</p>
+      <p style="font-weight:700">${now}</p>
+      <p style="font-size:11px;color:#888;margin-top:4px">AcademicSync System</p>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card"><div class="val">${s.gpa != null ? Number(s.gpa).toFixed(2) : '—'}</div><div class="lbl">GPA</div></div>
+    <div class="stat-card"><div class="val">${s.attendance_percentage != null ? s.attendance_percentage.toFixed(1)+'%' : '—'}</div><div class="lbl">Attendance</div></div>
+    <div class="stat-card"><div class="val">${s.enrollment_count ?? crs.length}</div><div class="lbl">Courses</div></div>
+    <div class="stat-card"><div class="val">${submittedAsn.length}/${asn.length}</div><div class="lbl">Assignments Done</div></div>
+  </div>
+
+  <section>
+    <h2>Personal Information</h2>
+    <div class="info-grid">
+      <div class="row"><span class="lbl">Full Name</span><span>${name}</span></div>
+      <div class="row"><span class="lbl">Email</span><span>${p.email || user.email || '—'}</span></div>
+      <div class="row"><span class="lbl">Phone</span><span>${p.phone || '—'}</span></div>
+      <div class="row"><span class="lbl">Date of Birth</span><span>${p.date_of_birth || p.dateOfBirth || '—'}</span></div>
+      <div class="row"><span class="lbl">Enrollment Date</span><span>${p.enrollment_date || '—'}</span></div>
+      <div class="row"><span class="lbl">Advisor</span><span>${p.advisor || '—'}</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Enrolled Courses</h2>
+    <table>
+      <thead><tr><th>Code</th><th>Course Name</th><th>Instructor</th><th>Credits</th><th>Schedule</th></tr></thead>
+      <tbody>${courseRows}</tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Weekly Schedule</h2>
+    <table>
+      <thead><tr><th>Day</th><th>Course</th><th>Time</th><th>Room</th><th>Instructor</th></tr></thead>
+      <tbody>${scheduleRows}</tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Assignments</h2>
+    <table>
+      <thead><tr><th>Title</th><th>Course</th><th>Due Date</th><th>Status</th><th>Grade</th></tr></thead>
+      <tbody>${asnRows}</tbody>
+    </table>
+  </section>
+
+  <div class="footer">This report was automatically generated by AcademicSync on ${now}. For official records, contact the Registrar's Office.</div>
+</div>
+<script>window.onload = () => window.print();<\/script>
+</body></html>`;
+
+                const w = window.open('', '_blank');
+                if (!w) { api.showNotification('Pop-up blocked. Please allow pop-ups and try again.', 'error'); return; }
+                w.document.write(html);
+                w.document.close();
+            } catch (err) {
+                console.error('Report error:', err);
+                api.showNotification('Could not generate report. Please try again.', 'error');
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ri-file-download-line text-lg"></i><span class="hidden sm:inline">Report</span>'; }
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>

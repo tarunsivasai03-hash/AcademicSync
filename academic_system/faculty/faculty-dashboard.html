@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white antialiased dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <meta name="description" content="AcademicSync - Smart Academic Management Faculty Dashboard">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)">
+    <title>AcademicSync - Faculty Dashboard</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f9fafb',
+                            100: '#f3f4f6',
+                            200: '#e5e7eb',
+                            300: '#d1d5db',
+                            400: '#9ca3af',
+                            500: '#6b7280',
+                            600: '#000000',
+                            700: '#1f2937',
+                            800: '#111827',
+                            900: '#000000',
+                        },
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'slide-in-right': 'slideInRight 0.3s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        slideInRight: {
+                            '0%': { transform: 'translateX(100%)', opacity: '0' },
+                            '100%': { transform: 'translateX(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+
+        /* Accessible Focus Rings */
+        *:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #e5e7eb; border-radius: 20px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #374151; }
+
+        /* Enhanced Button Animations */
+        .btn-enhanced {
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-enhanced::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        .btn-enhanced:hover::before { left: 100%; }
+
+        /* Skeleton Loading Shimmer */
+        .skeleton {
+            background: #f3f4f6;
+            background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+        .dark .skeleton {
+            background: #374151;
+            background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+            background-size: 200% 100%;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+</head>
+
+<body
+    class="h-full flex overflow-hidden text-gray-600 font-sans antialiased bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 dark:text-gray-300 transition-colors duration-200"
+    x-data="facultyDashboard()" 
+    @keydown.escape.window="closeAllModals()">
+
+    <div class="fixed top-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none" aria-live="assertive">
+        <template x-for="toast in toasts" :key="toast.id">
+            <div x-show="toast.show" 
+                 x-transition:enter="transition ease-out duration-300 transform"
+                 x-transition:enter-start="translate-x-full opacity-0"
+                 x-transition:enter-end="translate-x-0 opacity-100"
+                 x-transition:leave="transition ease-in duration-200 transform"
+                 x-transition:leave-start="translate-x-0 opacity-100"
+                 x-transition:leave-end="translate-x-full opacity-0"
+                 class="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 w-80"
+                 role="alert">
+                <div class="shrink-0">
+                    <div x-show="toast.type === 'success'" class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center">
+                        <i class="lni lni-checkmark"></i>
+                    </div>
+                    <div x-show="toast.type === 'error'" class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center">
+                        <i class="lni lni-warning"></i>
+                    </div>
+                    <div x-show="toast.type === 'info'" class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                        <i class="lni lni-information"></i>
+                    </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-gray-900 dark:text-white truncate" x-text="toast.title"></p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate" x-text="toast.message"></p>
+                </div>
+                <button @click="dismissToast(toast.id)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" aria-label="Close notification">
+                    <i class="lni lni-close"></i>
+                </button>
+            </div>
+        </template>
+    </div>
+
+    <div x-show="announcementModalOpen" x-cloak class="relative z-[60]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div x-show="announcementModalOpen" x-transition.opacity class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity"></div>
+        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div x-show="announcementModalOpen" 
+                     x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     @click.away="announcementModalOpen = false"
+                     class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-gray-100 dark:border-gray-700">
+                    <div class="px-6 py-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white" id="modal-title">Post New Announcement</h3>
+                        <button @click="announcementModalOpen = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors" aria-label="Close modal">
+                            <i class="lni lni-close text-lg"></i>
+                        </button>
+                    </div>
+                    <form @submit.prevent="submitAnnouncement">
+                        <div class="px-6 py-6 space-y-4">
+                            <!-- Priority -->
+                            <div class="flex gap-3">
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="ann-priority" value="normal" x-model="announcementForm.priority" class="sr-only">
+                                    <div class="flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all"
+                                        :class="announcementForm.priority === 'normal' ? 'border-black dark:border-white bg-black dark:bg-white text-white dark:text-black' : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300'">
+                                        <i class="ri-information-line"></i> Normal
+                                    </div>
+                                </label>
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="ann-priority" value="urgent" x-model="announcementForm.priority" class="sr-only">
+                                    <div class="flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all"
+                                        :class="announcementForm.priority === 'urgent' ? 'border-red-500 bg-red-500 text-white' : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-red-300'">
+                                        <i class="ri-alarm-warning-line"></i> Urgent
+                                    </div>
+                                </label>
+                            </div>
+                            <!-- Target Course -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Course</label>
+                                <select x-model="announcementForm.course_id" required
+                                    class="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white py-2.5 px-3 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent outline-none transition-all">
+                                    <option value="">Select a course...</option>
+                                    <option value="all">All My Courses (all enrolled students)</option>
+                                    <template x-for="c in courses" :key="c.id">
+                                        <option :value="c.id" x-text="c.code + ' — ' + c.name + ' (' + c.students + ' students)'"></option>
+                                    </template>
+                                </select>
+                                <p x-show="!courses.length" class="text-xs text-gray-400 mt-1">No courses loaded yet.</p>
+                            </div>
+                            <!-- Title -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title <span class="text-red-500">*</span></label>
+                                <input type="text" x-model="announcementForm.title" maxlength="120" required
+                                    class="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white py-2.5 px-3 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent outline-none transition-all"
+                                    placeholder="E.g., Midterm Exam Schedule Update">
+                                <div class="flex justify-end mt-1">
+                                    <span class="text-xs" :class="announcementForm.title.length > 100 ? 'text-orange-500' : 'text-gray-400'">
+                                        <span x-text="announcementForm.title.length"></span>/120
+                                    </span>
+                                </div>
+                            </div>
+                            <!-- Message -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Message <span class="text-red-500">*</span></label>
+                                <textarea x-model="announcementForm.message" rows="4" maxlength="1000" required
+                                    class="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white py-2.5 px-3 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent outline-none transition-all resize-none"
+                                    placeholder="Type your announcement here..."></textarea>
+                                <div class="flex justify-end mt-1">
+                                    <span class="text-xs" :class="announcementForm.message.length > 900 ? 'text-orange-500' : 'text-gray-400'">
+                                        <span x-text="announcementForm.message.length"></span>/1000
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3">
+                            <button type="button" @click="announcementModalOpen = false"
+                                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">Cancel</button>
+                            <button type="submit" :disabled="isSubmitting || !announcementForm.course_id"
+                                class="px-6 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                :class="announcementForm.priority === 'urgent' ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200'">
+                                <i x-show="isSubmitting" class="lni lni-spinner animate-spin"></i>
+                                <i x-show="!isSubmitting" class="lni lni-send"></i>
+                                <span x-text="isSubmitting ? 'Sending...' : 'Send Now'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="sidebarOpen" 
+        x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+        x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" 
+        @click="sidebarOpen = false"
+        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden" aria-hidden="true" x-cloak>
+    </div>
+
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+        class="fixed inset-y-0 left-0 z-50 w-64 bg-white/80 dark:bg-gray-900/90 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-800/50 shadow-[4px_0_24px_rgba(0,0,0,0.05)] transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 flex flex-col h-full"
+        aria-label="Sidebar">
+
+        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100/50 dark:border-gray-800/50 shrink-0">
+            <a href="../index.html" class="flex items-center gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-black dark:focus-visible:ring-white rounded-lg p-1 -ml-1">
+                <div class="w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-lg shadow-gray-200/50 dark:shadow-none group-hover:scale-105 transition-transform" aria-hidden="true">
+                    <i class="lni lni-graduation"></i>
+                </div>
+                <span class="font-display font-bold text-xl text-black dark:text-white tracking-tight">AcademicSync</span>
+            </a>
+
+            <button @click="sidebarOpen = false" aria-label="Close Sidebar Menu"
+                class="lg:hidden p-2 -mr-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-black dark:focus-visible:ring-white">
+                <i class="lni lni-close text-xl" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar" aria-label="Main Navigation">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2" id="nav-heading">Menu</p>
+            
+            <a href="faculty-dashboard.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group bg-white dark:bg-gray-800 text-black dark:text-white shadow-sm border border-gray-200 dark:border-gray-700"
+                aria-current="page">
+                <i class="lni lni-grid-alt text-lg text-black dark:text-white" aria-hidden="true"></i>
+                Dashboard
+            </a>
+
+            <template x-for="item in menuItems" :key="item.name">
+                <a :href="item.href"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-black dark:focus-visible:ring-white">
+                    <i :class="item.icon + ' text-lg text-gray-400 dark:text-gray-500 group-hover:text-black dark:group-hover:text-white transition-colors'" aria-hidden="true"></i>
+                    <span x-text="item.name"></span>
+                </a>
+            </template>
+        </nav>
+
+        <div class="p-4 border-t border-gray-100/50 dark:border-gray-800/50 bg-gray-50/50 dark:bg-gray-900/50 shrink-0">
+            <button @click="toggleDarkMode()" 
+                class="w-full flex items-center justify-center gap-2 mb-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-black dark:focus-visible:ring-white"
+                :aria-label="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+                <i class="lni lni-sun" x-show="!darkMode" aria-hidden="true"></i>
+                <i class="lni lni-night" x-show="darkMode" x-cloak aria-hidden="true"></i>
+                <span class="text-xs font-bold uppercase tracking-wider" x-text="darkMode ? 'Light Mode' : 'Dark Mode'"></span>
+            </button>
+
+            <a href="faculty-profile.html"
+                class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-black dark:focus-visible:ring-white">
+                <div class="w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold text-xs uppercase shadow-inner group-hover:bg-white dark:group-hover:bg-gray-600 transition-all"
+                    aria-hidden="true">
+                    <span data-user-initials>Dr.</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white truncate" data-user-name>Dr. Alan Turing</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate" data-user-role>Computer Science</p>
+                </div>
+                <i class="lni lni-cog text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" aria-hidden="true"></i>
+            </a>
+
+            <div class="mt-2 text-center">
+                <button type="button" @click="handleLogout()"
+                    class="w-full flex items-center justify-center gap-2 text-xs font-bold text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 py-2 rounded-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 uppercase tracking-tighter">
+                    <i class="lni lni-exit" aria-hidden="true"></i>
+                    <span>Sign Out</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col min-w-0 relative">
+
+        <header class="lg:hidden h-14 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 sticky top-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md z-20 shadow-sm">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-black font-bold text-sm shadow-sm" aria-hidden="true">AS</div>
+                <span class="font-semibold text-gray-900 dark:text-white">AcademicSync</span>
+            </div>
+            <button @click="sidebarOpen = !sidebarOpen"
+                class="p-2 -mr-2 text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-black dark:focus-visible:ring-white"
+                :aria-expanded="sidebarOpen" aria-controls="mobile-menu" aria-label="Toggle navigation menu">
+                <i class="ri-menu-line text-xl" aria-hidden="true"></i>
+            </button>
+        </header>
+
+        <main class="flex-1 overflow-y-auto scroll-smooth p-4 sm:p-6 lg:p-8 custom-scrollbar" id="main-content" tabindex="-1">
+            <div class="animate-fade-in-up space-y-8 pb-12 max-w-7xl mx-auto">
+
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div>
+                        <h1 class="text-3xl font-display font-bold text-gray-900 dark:text-white tracking-tight">
+                            Faculty Overview
+                        </h1>
+                        <p class="text-gray-500 dark:text-gray-400 mt-2 flex items-center gap-2 font-medium text-sm">
+                            <span class="w-2.5 h-2.5 rounded-full bg-green-500 shadow-sm animate-pulse-fast" aria-hidden="true"></span>
+                            Academic Year 2023-2024 &bull; Spring Semester
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3">
+                        <button @click="addToast('Info', 'Settings module coming soon.', 'info')"
+                            class="btn-enhanced relative group flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-black dark:hover:text-white transition-all shadow-sm hover:shadow active:scale-95 min-w-[44px] sm:min-w-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-black dark:focus-visible:ring-white"
+                            aria-label="Dashboard Settings">
+                            <i class="lni lni-cog text-lg group-hover:rotate-90 transition-transform duration-300" aria-hidden="true"></i>
+                            <span class="hidden sm:inline-block">Settings</span>
+                        </button>
+
+                        <button @click="announcementModalOpen = true"
+                            class="btn-enhanced relative group flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 bg-gradient-to-r from-gray-900 to-black dark:from-white dark:to-gray-200 text-white dark:text-black rounded-xl text-sm font-bold hover:from-black hover:to-gray-900 dark:hover:from-gray-100 dark:hover:to-white active:scale-95 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 min-w-[44px] sm:min-w-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black dark:focus-visible:ring-white dark:focus-visible:ring-offset-gray-900">
+                            <i class="lni lni-bullhorn text-lg group-hover:scale-110 transition-transform duration-200" aria-hidden="true"></i>
+                            <span class="hidden sm:inline-block">Post Announcement</span>
+                            
+                            <span class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
+                                3<span class="sr-only">unread notifications</span>
+                            </span>
+                        </button>
+
+                        <div class="relative sm:hidden">
+                            <button @click="showQuickActions = !showQuickActions"
+                                class="flex items-center justify-center w-[44px] h-[44px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
+                                aria-haspopup="true" :aria-expanded="showQuickActions" aria-label="More Actions">
+                                <i class="ri-more-line text-lg" aria-hidden="true"></i>
+                            </button>
+
+                            <div x-show="showQuickActions" 
+                                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                 @click.away="showQuickActions = false" @keydown.escape.window="showQuickActions = false"
+                                 class="absolute right-0 top-14 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden"
+                                 role="menu" aria-orientation="vertical" x-cloak>
+                                <div class="p-1.5 space-y-0.5">
+                                    <template x-for="action in quickActions" :key="action.name">
+                                        <button @click="handleMobileAction(action)" class="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700" role="menuitem">
+                                            <i :class="action.icon + ' text-lg text-gray-400 dark:text-gray-500'" aria-hidden="true"></i>
+                                            <span x-text="action.name"></span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" aria-label="Quick Statistics">
+                    
+                    <template x-for="(stat, index) in dashboardStats" :key="index">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                            <div x-show="isLoading" class="absolute inset-0 bg-white dark:bg-gray-800 z-10 p-6 flex flex-col justify-between">
+                                <div class="flex justify-between items-start">
+                                    <div class="w-12 h-12 rounded-xl skeleton"></div>
+                                    <div class="w-16 h-6 rounded-lg skeleton"></div>
+                                </div>
+                                <div>
+                                    <div class="w-20 h-8 rounded-lg skeleton mb-2"></div>
+                                    <div class="w-24 h-4 rounded-lg skeleton"></div>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="p-3 bg-gray-50 dark:bg-gray-900/50 text-gray-900 dark:text-white border border-gray-100 dark:border-gray-700 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                                    <i :class="stat.icon + ' text-2xl'" aria-hidden="true"></i>
+                                </div>
+                                <span x-show="stat.trend" :class="'flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg border ' + (stat.trend === 'up' ? 'text-green-700 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-900/20 dark:border-green-800' : 'text-blue-700 bg-blue-50 border-blue-200 dark:text-blue-400 dark:bg-blue-900/20 dark:border-blue-800')">
+                                    <i :class="stat.trend === 'up' ? 'lni lni-arrow-up' : 'lni lni-minus'" aria-hidden="true"></i> 
+                                    <span x-text="stat.trendValue"></span>
+                                </span>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1" x-text="stat.value"></h3>
+                                <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider" x-text="stat.label"></p>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    
+                    <div class="xl:col-span-2 space-y-8">
+                        
+                        <section class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden flex flex-col h-[400px]" aria-labelledby="courses-heading">
+                            <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between shrink-0 bg-white dark:bg-gray-800 z-10">
+                                <div>
+                                    <h2 id="courses-heading" class="font-bold text-lg text-gray-900 dark:text-white">My Courses</h2>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Manage your active classes</p>
+                                </div>
+                                <a href="faculty-courses.html" class="text-sm font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1 transition-colors">View All <span class="sr-only">courses</span></a>
+                            </div>
+
+                            <div class="p-4 flex-1 overflow-y-auto custom-scrollbar relative">
+                                <div x-show="isLoading" class="space-y-3 absolute inset-0 p-4 bg-white dark:bg-gray-800 z-10">
+                                    <template x-for="i in 3">
+                                        <div class="p-4 rounded-xl border border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                                            <div class="space-y-2 w-full">
+                                                <div class="w-1/4 h-5 skeleton rounded"></div>
+                                                <div class="w-1/2 h-4 skeleton rounded"></div>
+                                                <div class="w-1/3 h-3 skeleton rounded mt-3"></div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <div x-show="!isLoading && courses.length === 0" class="h-full flex flex-col items-center justify-center text-center p-6 space-y-4 text-gray-500 dark:text-gray-400">
+                                    <div class="w-16 h-16 rounded-full bg-gray-50 dark:bg-gray-700 flex items-center justify-center">
+                                        <i class="lni lni-library text-3xl"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-gray-900 dark:text-white">No active courses found</p>
+                                        <p class="text-sm mt-1 max-w-sm">You haven't been assigned any courses for this semester yet. Contact the department head for details.</p>
+                                    </div>
+                                    <button @click="fetchData()" class="px-4 py-2 mt-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                        Refresh Data
+                                    </button>
+                                </div>
+
+                                <div x-show="!isLoading && courses.length > 0" class="grid gap-3">
+                                    <template x-for="course in courses" :key="course.id">
+                                        <div class="p-4 bg-gray-50 dark:bg-gray-900/40 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 group cursor-pointer" tabindex="0" role="button" aria-label="View course details">
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 dark:text-white" x-text="course.code"></h4>
+                                                <p class="text-sm text-gray-600 dark:text-gray-300 mt-1 font-medium" x-text="course.name"></p>
+                                                <div class="flex items-center gap-3 mt-2 text-xs text-gray-500 dark:text-gray-400 font-medium">
+                                                    <span class="flex items-center gap-1"><i class="lni lni-users" aria-hidden="true"></i> <span x-text="course.students + ' Students'"></span></span>
+                                                    <span>&bull;</span>
+                                                    <span class="flex items-center gap-1"><i class="lni lni-timer" aria-hidden="true"></i> <span x-text="course.credits + ' Credits'"></span></span>
+                                                </div>
+                                            </div>
+                                            <div class="shrink-0 flex items-center gap-2">
+                                                <span class="px-2 py-1 text-xs font-bold rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-sm" x-text="course.status"></span>
+                                                <i class="lni lni-chevron-right text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" aria-hidden="true"></i>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6" aria-labelledby="schedule-heading">
+                            <h2 id="schedule-heading" class="font-bold text-lg text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                                <i class="lni lni-calendar text-gray-900 dark:text-white" aria-hidden="true"></i> Today's Schedule
+                            </h2>
+                            
+                            <div class="relative border-l-2 border-gray-100 dark:border-gray-700 ml-3 space-y-8 py-2">
+                                
+                                <div x-show="isLoading" class="absolute inset-0 bg-white dark:bg-gray-800 z-10 pl-6 space-y-8">
+                                    <template x-for="i in 2">
+                                        <div class="p-4 border border-gray-100 dark:border-gray-700 rounded-xl">
+                                            <div class="w-24 h-3 skeleton rounded mb-2"></div>
+                                            <div class="w-1/2 h-5 skeleton rounded mb-2"></div>
+                                            <div class="w-32 h-3 skeleton rounded"></div>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <!-- Empty state -->
+                                <div x-show="!isLoading && schedule.length === 0"
+                                     class="pl-8 py-6 text-center text-sm text-gray-400 dark:text-gray-500">
+                                    <i class="lni lni-calendar text-2xl block mb-2 opacity-40"></i>
+                                    No classes or sessions scheduled for today.
+                                </div>
+
+                                <template x-for="(event, index) in schedule" :key="index">
+                                    <div class="relative pl-8 group">
+                                        <span :class="'absolute -left-[9px] top-1.5 h-4 w-4 rounded-full border-[3px] border-white dark:border-gray-800 shadow-sm transition-transform group-hover:scale-125 ' + (event.isNow ? 'bg-green-500 animate-pulse' : 'bg-gray-900 dark:bg-gray-300')"></span>
+                                        
+                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 border border-transparent hover:border-gray-200 dark:hover:border-gray-600 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-black dark:focus-within:ring-white">
+                                            <div>
+                                                <p class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1" x-text="event.time"></p>
+                                                <h4 class="font-bold text-gray-900 dark:text-white text-lg">
+                                                    <a href="#" class="focus:outline-none before:absolute before:inset-0" x-text="event.title"></a>
+                                                </h4>
+                                                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium flex items-center gap-2 mt-1">
+                                                    <i class="lni lni-map-marker" aria-hidden="true"></i> <span x-text="event.location"></span>
+                                                </p>
+                                            </div>
+                                            <div x-show="event.type === 'lecture'" class="shrink-0">
+                                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
+                                                    <i class="lni lni-video" aria-hidden="true"></i> Lecture
+                                                </span>
+                                            </div>
+                                            <div x-show="event.type === 'meeting'" class="shrink-0">
+                                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border border-purple-100 dark:border-purple-800">
+                                                    <i class="lni lni-users" aria-hidden="true"></i> Meeting
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="xl:col-span-1 space-y-8">
+                        
+                        <section class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6" aria-labelledby="messages-heading">
+                            <div class="flex items-center justify-between mb-6">
+                                <h2 id="messages-heading" class="font-bold text-lg text-gray-900 dark:text-white">Messages</h2>
+                                <span class="px-2 py-1 bg-black dark:bg-white text-white dark:text-black text-xs font-bold rounded-lg shadow-sm" aria-label="2 unread messages">2 New</span>
+                            </div>
+
+                            <div x-show="isLoading" class="space-y-4">
+                                <template x-for="i in 2">
+                                    <div class="flex gap-3">
+                                        <div class="w-10 h-10 rounded-full skeleton shrink-0"></div>
+                                        <div class="flex-1 space-y-2 py-1">
+                                            <div class="w-1/2 h-4 skeleton rounded"></div>
+                                            <div class="w-3/4 h-3 skeleton rounded"></div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div x-show="!isLoading" class="space-y-2" role="list">
+                                <template x-for="msg in messages" :key="msg.id">
+                                    <a :href="'#msg-' + msg.id" class="group flex gap-3 p-3 -mx-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-black dark:focus-visible:ring-white" role="listitem">
+                                        <div class="relative shrink-0">
+                                            <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 flex items-center justify-center text-gray-700 dark:text-gray-300 text-xs font-bold shadow-sm group-hover:scale-105 transition-transform" aria-hidden="true" x-text="msg.initials">
+                                            </div>
+                                            <span x-show="msg.unread" class="absolute bottom-0 right-0 w-3 h-3 bg-blue-500 border-2 border-white dark:border-gray-800 rounded-full"></span>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex justify-between items-center mb-0.5">
+                                                <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100 truncate" x-text="msg.sender"></h3>
+                                                <span class="text-[10px] text-gray-500 dark:text-gray-400 font-bold" x-text="msg.time"></span>
+                                            </div>
+                                            <p :class="'text-xs line-clamp-1 transition-colors ' + (msg.unread ? 'text-gray-900 dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white')" x-text="msg.preview"></p>
+                                        </div>
+                                    </a>
+                                </template>
+                            </div>
+
+                            <button @click="addToast('Info', 'Opening inbox...', 'info')" class="w-full mt-6 py-2.5 text-sm font-bold text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-black dark:hover:text-white hover:border-black dark:hover:border-white transition-all flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-black dark:focus-visible:ring-white">
+                                View All Messages <i class="lni lni-arrow-right" aria-hidden="true"></i>
+                            </button>
+                        </section>
+
+                        <section class="bg-gray-900 dark:bg-indigo-950 rounded-2xl shadow-xl shadow-gray-200 dark:shadow-none p-8 text-white relative overflow-hidden group">
+                            <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" aria-hidden="true"></div>
+                            <div class="absolute bottom-0 right-0 opacity-10 transform translate-x-4 translate-y-4" aria-hidden="true">
+                                <i class="lni lni-graduation text-9xl"></i>
+                            </div>
+
+                            <div class="relative z-10">
+                                <h2 class="font-bold text-xl mb-2">Faculty Portal</h2>
+                                <p class="text-gray-300 text-sm mb-6 leading-relaxed font-medium">Quick access to departmental guidelines, grading forms, and templates.</p>
+
+                                <nav class="space-y-3" aria-label="Quick Links">
+                                    <a href="faculty-attendance.html" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all hover:translate-x-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                                        <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white shrink-0" aria-hidden="true">
+                                            <i class="lni lni-checkmark-circle"></i>
+                                        </div>
+                                        <span class="text-sm font-bold">Mark Attendance</span>
+                                    </a>
+                                    <a href="faculty-resources.html" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all hover:translate-x-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                                        <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white shrink-0" aria-hidden="true">
+                                            <i class="lni lni-folder"></i>
+                                        </div>
+                                        <span class="text-sm font-bold">Manage Resources</span>
+                                    </a>
+                                    <a href="faculty-resources.html" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all hover:translate-x-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                                        <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white shrink-0" aria-hidden="true">
+                                            <i class="lni lni-download"></i>
+                                        </div>
+                                        <span class="text-sm font-bold">Syllabus Templates</span>
+                                    </a>
+                                    <a href="faculty-grades.html" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all hover:translate-x-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                                        <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white shrink-0" aria-hidden="true">
+                                            <i class="lni lni-files"></i>
+                                        </div>
+                                        <span class="text-sm font-bold">Grading Policy 2024</span>
+                                    </a>
+                                </nav>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../assets/js/api.js?v=2"></script>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('facultyDashboard', () => ({
+                // UI State
+                sidebarOpen: false,
+                darkMode: localStorage.getItem('darkMode') === 'true' || false,
+                showQuickActions: false,
+                announcementModalOpen: false,
+                isLoading: true,
+                isSubmitting: false,
+                announcementForm: { title: '', message: '', course_id: '', priority: 'normal' },
+                
+                // Toast State
+                toasts: [],
+                toastIdCounter: 0,
+
+                // Navigation Config
+                menuItems: [
+                    { name: 'My Courses',  icon: 'lni lni-library',     href: 'faculty-courses.html' },
+                    { name: 'Schedule',    icon: 'lni lni-calendar',     href: 'faculty-schedule.html' },
+                    { name: 'Students',    icon: 'lni lni-users',        href: 'faculty-students.html' },
+                    { name: 'Attendance',  icon: 'lni lni-checkmark-circle', href: 'faculty-attendance.html' },
+                    { name: 'Grades',      icon: 'lni lni-clipboard',    href: 'faculty-grades.html' },
+                    { name: 'Assignments', icon: 'lni lni-list',         href: 'faculty-assignments.html' },
+                    { name: 'Quizzes',     icon: 'lni lni-pencil-alt',   href: 'faculty-quiz.html' },
+                    { name: 'Resources',   icon: 'lni lni-folder',       href: 'faculty-resources.html' },
+                    { name: 'Profile',     icon: 'lni lni-user',         href: 'faculty-profile.html' },
+                ],
+                quickActions: [
+                    { name: 'Course Management', icon: 'lni lni-graduation' },
+                    { name: 'Student Analytics', icon: 'lni lni-users' },
+                    { name: 'Export Grades', icon: 'lni lni-download' }
+                ],
+
+                // Mock Data (Replaces static HTML for better state management)
+                dashboardStats: [
+                    { label: 'Total Students', value: '142', icon: 'lni lni-users', trend: 'up', trendValue: '12%' },
+                    { label: 'Active Courses', value: '3', icon: 'lni lni-graduation', trend: null, trendValue: null },
+                    { label: 'Pending Grades', value: '28', icon: 'lni lni-pencil-alt', trend: 'down', trendValue: '4' },
+                    { label: 'Department', value: 'CS', icon: 'lni lni-network', trend: null, trendValue: null }
+                ],
+                courses: [],
+                schedule: [],
+                messages: [],
+
+                init() {
+                    // Auth check
+                    this._api = window.api || new AcademicSyncAPI(window._apiBase || 'http://localhost:5000');
+                    if (!this._api.checkAuth()) { window.location.href = 'faculty-login.html'; return; }
+                    const user = this._api.getUserData();
+                    if (user) this._api.populateSidebar(user);
+
+                    // Dark Mode setup
+                    this.applyDarkMode();
+                    this.$watch('darkMode', val => {
+                        localStorage.setItem('darkMode', val);
+                        this.applyDarkMode();
+                    });
+
+                    // Manage Body Scroll for mobile menu
+                    this.$watch('sidebarOpen', val => {
+                        document.body.style.overflow = val ? 'hidden' : '';
+                    });
+                    
+                    // Manage Body scroll for modals
+                    this.$watch('announcementModalOpen', val => {
+                        document.body.style.overflow = val ? 'hidden' : '';
+                        if(val) setTimeout(() => document.getElementById('target-course')?.focus(), 100);
+                    });
+
+                    // Fetch real data from API
+                    this.fetchData();
+                },
+
+                applyDarkMode() {
+                    if (this.darkMode) {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                },
+
+                toggleDarkMode() {
+                    this.darkMode = !this.darkMode;
+                },
+
+                closeAllModals() {
+                    this.announcementModalOpen = false;
+                    this.showQuickActions = false;
+                    this.sidebarOpen = false;
+                },
+
+                // Real API Fetch
+                async fetchData() {
+                    this.isLoading = true;
+                    this.courses = [];
+                    
+                    try {
+                        const data = await this._api.getFacultyCourses();
+                        const raw = Array.isArray(data) ? data : (data.courses || []);
+
+                        this.courses = raw.map(c => ({
+                            id:       c.id,
+                            code:     c.course_code,
+                            name:     c.course_name,
+                            students: c.enrolled_count ?? 0,
+                            credits:  c.credits ?? 3,
+                            status:   c.is_active ? 'Active' : 'Inactive',
+                            semester: c.semester || '',
+                            dept:     c.department || ''
+                        }));
+
+                        // Update "Active Courses" stat card dynamically
+                        const activeIdx = this.dashboardStats.findIndex(s => s.label === 'Active Courses');
+                        if (activeIdx !== -1) {
+                            this.dashboardStats[activeIdx].value = String(this.courses.filter(c => c.status === 'Active').length);
+                        }
+                        const totalStudentsIdx = this.dashboardStats.findIndex(s => s.label === 'Total Students');
+                        if (totalStudentsIdx !== -1) {
+                            const total = this.courses.reduce((sum, c) => sum + c.students, 0);
+                            this.dashboardStats[totalStudentsIdx].value = String(total);
+                        }
+
+                    } catch (error) {
+                        console.error('Dashboard load error:', error);
+                        this.addToast('Error', 'Failed to load dashboard data. Please try again.', 'error');
+                    }
+
+                    // -- Today's Schedule --------------------------------------
+                    try {
+                        const raw = await this._api.getFacultySchedule();
+                        const sessions = Array.isArray(raw) ? raw : (raw.schedule || raw.sessions || []);
+
+                        const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+                        const todayName = days[new Date().getDay()];
+
+                        const fmt12 = (t) => {
+                            if (!t) return '';
+                            const [h, m] = t.substring(0, 5).split(':').map(Number);
+                            const ampm = h >= 12 ? 'PM' : 'AM';
+                            return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${ampm}`;
+                        };
+
+                        this.schedule = sessions
+                            .filter(s => (s.day_of_week || s.day || '') === todayName)
+                            .sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''))
+                            .map(s => {
+                                const start = (s.start_time || '').substring(0, 5);
+                                const end   = (s.end_time   || '').substring(0, 5);
+                                const now   = new Date();
+                                const [sh, sm] = start.split(':').map(Number);
+                                const [eh, em] = end   ? end.split(':').map(Number) : [sh + 1, sm];
+                                const startMin = sh * 60 + sm;
+                                const endMin   = eh * 60 + em;
+                                const nowMin   = now.getHours() * 60 + now.getMinutes();
+                                return {
+                                    time:     end ? `${fmt12(start)} – ${fmt12(end)}` : fmt12(start),
+                                    title:    s.course_name || s.title || 'Class',
+                                    location: s.room || s.location || '',
+                                    type:     s.session_type === 'office_hours' ? 'meeting' : 'lecture',
+                                    isNow:    nowMin >= startMin && nowMin < endMin
+                                };
+                            });
+                    } catch (e) {
+                        console.warn('Could not load today\'s schedule:', e);
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+
+                // Modal Actions
+                async submitAnnouncement() {
+                    if (!this.announcementForm.course_id || !this.announcementForm.title.trim() || !this.announcementForm.message.trim()) return;
+                    this.isSubmitting = true;
+                    try {
+                        const res = await this._api.postFacultyAnnouncement({
+                            title:     this.announcementForm.title.trim(),
+                            message:   this.announcementForm.message.trim(),
+                            course_id: this.announcementForm.course_id,
+                            priority:  this.announcementForm.priority,
+                        });
+                        this.announcementModalOpen = false;
+                        this.announcementForm = { title: '', message: '', course_id: '', priority: 'normal' };
+                        this.addToast('Sent!', `Announcement delivered to ${res.recipients ?? 0} student(s).`, 'success');
+                    } catch (e) {
+                        this.addToast('Error', e.message || 'Failed to send announcement.', 'error');
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                },
+
+                handleMobileAction(action) {
+                    this.showQuickActions = false;
+                    this.addToast('Action Triggered', `Navigating to ${action.name}`, 'info');
+                },
+                
+                handleLogout() {
+                    this.addToast('Signing out', 'Clearing session data...', 'info');
+                    setTimeout(async () => {
+                        await this._api?.logout().catch(() => {});
+                        window.location.href = 'faculty-login.html';
+                    }, 800);
+                },
+
+                // Toast Notification Logic
+                addToast(title, message, type = 'info') {
+                    const id = this.toastIdCounter++;
+                    this.toasts.push({ id, title, message, type, show: false });
+                    
+                    // Small delay to trigger animation
+                    setTimeout(() => {
+                        const toast = this.toasts.find(t => t.id === id);
+                        if(toast) toast.show = true;
+                    }, 50);
+
+                    // Auto dismiss
+                    setTimeout(() => {
+                        this.dismissToast(id);
+                    }, 5000);
+                },
+
+                dismissToast(id) {
+                    const toast = this.toasts.find(t => t.id === id);
+                    if (toast) {
+                        toast.show = false;
+                        // Remove from array after animation completes
+                        setTimeout(() => {
+                            this.toasts = this.toasts.filter(t => t.id !== id);
+                        }, 300);
+                    }
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

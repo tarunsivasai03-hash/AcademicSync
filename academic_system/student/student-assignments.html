@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <title>My Assignments - AcademicSync</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { fontFamily: { sans: ['Inter','sans-serif'] } } }
+        }
+    </script>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/components/scrollbar.css">
+    <script src="../assets/js/api.js?v=2"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+        .skeleton { background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; }
+        .dark .skeleton { background: linear-gradient(90deg,#374151 25%,#4b5563 50%,#374151 75%); background-size:200% 100%; }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+        .custom-scrollbar::-webkit-scrollbar { width:6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background:transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color:#e5e7eb; border-radius:20px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color:#374151; }
+    </style>
+</head>
+
+<body class="h-full flex overflow-hidden text-gray-600 font-sans antialiased bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 dark:text-gray-300 transition-colors duration-200"
+    x-data="assignmentsPage()" x-init="init()" :class="darkMode ? 'dark' : ''" x-cloak>
+
+    <!-- Sidebar overlay -->
+    <div x-show="sidebarOpen" @click="sidebarOpen=false"
+        class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"></div>
+
+    <!-- Sidebar -->
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+        class="fixed inset-y-0 left-0 z-50 w-64 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-800/50 shadow-lg transform transition-transform duration-300 lg:static lg:translate-x-0 flex flex-col h-full">
+
+        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100/60 dark:border-gray-800/60">
+            <a href="../index.html" class="flex items-center gap-2.5 group">
+                <div class="w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                    <i class="lni lni-graduation"></i>
+                </div>
+                <span class="font-bold text-xl text-black dark:text-white tracking-tight">AcademicSync</span>
+            </a>
+            <button @click="sidebarOpen=false" class="lg:hidden text-gray-400 hover:text-black dark:hover:text-white transition-colors"><i class="lni lni-close text-xl"></i></button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Menu</p>
+            <a href="student-dashboard.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:text-black dark:hover:text-white transition-all">
+                <i class="lni lni-grid-alt text-lg"></i> Dashboard
+            </a>
+            <a href="schedules.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:text-black dark:hover:text-white transition-all">
+                <i class="lni lni-calendar text-lg"></i> Schedule
+            </a>
+            <a href="tasks.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:text-black dark:hover:text-white transition-all">
+                <i class="lni lni-list text-lg"></i> Tasks
+            </a>
+            <a href="courses.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:text-black dark:hover:text-white transition-all">
+                <i class="lni lni-graduation text-lg"></i> Courses
+            </a>
+            <a href="student-attendance.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:text-black dark:hover:text-white transition-all">
+                <i class="lni lni-checkmark-circle text-lg"></i> Attendance
+            </a>
+            <a href="student-grades.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:text-black dark:hover:text-white transition-all">
+                <i class="lni lni-stats-up text-lg"></i> Grades
+            </a>
+            <a href="student-assignments.html" aria-current="page"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium bg-white/70 dark:bg-white/10 text-black dark:text-white shadow-sm border border-white/40 dark:border-white/5">
+                <i class="lni lni-files text-lg text-black dark:text-white"></i> Assignments
+            </a>
+            <a href="student-announcements.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:text-black dark:hover:text-white transition-all">
+                <i class="lni lni-bullhorn text-lg"></i> Announcements
+            </a>
+            <a href="resources.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:text-black dark:hover:text-white transition-all">
+                <i class="lni lni-library text-lg"></i> Resources
+            </a>
+            <a href="student-profile.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:text-black dark:hover:text-white transition-all">
+                <i class="lni lni-user text-lg"></i> Profile
+            </a>
+        </div>
+
+        <div class="p-4 border-t border-gray-100/50 dark:border-gray-800/50 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md">
+            <button @click="darkMode = !darkMode" aria-label="Toggle Dark Mode"
+                class="w-full flex items-center justify-center gap-2 mb-3 py-2 rounded-lg bg-white/50 dark:bg-gray-800/50 border border-white/20 dark:border-gray-700/30 text-gray-600 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-800/80 transition-colors shadow-sm">
+                <i class="lni" :class="darkMode ? 'lni-night' : 'lni-sun'"></i>
+                <span class="text-xs font-bold uppercase tracking-wider" x-text="darkMode ? 'Dark Mode' : 'Light Mode'"></span>
+            </button>
+            <a href="student-profile.html" class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors group">
+                <div class="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-gray-200 dark:border-gray-700 text-gray-400 font-bold text-xs uppercase shadow-sm group-hover:bg-white dark:group-hover:bg-gray-700 group-hover:shadow-md transition-all">
+                    <span data-user-initials>AT</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-black dark:text-white truncate" data-user-name>Alex Thompson</p>
+                    <p class="text-xs text-gray-500 truncate" data-user-role>CS Student - Year 3</p>
+                </div>
+                <i class="lni lni-cog text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors"></i>
+            </a>
+            <div class="mt-2 text-center">
+                <button @click="logout()" class="w-full flex items-center justify-center gap-2 text-xs font-bold text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 py-2 rounded-lg transition-all uppercase tracking-tighter">
+                    <i class="lni lni-exit"></i><span>Sign Out</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="flex-1 flex flex-col min-w-0">
+        <!-- Mobile header -->
+        <div class="lg:hidden h-14 border-b border-gray-100/50 dark:border-gray-800/50 flex items-center justify-between px-4 sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl z-20">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-black font-bold text-sm">AS</div>
+                <span class="font-semibold text-black dark:text-white">AcademicSync</span>
+            </div>
+            <button @click="sidebarOpen=!sidebarOpen" class="p-2 -mr-2 text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md">
+                <i class="ri-menu-line text-xl"></i>
+            </button>
+        </div>
+
+        <main class="flex-1 overflow-y-auto scroll-smooth p-4 sm:p-6 lg:p-8 custom-scrollbar">
+            <div class="max-w-5xl mx-auto space-y-6 pb-12">
+
+                <!-- Page header -->
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                    <div>
+                        <h1 class="text-3xl font-bold text-black dark:text-white tracking-tight">My Assignments</h1>
+                        <p class="text-gray-500 mt-1 text-sm">Track submissions, feedback, and grades.</p>
+                        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1" x-show="!loading">
+                            <span class="font-medium text-gray-600 dark:text-gray-300" x-text="tabCount('not_submitted')"></span> pending
+                            <span class="mx-1.5 text-gray-300 dark:text-gray-600">·</span>
+                            <span class="font-medium text-red-500" x-text="overdueCount"></span> overdue
+                            <span class="mx-1.5 text-gray-300 dark:text-gray-600">·</span>
+                            <span class="font-medium text-green-500" x-text="tabCount('graded')"></span> graded
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <select x-model="sortBy" class="py-2 pl-3 pr-8 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                            <option value="due_asc">Due Soon</option>
+                            <option value="due_desc">Due Later</option>
+                            <option value="course">Course A-Z</option>
+                            <option value="pts_desc">Points ↓</option>
+                            <option value="pts_asc">Points ↑</option>
+                        </select>
+                        <div class="relative">
+                            <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                            <input type="text" x-model="search" placeholder="Search…"
+                                class="pl-9 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 w-44">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary stat strip -->
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    <template x-for="tab in tabs" :key="tab.key">
+                        <button @click="activeTab = tab.key"
+                            class="rounded-xl border p-3 text-center transition-all"
+                            :class="activeTab === tab.key
+                                ? 'border-black dark:border-white bg-black dark:bg-white text-white dark:text-black shadow-sm'
+                                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-500'">
+                            <p class="text-xl font-bold" :class="activeTab===tab.key ? 'text-inherit' : tab.color"
+                                x-text="loading ? '—' : tabCount(tab.key)"></p>
+                            <p class="text-xs font-medium mt-0.5" x-text="tab.label"></p>
+                        </button>
+                    </template>
+                </div>
+
+                <!-- Type filter chips + clear filters -->
+                <div x-show="!loading" class="flex items-center flex-wrap gap-2">
+                    <button @click="typeFilter = ''" class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors" :class="typeFilter === '' ? 'bg-black dark:bg-white text-white dark:text-black' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'">All Types</button>
+                    <template x-for="t in ['homework','project','lab','quiz','exam']" :key="t">
+                        <button @click="typeFilter = typeFilter === t ? '' : t" class="px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-colors" :class="typeFilter === t ? 'bg-black dark:bg-white text-white dark:text-black' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'" x-text="t"></button>
+                    </template>
+                    <template x-if="search.trim() || activeTab !== 'all' || sortBy !== 'due_asc' || typeFilter !== ''">
+                        <button @click="search=''; activeTab='all'; sortBy='due_asc'; typeFilter='';" class="ml-auto flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors">
+                            <i class="ri-close-line"></i> Clear filters
+                        </button>
+                    </template>
+                </div>
+
+                <!-- Assignment list -->
+                <div class="space-y-3">
+                    <!-- Loading skeletons -->
+                    <template x-if="loading">
+                        <template x-for="n in [1,2,3,4,5,6]" :key="n">
+                            <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+                                <div class="flex-1 space-y-2">
+                                    <div class="skeleton h-4 w-2/5 rounded"></div>
+                                    <div class="skeleton h-3 w-1/3 rounded"></div>
+                                    <div class="skeleton h-3 w-3/4 rounded"></div>
+                                </div>
+                                <div class="skeleton h-8 w-24 rounded-xl shrink-0"></div>
+                            </div>
+                        </template>
+                    </template>
+
+                    <!-- Empty state -->
+                    <template x-if="!loading && filteredAssignments.length === 0">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 py-20 text-center text-gray-400 dark:text-gray-500">
+                            <i class="lni lni-files text-5xl mb-4"></i>
+                            <p class="font-medium text-lg">No assignments found</p>
+                            <p class="text-sm mt-1">Try a different filter or check back later.</p>
+                        </div>
+                    </template>
+
+                    <!-- Assignment cards -->
+                    <template x-if="!loading">
+                        <template x-for="a in filteredAssignments" :key="a.id">
+                            <div class="rounded-2xl border shadow-sm hover:shadow-md transition-all overflow-hidden"
+                                 :class="isDue(a) ? 'bg-red-50/40 dark:bg-gray-800 border-red-200 dark:border-red-800/50' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'">
+                                <!-- Priority stripe -->
+                                <div class="h-1" :class="isDue(a) ? 'bg-red-500' : {
+                                    'bg-red-500': a.priority === 'high',
+                                    'bg-yellow-400': a.priority === 'medium',
+                                    'bg-green-400': a.priority === 'low' || !a.priority
+                                }"></div>
+
+                                <div class="p-5 flex flex-col sm:flex-row sm:items-start gap-4">
+                                    <div class="flex-1 min-w-0">
+                                        <!-- Title + course -->
+                                        <div class="flex flex-wrap items-center gap-2 mb-1">
+                                            <h3 class="font-semibold text-black dark:text-white text-base" x-text="a.title"></h3>
+                                            <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-medium" x-text="a.course_code || a.course_name"></span>
+                                        </div>
+                                        <!-- Description -->
+                                        <p x-show="a.description" class="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2" x-text="a.description"></p>
+
+                                        <!-- Meta row -->
+                                        <div class="flex flex-wrap gap-4 text-xs text-gray-400 dark:text-gray-500">
+                                            <span class="flex items-center gap-1" :class="isDue(a) ? 'text-red-500 font-medium' : ''">
+                                                <i :class="isDue(a) ? 'ri-alarm-warning-line' : 'ri-calendar-line'"></i>
+                                                <span x-text="dueLabel(a)"></span>
+                                            </span>
+                                            <span class="flex items-center gap-1">
+                                                <i class="ri-star-line"></i>
+                                                <span x-text="(a.total_points || 0) + ' pts'"></span>
+                                            </span>
+                                            <span x-show="a.assignment_type" class="flex items-center gap-1 capitalize" x-text="a.assignment_type"></span>
+                                        </div>
+
+                                        <!-- Submission feedback / grade -->
+                                        <template x-if="a.submission_status === 'graded' && a.grade !== null">
+                                            <div class="mt-3 p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/30 flex items-center gap-3">
+                                                <i class="ri-checkbox-circle-fill text-green-500 text-lg shrink-0"></i>
+                                                <div>
+                                                    <p class="text-sm font-semibold text-green-800 dark:text-green-300">
+                                                        Score: <span x-text="a.grade"></span><span x-show="a.total_points" x-text="' / ' + a.total_points"></span>
+                                                        <span x-show="a.total_points > 0" x-text="' (' + Math.round(a.grade / a.total_points * 100) + '%)'"></span>
+                                                    </p>
+                                                    <p class="text-xs text-green-600 dark:text-green-400 mt-0.5">Graded by faculty</p>
+                                                    <p x-show="a.feedback" class="text-xs text-green-600 dark:text-green-400 mt-1 italic" x-text="'Feedback: ' + (a.feedback || '')"></p>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <template x-if="a.submission_status === 'submitted'">
+                                            <div class="mt-3 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 flex items-center gap-2">
+                                                <i class="ri-time-line text-blue-500 text-lg shrink-0"></i>
+                                                <div>
+                                                    <p class="text-sm text-blue-700 dark:text-blue-300 font-medium">Submitted — awaiting grade</p>
+                                                    <p x-show="a.submitted_at" class="text-xs text-blue-500 dark:text-blue-400 mt-0.5" x-text="a.submitted_at ? 'Submitted ' + new Date(a.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : ''"></p>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <template x-if="a.submission_status === 'late'">
+                                            <div class="mt-3 p-3 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800/30 flex items-center gap-2">
+                                                <i class="ri-alarm-warning-line text-yellow-500 text-lg shrink-0"></i>
+                                                <div>
+                                                    <p class="text-sm text-yellow-700 dark:text-yellow-300 font-medium">Submitted late — awaiting grade</p>
+                                                    <p x-show="a.submitted_at" class="text-xs text-yellow-600 dark:text-yellow-500 mt-0.5" x-text="a.submitted_at ? 'Submitted ' + new Date(a.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : ''"></p>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- Right column: status badge + action -->
+                                    <div class="flex flex-row sm:flex-col items-center sm:items-end gap-3 shrink-0">
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                            :class="{
+                                                'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400': a.submission_status === 'graded',
+                                                'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400': a.submission_status === 'submitted',
+                                                'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400': a.submission_status === 'late',
+                                                'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400': a.submission_status === 'not_submitted' && isDue(a),
+                                                'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400': a.submission_status === 'not_submitted' && !isDue(a)
+                                            }">
+                                            <i :class="{
+                                                'ri-checkbox-circle-fill': a.submission_status === 'graded',
+                                                'ri-time-line': a.submission_status === 'submitted',
+                                                'ri-alarm-warning-line': a.submission_status === 'late',
+                                                'ri-close-circle-line': a.submission_status === 'not_submitted'
+                                            }"></i>
+                                            <span x-text="statusLabel(a.submission_status)"></span>
+                                        </span>
+                                        <!-- Submit button for pending -->
+                                        <button x-show="a.submission_status === 'not_submitted'"
+                                            @click="openSubmit(a)"
+                                            class="px-4 py-2 rounded-xl bg-black dark:bg-white text-white dark:text-black text-xs font-semibold hover:opacity-80 transition-opacity">
+                                            Submit
+                                        </button>
+                                        <a x-show="a.submission_status !== 'not_submitted'"
+                                            :href="'course-detail.html?id=' + a.course_id"
+                                            class="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                            View Course
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+<script>
+function assignmentsPage() {
+    return {
+        darkMode: false,
+        sidebarOpen: false,
+        loading: true,
+        userName: '—',
+        userInitials: 'S',
+        assignments: [],
+        activeTab: 'all',
+        search: '',
+        sortBy: 'due_asc',
+        typeFilter: '',
+
+        // Submission modal state
+        showSubmitModal: false,
+        submittingAssignment: null,
+        submitText: '',
+        submitFile: null,
+        submitFileName: '',
+        submitting: false,
+        submitError: '',
+
+        tabs: [
+            { key: 'all',           label: 'All',       color: 'text-black dark:text-white' },
+            { key: 'not_submitted', label: 'Pending',   color: 'text-red-500' },
+            { key: 'submitted',     label: 'Submitted', color: 'text-blue-500' },
+            { key: 'graded',        label: 'Graded',    color: 'text-green-500' },
+            { key: 'late',          label: 'Late',      color: 'text-yellow-500' },
+        ],
+
+        get filteredAssignments() {
+            let list = this.assignments;
+            if (this.activeTab !== 'all') {
+                list = list.filter(a => a.submission_status === this.activeTab);
+            }
+            if (this.search.trim()) {
+                const q = this.search.toLowerCase();
+                list = list.filter(a =>
+                    (a.title || '').toLowerCase().includes(q) ||
+                    (a.course_name || '').toLowerCase().includes(q) ||
+                    (a.course_code || '').toLowerCase().includes(q)
+                );
+            }
+            if (this.typeFilter) {
+                list = list.filter(a => (a.assignment_type || '').toLowerCase() === this.typeFilter);
+            }
+            list = [...list];
+            if (this.sortBy === 'due_asc')   list.sort((a,b) => (a.due_date||'9999') < (b.due_date||'9999') ? -1 : 1);
+            else if (this.sortBy === 'due_desc') list.sort((a,b) => (b.due_date||'') < (a.due_date||'') ? -1 : 1);
+            else if (this.sortBy === 'course')   list.sort((a,b) => (a.course_name||'').localeCompare(b.course_name||''));
+            else if (this.sortBy === 'pts_desc') list.sort((a,b) => (b.total_points||0) - (a.total_points||0));
+            else if (this.sortBy === 'pts_asc')  list.sort((a,b) => (a.total_points||0) - (b.total_points||0));
+            return list;
+        },
+
+        tabCount(key) {
+            if (key === 'all') return this.assignments.length;
+            return this.assignments.filter(a => a.submission_status === key).length;
+        },
+
+        get overdueCount() {
+            return this.assignments.filter(a =>
+                a.submission_status === 'not_submitted' && a.due_date && new Date(a.due_date) < new Date()
+            ).length;
+        },
+
+        isDue(a) {
+            if (!a.due_date || a.submission_status !== 'not_submitted') return false;
+            return new Date(a.due_date) < new Date();
+        },
+
+        dueLabel(a) {
+            if (!a.due_date) return 'No deadline';
+            if (a.submission_status !== 'not_submitted') {
+                return 'Due ' + new Date(a.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+            }
+            const diff = new Date(a.due_date) - new Date();
+            const days = Math.round(diff / 86400000);
+            if (days < 0) return 'Overdue by ' + Math.abs(days) + ' day' + (Math.abs(days) > 1 ? 's' : '');
+            if (days === 0) return 'Due today';
+            if (days === 1) return 'Due tomorrow';
+            return 'Due in ' + days + ' days';
+        },
+
+        statusLabel(s) {
+            const map = { graded: 'Graded', submitted: 'Submitted', late: 'Late', not_submitted: 'Pending' };
+            return map[s] || s || 'Unknown';
+        },
+
+        async init() {
+            this.darkMode = localStorage.getItem('darkMode') === 'true';
+            document.documentElement.classList.toggle('dark', this.darkMode);
+            this.$watch('darkMode', val => {
+                document.documentElement.classList.toggle('dark', val);
+                localStorage.setItem('darkMode', String(val));
+            });
+            if (!window.api?.checkAuth()) { window.location.href = 'student-login.html'; return; }
+            const u = window.api.getUserData();
+            if (u) {
+                if (u.role !== 'student') { window.api.clearToken(); window.location.href = 'student-login.html'; return; }
+                this.userName     = u.full_name || u.user_id || '—';
+                this.userInitials = (u.full_name || u.user_id || 'S').split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+            }
+            try {
+                const res = await window.api.getAssignments();
+                this.assignments = Array.isArray(res) ? res : [];
+            } catch(e) {
+                console.error('[assignments]', e);
+                window.api?.showNotification('Failed to load assignments', 'error');
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        logout() {
+            window.api?.logout().then(() => { window.location.href = 'student-login.html'; }).catch(() => { window.location.href = 'student-login.html'; });
+        },
+
+        openSubmit(a) {
+            this.submittingAssignment = a;
+            this.submitText = '';
+            this.submitFile = null;
+            this.submitFileName = '';
+            this.submitError = '';
+            this.showSubmitModal = true;
+        },
+
+        onFileSelect(e) {
+            const f = e.target.files[0];
+            if (!f) return;
+            const maxMB = 20;
+            if (f.size > maxMB * 1024 * 1024) {
+                this.submitError = `File exceeds ${maxMB} MB limit.`;
+                e.target.value = '';
+                return;
+            }
+            this.submitFile = f;
+            this.submitFileName = f.name;
+            this.submitError = '';
+        },
+
+        async doSubmit() {
+            if (!this.submitText.trim() && !this.submitFile) {
+                this.submitError = 'Please enter text or attach a file before submitting.';
+                return;
+            }
+            this.submitting = true;
+            this.submitError = '';
+            try {
+                await window.api.submitAssignment(
+                    this.submittingAssignment.id,
+                    { text: this.submitText.trim() },
+                    this.submitFile
+                );
+                // Update local assignment status optimistically
+                const now = new Date();
+                const due = this.submittingAssignment.due_date ? new Date(this.submittingAssignment.due_date) : null;
+                const newStatus = (due && now > due) ? 'late' : 'submitted';
+                const idx = this.assignments.findIndex(a => a.id === this.submittingAssignment.id);
+                if (idx !== -1) {
+                    this.assignments[idx] = { ...this.assignments[idx], submission_status: newStatus, submitted_at: now.toISOString() };
+                }
+                this.showSubmitModal = false;
+                window.api?.showNotification('Assignment submitted ✓', 'success');
+            } catch(e) {
+                this.submitError = e.message || 'Submission failed. Please try again.';
+            } finally {
+                this.submitting = false;
+            }
+        }
+    };
+}
+</script>
+
+<!-- Submit Assignment Modal -->
+<div x-show="showSubmitModal" class="relative z-50" x-cloak>
+    <div x-show="showSubmitModal"
+         x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" @click="showSubmitModal = false"></div>
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4">
+            <div x-show="showSubmitModal"
+                 x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-4 scale-95" x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                 x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0 scale-100" x-transition:leave-end="opacity-0 translate-y-4 scale-95"
+                 class="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-2xl overflow-hidden">
+
+                <!-- Header -->
+                <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex items-start justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-black dark:text-white" x-text="submittingAssignment?.title"></h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                            <span x-text="submittingAssignment?.course_code || submittingAssignment?.course_name"></span>
+                            <span x-show="submittingAssignment?.total_points"> &bull; <span x-text="submittingAssignment?.total_points"></span> pts</span>
+                            <span x-show="submittingAssignment?.due_date" :class="isDue(submittingAssignment) ? 'text-red-500 font-medium' : ''"> &bull; <span x-text="submittingAssignment ? dueLabel(submittingAssignment) : ''"></span></span>
+                        </p>
+                    </div>
+                    <button @click="showSubmitModal = false" class="text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors mt-0.5"><i class="ri-close-line text-xl"></i></button>
+                </div>
+
+                <!-- Body -->
+                <div class="p-6 space-y-5">
+                    <!-- Error banner -->
+                    <div x-show="submitError" class="flex items-start gap-2 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40 text-sm text-red-700 dark:text-red-400">
+                        <i class="ri-error-warning-line shrink-0 mt-0.5"></i>
+                        <span x-text="submitError"></span>
+                    </div>
+
+                    <!-- Text answer -->
+                    <div>
+                        <label class="block text-sm font-semibold text-black dark:text-white mb-1.5">Written Answer <span class="text-gray-400 font-normal">(optional)</span></label>
+                        <textarea x-model="submitText" rows="5"
+                                  placeholder="Type your answer, code, or response here…"
+                                  class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 resize-y"></textarea>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="flex items-center gap-3 text-xs text-gray-400">
+                        <div class="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
+                        <span>OR</span>
+                        <div class="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
+                    </div>
+
+                    <!-- File upload -->
+                    <div>
+                        <label class="block text-sm font-semibold text-black dark:text-white mb-1.5">Attach File <span class="text-gray-400 font-normal">(optional &bull; max 20 MB)</span></label>
+                        <label class="flex flex-col items-center justify-center gap-2 w-full rounded-xl border-2 border-dashed cursor-pointer transition-colors"
+                               :class="submitFileName ? 'border-green-400 dark:border-green-600 bg-green-50 dark:bg-green-900/10 py-4' : 'border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500 bg-gray-50 dark:bg-gray-800/50 py-8'">
+                            <i class="text-2xl" :class="submitFileName ? 'ri-file-check-line text-green-500' : 'ri-upload-cloud-2-line text-gray-400'"></i>
+                            <div class="text-center">
+                                <p class="text-sm font-medium" :class="submitFileName ? 'text-green-700 dark:text-green-400' : 'text-gray-600 dark:text-gray-300'" x-text="submitFileName || 'Click to browse or drag & drop'"></p>
+                                <p x-show="!submitFileName" class="text-xs text-gray-400 mt-0.5">PDF, Word, ZIP, images, code files…</p>
+                            </div>
+                            <input type="file" class="hidden" @change="onFileSelect($event)"
+                                   accept=".pdf,.doc,.docx,.zip,.rar,.txt,.py,.js,.java,.cpp,.c,.png,.jpg,.jpeg,.gif,.xlsx,.pptx">
+                        </label>
+                        <button x-show="submitFileName" @click="submitFile=null; submitFileName=''"
+                                class="mt-1.5 text-xs text-gray-400 hover:text-red-500 dark:hover:text-red-400 flex items-center gap-1 transition-colors">
+                            <i class="ri-close-line"></i> Remove file
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-3">
+                    <p class="text-xs text-gray-400" x-show="isDue(submittingAssignment)">
+                        <i class="ri-alarm-warning-line text-red-400"></i> Submitting past due — will be marked late
+                    </p>
+                    <div class="flex gap-2 ml-auto">
+                        <button @click="showSubmitModal = false"
+                                class="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            Cancel
+                        </button>
+                        <button @click="doSubmit()"
+                                :disabled="submitting"
+                                class="px-5 py-2 rounded-xl bg-black dark:bg-white text-white dark:text-black text-sm font-semibold hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2">
+                            <i class="ri-loader-4-line animate-spin" x-show="submitting"></i>
+                            <span x-text="submitting ? 'Submitting…' : 'Submit Assignment'"></span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

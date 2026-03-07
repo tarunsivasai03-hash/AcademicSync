@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+*.spec
+
+# Virtual environment
+.venv/
+venv/
+env/
+ENV/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Database
+*.db
+*.sqlite3
+
+# Flask
+instance/
+flask_session/
+
+# Migrations (keep migrations folder but ignore compiled)
+backend/migrations/__pycache__/
+
+# IDE / OS
+.vscode/settings.json
+.idea/
+*.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Uploads (user-uploaded files — exclude from repo)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Node (if ever added)
+node_modules/

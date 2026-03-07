@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <title>Online Quizzes - Faculty - AcademicSync</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter','sans-serif'], display: ['Inter','sans-serif'] },
+                    animation: { 'fade-in-up': 'fadeInUp 0.4s ease-out forwards' },
+                    keyframes: { fadeInUp: { '0%': { opacity:'0', transform:'translateY(10px)' }, '100%': { opacity:'1', transform:'translateY(0)' } } }
+                }
+            }
+        }
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #e5e7eb; border-radius: 20px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #374151; }
+    </style>
+</head>
+
+<body class="h-full flex overflow-hidden text-gray-600 font-sans antialiased bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 dark:text-gray-300 transition-colors duration-200"
+      x-data="facultyQuiz()"
+    @keydown.window.escape="closeAllModals()">
+
+<!-- Mobile backdrop -->
+<div x-show="sidebarOpen" @click="sidebarOpen=false" x-cloak
+     class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"></div>
+
+<!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+<aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+       class="fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-800/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transform transition-transform duration-300 ease-in-out flex flex-col h-full">
+
+    <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100/50 dark:border-gray-800/50">
+        <a href="../index.html" class="flex items-center gap-2.5 group">
+            <div class="w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                <i class="lni lni-graduation"></i></div>
+            <span class="font-display font-bold text-xl text-black dark:text-white tracking-tight">AcademicSync</span>
+        </a>
+        <button @click="sidebarOpen=false" aria-label="Close sidebar" class="lg:hidden text-gray-400 hover:text-black transition-colors">
+            <i class="lni lni-close text-xl"></i></button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
+        <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Faculty Menu</p>
+
+        <a href="faculty-dashboard.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+            <i class="lni lni-grid-alt text-lg"></i> Dashboard</a>
+        <a href="faculty-courses.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+            <i class="lni lni-library text-lg"></i> My Courses</a>
+        <a href="faculty-schedule.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+            <i class="lni lni-calendar text-lg"></i> Schedule</a>
+        <a href="faculty-students.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+            <i class="lni lni-users text-lg"></i> Students</a>
+        <a href="faculty-attendance.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+            <i class="lni lni-checkmark-circle text-lg"></i> Attendance</a>
+        <a href="faculty-grades.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+            <i class="lni lni-clipboard text-lg"></i> Grades</a>
+        <a href="faculty-assignments.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+            <i class="lni lni-list text-lg"></i> Assignments</a>
+        <a href="faculty-quiz.html"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 bg-white/60 dark:bg-white/10 text-black dark:text-white shadow-sm border border-white/40 dark:border-white/5 backdrop-blur-sm"
+           aria-current="page">
+            <i class="lni lni-pencil-alt text-lg"></i> Quizzes</a>
+        <a href="faculty-resources.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+            <i class="lni lni-folder text-lg"></i> Resources</a>
+        <a href="faculty-profile.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+            <i class="lni lni-user text-lg"></i> Profile</a>
+    </div>
+
+    <div class="p-4 border-t border-gray-100/50 dark:border-gray-800/50 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md">
+        <button @click="darkMode=!darkMode" class="w-full flex items-center justify-center gap-2 mb-3 py-2 rounded-lg bg-white/50 dark:bg-gray-800/50 border border-white/20 dark:border-gray-700/30 text-gray-600 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-800/80 transition-colors shadow-sm">
+            <i class="lni" :class="darkMode?'lni-night':'lni-sun'"></i>
+            <span class="text-xs font-bold uppercase tracking-wider" x-text="darkMode?'Dark Mode':'Light Mode'"></span>
+        </button>
+        <a href="faculty-profile.html" class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors group">
+            <div class="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-gray-200 dark:border-gray-700 font-bold text-xs uppercase shadow-sm" data-user-initials>--</div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-black dark:text-white truncate" data-user-name>Faculty</p>
+                <p class="text-xs text-gray-500 truncate" data-user-role>Faculty</p>
+            </div>
+        </a>
+        <div class="mt-2 text-center">
+            <a href="../index.html" class="w-full flex items-center justify-center gap-2 text-xs font-bold text-gray-400 hover:text-black dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-800/50 py-2 rounded-lg transition-all border border-transparent hover:border-gray-200 dark:hover:border-gray-700 uppercase tracking-tighter">
+                <i class="lni lni-exit"></i><span>Sign Out</span></a>
+        </div>
+    </div>
+</aside>
+
+<!-- ═══════════════════ MAIN ═══════════════════ -->
+<div class="flex-1 flex flex-col min-w-0 relative h-full">
+    <!-- Mobile header -->
+    <div class="lg:hidden h-14 border-b border-gray-100/50 dark:border-gray-800/50 flex items-center justify-between px-4 sticky top-0 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl z-20">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-black font-bold text-sm">AS</div>
+            <span class="font-semibold text-black dark:text-white">AcademicSync</span>
+        </div>
+        <button @click="sidebarOpen=!sidebarOpen" aria-label="Open sidebar" class="p-2 text-gray-500 hover:text-black dark:hover:text-white rounded-md">
+            <i class="ri-menu-line text-xl"></i></button>
+    </div>
+
+    <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
+        <!-- Error boundary -->
+        <div x-show="initError" x-cloak class="mb-6 p-4 rounded-xl border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-900/20 flex items-start gap-3">
+            <i class="lni lni-warning text-red-500 mt-0.5 shrink-0 text-lg"></i>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-red-700 dark:text-red-300" x-text="initError"></p>
+                <button @click="initError = ''; init()" class="mt-1.5 text-xs font-bold text-red-600 dark:text-red-400 hover:underline">Try again</button>
+            </div>
+            <button @click="initError = ''" aria-label="Dismiss error" class="text-red-300 hover:text-red-500 shrink-0"><i class="lni lni-close text-xs"></i></button>
+        </div>
+        <!-- Skeleton loading -->
+        <div x-show="loading" class="max-w-6xl mx-auto animate-pulse space-y-6">
+            <div class="flex items-center justify-between">
+                <div class="space-y-2">
+                    <div class="h-7 w-40 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                    <div class="h-4 w-52 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                </div>
+                <div class="h-10 w-28 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-3"><div class="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-2/3 bg-gray-200 dark:bg-gray-700 rounded"></div></div>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-3"><div class="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-2/3 bg-gray-200 dark:bg-gray-700 rounded"></div></div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between"><div class="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded-xl"></div></div>
+                <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                    <div class="flex items-center gap-4 p-4"><div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-xl shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-2/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/4 bg-gray-200 dark:bg-gray-700 rounded"></div></div><div class="flex gap-2"><div class="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded-xl"></div><div class="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded-xl"></div></div></div>
+                    <div class="flex items-center gap-4 p-4"><div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-xl shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-3/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/3 bg-gray-200 dark:bg-gray-700 rounded"></div></div><div class="flex gap-2"><div class="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded-xl"></div><div class="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded-xl"></div></div></div>
+                    <div class="flex items-center gap-4 p-4"><div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-xl shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/4 bg-gray-200 dark:bg-gray-700 rounded"></div></div><div class="flex gap-2"><div class="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded-xl"></div><div class="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded-xl"></div></div></div>
+                    <div class="flex items-center gap-4 p-4"><div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-xl shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-2/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/3 bg-gray-200 dark:bg-gray-700 rounded"></div></div><div class="flex gap-2"><div class="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded-xl"></div><div class="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded-xl"></div></div></div>
+                </div>
+            </div>
+        </div>
+        <div class="max-w-6xl mx-auto space-y-6 animate-fade-in-up" x-show="!loading">
+
+            <!-- Page header -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-black dark:text-white">Online Quizzes</h1>
+                    <p class="text-sm text-gray-500 mt-1">Create and manage online quizzes for your courses</p>
+                </div>
+                <button @click="openCreateModal()"
+                        class="flex items-center gap-2 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-semibold hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors shadow-sm">
+                    <i class="lni lni-plus"></i> Create Quiz
+                </button>
+            </div>
+
+            <!-- Assignment type info banner -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+                    <div class="flex items-start gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-800 flex items-center justify-center flex-shrink-0">
+                            <i class="lni lni-folder text-blue-600 dark:text-blue-400"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-blue-800 dark:text-blue-300 text-sm">Offline Assignments</p>
+                            <p class="text-xs text-blue-600 dark:text-blue-400 mt-1">Upload assignment files via <a href="faculty-resources.html" class="underline font-medium">Resources</a>. Students receive them in their course Resources section.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4">
+                    <div class="flex items-start gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-purple-100 dark:bg-purple-800 flex items-center justify-center flex-shrink-0">
+                            <i class="lni lni-pencil-alt text-purple-600 dark:text-purple-400"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-purple-800 dark:text-purple-300 text-sm">Online Quizzes (this page)</p>
+                            <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">Create MCQ/True-False quizzes. Students take them directly in the Courses section. You control questions & answers.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats strip -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Total Quizzes</p>
+                    <p class="text-2xl font-bold text-black dark:text-white" x-text="quizzes.length">0</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Published</p>
+                    <p class="text-2xl font-bold text-green-600" x-text="quizzes.filter(q=>q.is_published).length">0</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Scheduled</p>
+                    <p class="text-2xl font-bold text-blue-600" x-text="quizzes.filter(q=>!q.is_published && q.scheduled_publish_at).length">0</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Drafts</p>
+                    <p class="text-2xl font-bold text-yellow-600" x-text="quizzes.filter(q=>!q.is_published && !q.scheduled_publish_at).length">0</p>
+                </div>
+            </div>
+
+            <!-- Quiz list -->
+            <div x-show="loading" class="text-center py-12 text-gray-400">
+                <i class="lni lni-spinner-arrow text-3xl animate-spin"></i>
+                <p class="mt-2 text-sm">Loading quizzes…</p>
+            </div>
+
+            <div x-show="!loading && quizzes.length === 0" class="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
+                <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="lni lni-pencil-alt text-2xl text-gray-400"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-black dark:text-white mb-2">No quizzes yet</h3>
+                <p class="text-gray-500 text-sm mb-4">Create your first online quiz for students</p>
+                <button @click="openCreateModal()" class="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg text-sm font-medium">Create Quiz</button>
+            </div>
+
+            <div x-show="!loading && quizzes.length > 0" class="space-y-4">
+                <template x-for="quiz in quizzes" :key="quiz.id">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                        <div class="p-5 flex flex-col sm:flex-row sm:items-start gap-4">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <!-- Published badge -->
+                                    <span x-show="quiz.is_published"
+                                          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                        <i class="lni lni-checkmark-circle text-xs"></i> Published
+                                    </span>
+                                    <!-- Scheduled badge -->
+                                    <span x-show="!quiz.is_published && quiz.scheduled_publish_at"
+                                          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                        <i class="lni lni-alarm-clock text-xs"></i>
+                                        Scheduled &bull; <span x-text="quiz.scheduled_publish_at ? new Date(quiz.scheduled_publish_at).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : ''"></span>
+                                    </span>
+                                    <!-- Draft badge -->
+                                    <span x-show="!quiz.is_published && !quiz.scheduled_publish_at"
+                                          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                                        <i class="lni lni-pencil text-xs"></i> Draft
+                                    </span>
+                                    <span class="text-xs text-gray-400" x-text="quiz.course_code + ' · ' + quiz.course_name"></span>
+                                </div>
+                                <h3 class="font-bold text-black dark:text-white text-base" x-text="quiz.title"></h3>
+                                <p class="text-sm text-gray-500 mt-1 line-clamp-1" x-text="quiz.description || 'No description'"></p>
+                                <div class="flex flex-wrap gap-4 mt-3 text-xs text-gray-500">
+                                    <span class="flex items-center gap-1"><i class="lni lni-help"></i> <span x-text="quiz.question_count + ' questions'"></span></span>
+                                    <span class="flex items-center gap-1"><i class="lni lni-star"></i> <span x-text="quiz.total_points + ' pts'"></span></span>
+                                    <span class="flex items-center gap-1"><i class="lni lni-timer"></i> <span x-text="quiz.time_limit_minutes ? quiz.time_limit_minutes + ' min' : 'Unlimited'"></span></span>
+                                    <span class="flex items-center gap-1"><i class="lni lni-users"></i> <span x-text="quiz.attempt_count + ' attempts'"></span></span>
+                                    <span x-show="quiz.due_date" class="flex items-center gap-1 text-red-500"><i class="lni lni-calendar"></i> Due: <span x-text="quiz.due_date ? new Date(quiz.due_date).toLocaleDateString() : ''"></span></span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                <button @click="togglePublish(quiz)"
+                                        :disabled="publishingId === quiz.id"
+                                        :class="quiz.is_published ? 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800 hover:bg-yellow-100' : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800 hover:bg-green-100'"
+                                        class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <span x-show="publishingId !== quiz.id" x-text="quiz.is_published ? 'Unpublish' : 'Publish'"></span>
+                                    <span x-show="publishingId === quiz.id"><i class="lni lni-spinner-arrow animate-spin"></i> Saving…</span>
+                                </button>
+                                <button @click="openEditSettings(quiz)"
+                                        title="Edit quiz settings"
+                                        class="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+                                    <i class="lni lni-cog"></i> Settings
+                                </button>
+                                <button @click="openBuilder(quiz)"
+                                        title="Edit questions"
+                                        class="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+                                    <i class="lni lni-pencil"></i> Questions
+                                </button>
+                                <button @click="viewAttempts(quiz)"
+                                        class="px-3 py-1.5 rounded-lg text-xs font-medium border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                                    <i class="lni lni-bar-chart"></i> Results
+                                </button>
+                                <button @click="confirmDelete(quiz)"
+                                        class="px-3 py-1.5 rounded-lg text-xs font-medium border border-red-200 dark:border-red-800 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                                    <i class="lni lni-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<!-- ═══════════════════ CREATE/EDIT QUIZ MODAL ═══════════════════ -->
+<div x-show="showCreateModal" x-cloak
+     class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div @click.stop class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-xl font-bold text-black dark:text-white" x-text="editingQuiz ? 'Edit Quiz' : 'Create New Quiz'"></h2>
+        </div>
+        <div class="p-6 space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quiz Title *</label>
+                <input type="text" x-model="form.title" placeholder="e.g. Week 3 Quiz: Dynamic Programming"
+                       class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-black dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:outline-none">
+            </div>
+            <div x-show="!editingQuiz">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Course *</label>
+                <select x-model="form.course_id" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-black dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:outline-none">
+                    <option value="">Select course…</option>
+                    <template x-for="c in courses" :key="c.id">
+                        <option :value="c.id" x-text="c.course_code + ' — ' + c.course_name"></option>
+                    </template>
+                </select>
+            </div>
+            <div x-show="editingQuiz" class="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm text-gray-500">
+                <i class="lni lni-library mr-1"></i>
+                Course: <span class="font-medium text-black dark:text-white" x-text="editingQuiz ? (editingQuiz.course_code + ' \u2014 ' + editingQuiz.course_name) : ''"></span>
+                <span class="text-xs ml-1">(cannot be changed)</span>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                <textarea x-model="form.description" rows="2" placeholder="What is this quiz about?"
+                          class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-black dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:outline-none resize-none"></textarea>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time Limit (min)</label>
+                    <input type="number" x-model.number="form.time_limit_minutes" placeholder="Leave blank = unlimited" min="1"
+                           class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-black dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Max Attempts</label>
+                    <input type="number" x-model.number="form.max_attempts" placeholder="1" min="0"
+                           class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-black dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:outline-none">
+                    <p class="text-xs text-gray-400 mt-1">0 = unlimited</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pass Score (%)</label>
+                    <input type="number" x-model.number="form.pass_score" placeholder="60" min="0" max="100"
+                           class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-black dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:outline-none">
+                </div>
+                <!-- Hide Due Date when "Publish Now" is selected (not needed for immediate publish) -->
+                <div x-show="editingQuiz || form.publish_mode !== 'now'" x-transition>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Due Date</label>
+                        <button x-show="form.due_date" @click="form.due_date = ''" type="button"
+                                class="text-xs text-red-500 hover:text-red-700 transition-colors flex items-center gap-0.5">
+                            <i class="lni lni-close text-xs"></i> Clear
+                        </button>
+                    </div>
+                    <input type="datetime-local" x-model="form.due_date"
+                           class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-black dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:outline-none">
+                </div>
+            </div>
+            <div class="flex flex-col gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" id="chk_show_answers" x-model="form.show_answers_after" class="rounded border-gray-300">
+                    <label for="chk_show_answers" class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                        Show correct answers to students after submission
+                    </label>
+                </div>
+            </div>
+
+            <!-- ── Publish options (CREATE only) ───────────────────────────── -->
+            <div x-show="!editingQuiz">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Publish Options</label>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <button type="button" @click="form.publish_mode='draft'"
+                            :class="form.publish_mode==='draft'
+                                ? 'ring-2 ring-gray-600 dark:ring-gray-300 bg-gray-100 dark:bg-gray-700'
+                                : 'border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'"
+                            class="rounded-xl p-3 text-center transition-all cursor-pointer w-full">
+                        <i class="lni lni-file text-xl text-gray-500 dark:text-gray-400 block mb-1"></i>
+                        <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 block">Save Draft</span>
+                        <span class="text-xs text-gray-400 block mt-0.5">Not visible yet</span>
+                    </button>
+                    <!-- Publish now -->
+                    <button type="button" @click="form.publish_mode='now'"
+                            :class="form.publish_mode==='now'
+                                ? 'ring-2 ring-green-500 bg-green-50 dark:bg-green-900/20'
+                                : 'border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'"
+                            class="rounded-xl p-3 text-center transition-all cursor-pointer w-full">
+                        <i class="lni lni-checkmark-circle text-xl text-green-500 block mb-1"></i>
+                        <span class="text-xs font-semibold text-green-700 dark:text-green-400 block">Publish Now</span>
+                        <span class="text-xs text-gray-400 block mt-0.5">Immediately live</span>
+                    </button>
+                    <!-- Schedule -->
+                    <button type="button" @click="form.publish_mode='scheduled'"
+                            :class="form.publish_mode==='scheduled'
+                                ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                : 'border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'"
+                            class="rounded-xl p-3 text-center transition-all cursor-pointer w-full">
+                        <i class="lni lni-alarm-clock text-xl text-blue-500 block mb-1"></i>
+                        <span class="text-xs font-semibold text-blue-700 dark:text-blue-400 block">Schedule</span>
+                        <span class="text-xs text-gray-400 block mt-0.5">Pick date & time</span>
+                    </button>
+                </div>
+                <!-- Scheduled time picker — only when "Schedule" is selected -->
+                <div x-show="form.publish_mode==='scheduled'" x-transition class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-xl">
+                    <label class="block text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">
+                        <i class="lni lni-alarm-clock mr-1"></i>Auto-publish at
+                    </label>
+                    <input type="datetime-local" x-model="form.scheduled_at"
+                           class="w-full px-3 py-2 rounded-lg border border-blue-300 dark:border-blue-600 bg-white dark:bg-gray-800 text-black dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <p class="text-xs text-blue-500 mt-1.5"><i class="lni lni-information mr-0.5"></i>Quiz becomes visible to students automatically at this date &amp; time.</p>
+                </div>
+            </div>
+
+            <!-- ── Schedule section (EDIT only) ───────────────────────────── -->
+            <div x-show="editingQuiz" class="p-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800 rounded-xl">
+                <div class="flex items-center justify-between mb-1.5">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <i class="lni lni-alarm-clock mr-1 text-blue-500"></i>Schedule Auto-Publish
+                    </label>
+                    <button x-show="form.scheduled_at" @click="form.scheduled_at=''" type="button"
+                            class="text-xs text-red-500 hover:text-red-700 transition-colors flex items-center gap-0.5">
+                        <i class="lni lni-close text-xs"></i> Clear
+                    </button>
+                </div>
+                <input type="datetime-local" x-model="form.scheduled_at"
+                       class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-black dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <p class="text-xs text-blue-500 mt-1.5"><i class="lni lni-information mr-0.5"></i>If set, quiz auto-publishes to students at this time (even if draft).</p>
+            </div>
+        </div>
+        <div class="p-6 border-t border-gray-200 dark:border-gray-700 flex gap-3 justify-end">
+            <button @click="showCreateModal=false" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Cancel</button>
+            <button @click="saveQuiz()" :disabled="saving"
+                    class="px-5 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg text-sm font-semibold hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:opacity-50">
+                <span x-text="saving ? 'Saving…' : (editingQuiz ? 'Save Changes' : 'Create Quiz')"></span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════ QUIZ BUILDER (questions) ═══════════════════ -->
+<div x-show="showBuilder" x-cloak
+     class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
+    <div @click.stop class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-3xl my-8 custom-scrollbar">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <div>
+                <h2 class="text-xl font-bold text-black dark:text-white" x-text="builderQuiz?.title"></h2>
+                <p class="text-sm text-gray-500 mt-0.5" x-text="(builderQuiz?.question_count||0) + ' questions · ' + (builderQuiz?.total_points||0) + ' pts'"></p>
+            </div>
+            <button @click="showBuilder=false" aria-label="Close modal" class="text-gray-400 hover:text-black dark:hover:text-white transition-colors"><i class="lni lni-close text-xl"></i></button>
+        </div>
+
+        <!-- Questions list -->
+        <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar" x-show="builderQuiz">
+            <div x-show="builderQuestions.length===0" class="text-center py-8 text-gray-400">
+                <i class="lni lni-help text-3xl"></i>
+                <p class="mt-2 text-sm">No questions yet. Add one below.</p>
+            </div>
+            <template x-for="(q, qi) in builderQuestions" :key="q.id">
+                <div class="border rounded-xl p-4 transition-colors" :class="editingQuestion?.id === q.id ? 'border-blue-400 dark:border-blue-500 bg-blue-50/50 dark:bg-blue-900/10' : 'border-gray-200 dark:border-gray-700'">
+                    <div class="flex items-start justify-between gap-3 mb-3">
+                        <div class="flex-1">
+                            <span class="text-xs font-medium text-gray-400 uppercase tracking-wider" x-text="'Q' + (qi+1) + ' · ' + (q.question_type==='mcq'?'Multiple Choice':'True/False') + ' · ' + q.points + ' pt(s)'"></span>
+                            <p class="font-medium text-black dark:text-white mt-1" x-text="q.question_text"></p>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <button @click="openEditQuestion(q)" title="Edit question"
+                                    class="px-2.5 py-1 rounded-lg text-xs font-medium border border-blue-200 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                                <i class="lni lni-pencil"></i> Edit
+                            </button>
+                            <button @click="deleteQuestion(q)" title="Delete question"
+                                    class="px-2.5 py-1 rounded-lg text-xs font-medium border border-red-200 dark:border-red-800 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                                <i class="lni lni-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="space-y-1.5 ml-4">
+                        <template x-for="opt in q.options" :key="opt.id">
+                            <div class="flex items-center gap-2">
+                                <span :class="opt.is_correct ? 'text-green-500' : 'text-gray-300 dark:text-gray-600'"
+                                      class="flex-shrink-0"><i class="lni" :class="opt.is_correct ? 'lni-checkmark-circle' : 'lni-radio-button'"></i></span>
+                                <span class="text-sm text-gray-600 dark:text-gray-300" x-text="opt.option_text"></span>
+                                <span x-show="opt.is_correct" class="text-xs text-green-600 dark:text-green-400 font-medium">(Correct)</span>
+                            </div>
+                        </template>
+                    </div>
+                    <p x-show="q.explanation" class="mt-2 text-xs text-blue-600 dark:text-blue-400 italic" x-text="'Explanation: ' + q.explanation"></p>
+                </div>
+            </template>
+        </div>
+
+        <!-- Add / Edit question form -->
+        <div class="p-6 border-t border-gray-200 dark:border-gray-700 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="font-semibold text-black dark:text-white text-sm" x-text="editingQuestion ? 'Edit Question' : 'Add New Question'"></h3>
+                <button x-show="editingQuestion" @click="cancelEditQuestion()"
+                        class="text-xs text-gray-500 hover:text-black dark:hover:text-white flex items-center gap-1 transition-colors">
+                    <i class="lni lni-close"></i> Cancel Edit
+                </button>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Question Type</label>
+                <div class="flex gap-3">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" x-model="qForm.question_type" value="mcq" class="rounded border-gray-300"> <span class="text-sm text-gray-700 dark:text-gray-300">Multiple Choice</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" x-model="qForm.question_type" value="true_false" @change="prefillTrueFalse()" class="rounded border-gray-300"> <span class="text-sm text-gray-700 dark:text-gray-300">True / False</span>
+                    </label>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Question Text *</label>
+                <textarea x-model="qForm.question_text" rows="2" placeholder="Enter the question…"
+                          class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-black dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:outline-none resize-none"></textarea>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Points</label>
+                    <input type="number" x-model.number="qForm.points" min="1" value="1"
+                           class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-black dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Explanation (optional)</label>
+                    <input type="text" x-model="qForm.explanation" placeholder="Shown after submission"
+                           class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-black dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:outline-none">
+                </div>
+            </div>
+
+            <!-- Options -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <label class="block text-xs font-medium text-gray-600 dark:text-gray-400">Answer Options * (check correct answer)</label>
+                    <button x-show="qForm.question_type==='mcq'" @click="addOption()" type="button"
+                            class="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
+                        <i class="lni lni-plus"></i> Add Option
+                    </button>
+                </div>
+                <div class="space-y-2">
+                    <template x-for="(opt, oi) in qForm.options" :key="oi">
+                        <div class="flex items-center gap-2">
+                            <input type="radio" name="correct_opt" :checked="opt.is_correct"
+                                   @change="setCorrectOption(oi)"
+                                   class="flex-shrink-0 accent-black dark:accent-white">
+                            <input type="text" x-model="opt.option_text"
+                                   :placeholder="'Option ' + (oi+1)"
+                                   :disabled="qForm.question_type==='true_false'"
+                                   class="flex-1 px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-black dark:text-white text-sm focus:ring-1 focus:ring-black dark:focus:ring-white focus:outline-none disabled:opacity-60">
+                            <button x-show="qForm.question_type==='mcq' && qForm.options.length > 2"
+                                    @click="removeOption(oi)" type="button" class="text-red-400 hover:text-red-600 flex-shrink-0">
+                                <i class="lni lni-close text-sm"></i>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <button @click="saveQuestion()" :disabled="savingQ"
+                    class="w-full py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-semibold hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:opacity-50">
+                <span x-text="savingQ ? (editingQuestion ? 'Updating…' : 'Adding…') : (editingQuestion ? 'Update Question' : 'Add Question')"></span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════ RESULTS MODAL ═══════════════════ -->
+<div x-show="showResults" x-cloak
+     class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div @click.stop class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto custom-scrollbar">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <div>
+                <h2 class="text-xl font-bold text-black dark:text-white" x-text="resultsQuiz?.title + ' — Results'"></h2>
+                <p class="text-sm text-gray-500 mt-0.5" x-text="attempts.length + ' submission(s)'"></p>
+            </div>
+            <button @click="showResults=false" aria-label="Close modal" class="text-gray-400 hover:text-black dark:hover:text-white">
+                <i class="lni lni-close text-xl"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <div x-show="attempts.length===0" class="text-center py-8 text-gray-400">
+                <i class="lni lni-users text-3xl"></i>
+                <p class="mt-2 text-sm">No submissions yet</p>
+            </div>
+            <div x-show="attempts.length>0" class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-200 dark:border-gray-700">
+                            <th class="text-left py-2 font-medium text-gray-700 dark:text-gray-300">Student</th>
+                            <th class="text-left py-2 font-medium text-gray-700 dark:text-gray-300">Score</th>
+                            <th class="text-left py-2 font-medium text-gray-700 dark:text-gray-300">%</th>
+                            <th class="text-left py-2 font-medium text-gray-700 dark:text-gray-300">Passed</th>
+                            <th class="text-left py-2 font-medium text-gray-700 dark:text-gray-300">Submitted</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                        <template x-for="a in attempts" :key="a.id">
+                            <tr>
+                                <td class="py-2 text-gray-700 dark:text-gray-300" x-text="a.student_name"></td>
+                                <td class="py-2 font-medium text-black dark:text-white" x-text="a.score + '/' + a.max_score"></td>
+                                <td class="py-2" x-text="a.percentage + '%'"></td>
+                                <td class="py-2">
+                                    <span :class="a.passed ? 'text-green-600' : 'text-red-500'" x-text="a.passed ? 'Yes' : 'No'"></span>
+                                </td>
+                                <td class="py-2 text-gray-500 text-xs" x-text="a.submitted_at ? new Date(a.submitted_at).toLocaleString() : '—'"></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+                <!-- Summary stats -->
+                <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 text-center">
+                        <p class="text-xs text-gray-500 mb-1">Avg Score</p>
+                        <p class="font-bold text-black dark:text-white" x-text="avgScore + '%'"></p>
+                    </div>
+                    <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-3 text-center">
+                        <p class="text-xs text-green-600 dark:text-green-400 mb-1">Passed</p>
+                        <p class="font-bold text-green-700 dark:text-green-400" x-text="attempts.filter(a=>a.passed).length"></p>
+                    </div>
+                    <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-3 text-center">
+                        <p class="text-xs text-red-600 dark:text-red-400 mb-1">Failed</p>
+                        <p class="font-bold text-red-700 dark:text-red-400" x-text="attempts.filter(a=>!a.passed).length"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete confirm -->
+<div x-show="showDeleteConfirm" x-cloak
+     class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div @click.stop class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+        <div class="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="lni lni-trash text-red-500 text-2xl"></i>
+        </div>
+        <h3 class="font-bold text-black dark:text-white mb-2">Delete Quiz?</h3>
+        <p class="text-sm text-gray-500 mb-6">This will permanently delete "<span x-text="deleteTarget?.title"></span>" and all its questions and student attempts.</p>
+        <div class="flex gap-3">
+            <button @click="showDeleteConfirm=false" class="flex-1 py-2 rounded-xl border border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">Cancel</button>
+            <button @click="doDelete()" class="flex-1 py-2 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600">Delete</button>
+        </div>
+    </div>
+</div>
+
+<script src="../assets/js/api.js?v=2"></script>
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('facultyQuiz', () => ({
+        darkMode: localStorage.getItem('darkMode') === 'true',
+        sidebarOpen: false,
+        loading: true,
+        initError: '',
+        saving: false,
+        savingQ: false,
+
+        quizzes: [],
+        courses: [],
+
+        // Modal states
+        showCreateModal: false,
+        showBuilder: false,
+        showResults: false,
+        showDeleteConfirm: false,
+
+        editingQuiz: null,
+        builderQuiz: null,
+        builderQuestions: [],
+        resultsQuiz: null,
+        attempts: [],
+        deleteTarget: null,
+        editingQuestion: null,
+
+        form: { title:'', course_id:'', description:'', time_limit_minutes:'', max_attempts:1, pass_score:60, show_answers_after:true, due_date:'', publish_mode:'draft', scheduled_at:'' },
+        qForm: { question_type:'mcq', question_text:'', points:1, explanation:'', options:[] },
+
+        get avgScore() {
+            if (!this.attempts.length) return 0;
+            return Math.round(this.attempts.reduce((s,a)=>s+a.percentage,0)/this.attempts.length);
+        },
+
+        closeAllModals() { this.showCreateModal = false; },
+
+        init() {
+            document.documentElement.classList.toggle('dark', this.darkMode);
+            this.$watch('darkMode', v => {
+                document.documentElement.classList.toggle('dark', v);
+                localStorage.setItem('darkMode', v);
+            });
+
+            if (typeof window.api !== 'undefined') {
+                if (!window.api.checkAuth()) { window.location.href = 'faculty-login.html'; return; }
+                const user = window.api.getUserData();
+                if (user && user.role !== 'faculty') { window.api.clearToken(); window.location.href = 'faculty-login.html'; return; }
+                if (user) window.api.populateSidebar(user);
+            }
+            this.resetQForm();
+            this.loadData();
+        },
+
+        toggleDarkMode() { this.darkMode = !this.darkMode; },
+
+        async loadData() {
+            this.loading = true;
+            try {
+                const [qRes, cRes] = await Promise.all([
+                    window.api.getFacultyQuizzes(),
+                    window.api.getFacultyCourses(),
+                ]);
+                this.quizzes = Array.isArray(qRes) ? qRes : qRes.quizzes || [];
+                this.courses = Array.isArray(cRes) ? cRes : cRes.courses || [];
+            } catch(e) {
+                window.api.showNotification('Failed to load quizzes: ' + e.message, 'error');
+                this.initError = 'Could not load quizzes. Please try again.';
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        openCreateModal() {
+            this.editingQuiz = null;
+            this.form = { title:'', course_id:'', description:'', time_limit_minutes:'', max_attempts:1, pass_score:60, show_answers_after:true, due_date:'', publish_mode:'draft', scheduled_at:'' };
+            this.showCreateModal = true;
+        },
+
+        openEditSettings(quiz) {
+            this.editingQuiz = quiz;
+            // Format due_date for datetime-local input (strip seconds & TZ)
+            let dueFmt = '';
+            if (quiz.due_date) {
+                try {
+                    const d = new Date(quiz.due_date);
+                    dueFmt = d.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:MM"
+                } catch(_) {}
+            }
+            // Scheduled publish time for edit modal
+            let schedFmt = '';
+            if (quiz.scheduled_publish_at) {
+                try {
+                    const sd = new Date(quiz.scheduled_publish_at);
+                    schedFmt = sd.toISOString().slice(0, 16);
+                } catch(_) {}
+            }
+            this.form = {
+                title:              quiz.title || '',
+                course_id:          quiz.course_id || '',
+                description:        quiz.description || '',
+                time_limit_minutes: quiz.time_limit_minutes || '',
+                max_attempts:       quiz.max_attempts ?? 1,
+                pass_score:         quiz.pass_score ?? 60,
+                show_answers_after: quiz.show_answers_after ?? true,
+                due_date:           dueFmt,
+                publish_mode:       'draft',
+                scheduled_at:       schedFmt,
+            };
+            this.showCreateModal = true;
+        },
+
+        async saveQuiz() {
+            if (!this.form.title.trim()) { window.api.showNotification('Title is required', 'error'); return; }
+            if (!this.editingQuiz && !this.form.course_id) { window.api.showNotification('Select a course', 'error'); return; }
+            this.saving = true;
+            try {
+                // Normalize datetime-local value (YYYY-MM-DDTHH:MM → YYYY-MM-DDTHH:MM:SS)
+                const rawDue = this.form.due_date;
+                const normDue = rawDue ? (rawDue.length === 16 ? rawDue + ':00' : rawDue) : null;
+
+                // Compute publish state from mode (create only)
+                let isPublished = undefined;
+                let scheduledPublishAt = undefined;
+                if (!this.editingQuiz) {
+                    if (this.form.publish_mode === 'now') {
+                        isPublished = true;
+                        scheduledPublishAt = null;
+                    } else if (this.form.publish_mode === 'scheduled') {
+                        isPublished = false;
+                        const rawSched = this.form.scheduled_at;
+                        scheduledPublishAt = rawSched
+                            ? (rawSched.length === 16 ? rawSched + ':00' : rawSched)
+                            : null;
+                    } else {
+                        isPublished = false;
+                        scheduledPublishAt = null;
+                    }
+                } else {
+                    // Edit: only pass scheduled_publish_at (never override is_published from here)
+                    const rawSched = this.form.scheduled_at;
+                    scheduledPublishAt = rawSched
+                        ? (rawSched.length === 16 ? rawSched + ':00' : rawSched)
+                        : null;
+                }
+
+                const payload = {
+                    title:                this.form.title.trim(),
+                    description:          this.form.description.trim(),
+                    time_limit_minutes:   this.form.time_limit_minutes || null,
+                    max_attempts:         this.form.max_attempts,
+                    pass_score:           this.form.pass_score,
+                    show_answers_after:   this.form.show_answers_after,
+                    due_date:             normDue,
+                    is_published:         isPublished,
+                    scheduled_publish_at: scheduledPublishAt,
+                };
+                if (!this.editingQuiz) {
+                    payload.course_id = this.form.course_id;
+                } else {
+                    delete payload.is_published;   // never override publish state from settings edit
+                    delete payload.course_id;
+                }
+
+                if (this.editingQuiz) {
+                    await window.api.updateQuiz(this.editingQuiz.id, payload);
+                    window.api.showNotification('Quiz updated', 'success');
+                } else {
+                    const res = await window.api.createQuiz(payload);
+                    const msg = this.form.publish_mode === 'now'
+                        ? 'Quiz created & published! Add questions now.'
+                        : this.form.publish_mode === 'scheduled' && this.form.scheduled_at
+                        ? `Quiz created! Will auto-publish on ${new Date(this.form.scheduled_at).toLocaleString()}. Add questions now.`
+                        : 'Quiz created as draft. Add questions, then publish when ready.';
+                    window.api.showNotification(msg, 'success');
+                    await this.loadData();
+                    // open builder immediately for new quiz
+                    const created = this.quizzes.find(q => q.id === res.quiz_id);
+                    if (created) { this.showCreateModal = false; await this.openBuilder(created); return; }
+                }
+                await this.loadData();
+                this.showCreateModal = false;
+            } catch(e) {
+                window.api.showNotification('Error: ' + e.message, 'error');
+            } finally {
+                this.saving = false;
+            }
+        },
+
+        async openBuilder(quiz) {
+            try {
+                const data = await window.api.getFacultyQuiz(quiz.id);
+                this.builderQuiz = data;
+                this.builderQuestions = data.questions || [];
+                this.resetQForm();
+                this.showBuilder = true;
+            } catch(e) {
+                window.api.showNotification('Could not load quiz: ' + e.message, 'error');
+            }
+        },
+
+        resetQForm() {
+            this.editingQuestion = null;
+            this.qForm = { question_type:'mcq', question_text:'', points:1, explanation:'',
+                options: [{option_text:'', is_correct:true},{option_text:'', is_correct:false},{option_text:'', is_correct:false},{option_text:'', is_correct:false}]
+            };
+        },
+
+        openEditQuestion(q) {
+            this.editingQuestion = q;
+            this.qForm = {
+                question_type: q.question_type || 'mcq',
+                question_text: q.question_text || '',
+                points:        q.points ?? 1,
+                explanation:   q.explanation || '',
+                options: q.options.map(o => ({ option_text: o.option_text, is_correct: !!o.is_correct })),
+            };
+        },
+
+        cancelEditQuestion() {
+            this.resetQForm();
+        },
+
+        prefillTrueFalse() {
+            this.qForm.options = [
+                { option_text:'True',  is_correct:true  },
+                { option_text:'False', is_correct:false },
+            ];
+        },
+
+        addOption() {
+            this.qForm.options.push({ option_text:'', is_correct:false });
+        },
+
+        removeOption(i) {
+            this.qForm.options.splice(i, 1);
+            // ensure one is still correct
+            if (!this.qForm.options.some(o=>o.is_correct) && this.qForm.options.length)
+                this.qForm.options[0].is_correct = true;
+        },
+
+        setCorrectOption(i) {
+            this.qForm.options.forEach((o,idx) => o.is_correct = (idx === i));
+        },
+
+        async saveQuestion() {
+            if (!this.qForm.question_text.trim()) { window.api.showNotification('Question text required', 'error'); return; }
+            const filledOpts = this.qForm.options.filter(o=>o.option_text.trim());
+            if (filledOpts.length < 2) { window.api.showNotification('At least 2 options required', 'error'); return; }
+            if (!filledOpts.some(o=>o.is_correct)) { window.api.showNotification('Mark one option as correct', 'error'); return; }
+            this.savingQ = true;
+            try {
+                if (this.editingQuestion) {
+                    // ── UPDATE existing question ──
+                    await window.api.updateQuizQuestion(this.editingQuestion.id, {
+                        question_text: this.qForm.question_text.trim(),
+                        question_type: this.qForm.question_type,
+                        points:        this.qForm.points,
+                        explanation:   this.qForm.explanation.trim(),
+                        options:       filledOpts,
+                    });
+                    window.api.showNotification('Question updated!', 'success');
+                } else {
+                    // ── ADD new question ──
+                    await window.api.addQuizQuestion(this.builderQuiz.id, {
+                        question_text: this.qForm.question_text.trim(),
+                        question_type: this.qForm.question_type,
+                        points:        this.qForm.points,
+                        explanation:   this.qForm.explanation.trim(),
+                        options:       filledOpts,
+                    });
+                    window.api.showNotification('Question added!', 'success');
+                }
+                const data = await window.api.getFacultyQuiz(this.builderQuiz.id);
+                this.builderQuiz = data;
+                this.builderQuestions = data.questions || [];
+                await this.loadData();
+                this.resetQForm();
+            } catch(e) {
+                window.api.showNotification('Error: ' + e.message, 'error');
+            } finally {
+                this.savingQ = false;
+            }
+        },
+
+        async deleteQuestion(q) {
+            if (!confirm('Delete this question?')) return;
+            try {
+                await window.api.deleteQuizQuestion(q.id);
+                window.api.showNotification('Question deleted', 'success');
+                const data = await window.api.getFacultyQuiz(this.builderQuiz.id);
+                this.builderQuiz = data;
+                this.builderQuestions = data.questions || [];
+                await this.loadData();
+            } catch(e) {
+                window.api.showNotification('Error: ' + e.message, 'error');
+            }
+        },
+
+        // Per-quiz publishing busy state
+        publishingId: null,
+
+        async togglePublish(quiz) {
+            if (this.publishingId === quiz.id) return;  // prevent double-click
+            this.publishingId = quiz.id;
+            const wasPublished = quiz.is_published;
+            try {
+                await window.api.updateQuiz(quiz.id, { is_published: !wasPublished });
+                window.api.showNotification(
+                    wasPublished ? 'Quiz unpublished.' : 'Quiz published! Students can now see it.',
+                    'success'
+                );
+                await this.loadData();
+            } catch(e) {
+                window.api.showNotification('Error: ' + e.message, 'error');
+            } finally {
+                this.publishingId = null;
+            }
+        },
+
+        async viewAttempts(quiz) {
+            this.resultsQuiz = quiz;
+            this.attempts = [];
+            this.showResults = true;
+            try {
+                const data = await window.api.getQuizAttempts(quiz.id);
+                this.attempts = data.attempts || [];
+            } catch(e) {
+                window.api.showNotification('Could not load attempts: ' + e.message, 'error');
+            }
+        },
+
+        confirmDelete(quiz) {
+            this.deleteTarget = quiz;
+            this.showDeleteConfirm = true;
+        },
+
+        async doDelete() {
+            if (!this.deleteTarget) return;
+            try {
+                await window.api.deleteQuiz(this.deleteTarget.id);
+                window.api.showNotification('Quiz deleted', 'success');
+                await this.loadData();
+            } catch(e) {
+                window.api.showNotification('Error: ' + e.message, 'error');
+            } finally {
+                this.showDeleteConfirm = false;
+                this.deleteTarget = null;
+            }
+        },
+    }));
+});
+</script>
+</body>
+</html>

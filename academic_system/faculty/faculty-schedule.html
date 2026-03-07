@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <meta name="description" content="AcademicSync - Faculty Schedule Management">
+    <title>My Schedule - Faculty Dashboard - AcademicSync</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        display: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db',
+                            400: '#9ca3af', 500: '#6b7280', 600: '#000000', 700: '#1f2937',
+                            800: '#111827', 900: '#000000',
+                        },
+                        gray: {
+                            750: '#2d3748',
+                        }
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #e5e7eb;
+            border-radius: 20px;
+        }
+
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #374151;
+        }
+
+        /* Schedule Grid removes - now uses flex rows */
+        .schedule-row {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .dark .schedule-row {
+            border-bottom-color: #374151;
+        }
+    </style>
+</head>
+
+<body
+    class="h-full flex overflow-hidden text-gray-600 font-sans antialiased bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 dark:text-gray-300 transition-colors duration-200"
+    x-data="facultySchedule()"
+    @keydown.window.escape="closeAllModals()">
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-300"
+        x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+        x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0" @click="sidebarOpen = false"
+        class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden" aria-hidden="true" x-cloak>
+    </div>
+
+    <!-- Sidebar -->
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+        class="fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-800/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transform transition-transform duration-300 ease-in-out flex flex-col h-full">
+
+        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100/50 dark:border-gray-800/50">
+            <a href="../index.html" class="flex items-center gap-2.5 group">
+                <div
+                    class="w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-lg shadow-gray-200/50 dark:shadow-none group-hover:scale-105 transition-transform">
+                    <i class="lni lni-graduation"></i>
+                </div>
+                <span
+                    class="font-display font-bold text-xl text-black dark:text-white tracking-tight">AcademicSync</span>
+            </a>
+            <button @click="sidebarOpen = false" aria-label="Close Sidebar"
+                class="lg:hidden text-gray-400 hover:text-black transition-colors">
+                <i class="lni lni-close text-xl"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Faculty Menu</p>
+
+            <a href="faculty-dashboard.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-grid-alt text-lg group-hover:text-black dark:group-hover:text-white"></i> Dashboard
+            </a>
+
+            <a href="faculty-courses.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-library text-lg group-hover:text-black dark:group-hover:text-white"></i> My Courses
+            </a>
+
+            <a href="faculty-schedule.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group bg-white/60 dark:bg-white/10 text-black dark:text-white shadow-sm border border-white/40 dark:border-white/5 backdrop-blur-sm"
+                aria-current="page">
+                <i class="lni lni-calendar text-lg"></i> Schedule
+            </a>
+
+            <a href="faculty-students.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-users text-lg group-hover:text-black dark:group-hover:text-white"></i> Students
+            </a>
+
+            <a href="faculty-attendance.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-checkmark-circle text-lg group-hover:text-black dark:group-hover:text-white"></i> Attendance
+            </a>
+
+            <a href="faculty-grades.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-clipboard text-lg group-hover:text-black dark:group-hover:text-white"></i> Grades
+            </a>
+
+            <a href="faculty-assignments.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-list text-lg group-hover:text-black dark:group-hover:text-white"></i> Assignments
+            </a>
+            <a href="faculty-quiz.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-pencil-alt text-lg group-hover:text-black dark:group-hover:text-white"></i> Quizzes
+            </a>
+            <a href="faculty-resources.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-folder text-lg group-hover:text-black dark:group-hover:text-white"></i> Resources
+            </a>
+            <a href="faculty-profile.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-700 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-user text-lg group-hover:text-black dark:group-hover:text-white"></i> Profile
+            </a>
+        </div>
+
+        <div
+            class="p-4 border-t border-gray-100/50 dark:border-gray-800/50 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md">
+            <button @click="toggleDarkMode()" aria-label="Toggle Dark Mode"
+                class="w-full flex items-center justify-center gap-2 mb-3 py-2 rounded-lg bg-white/50 dark:bg-gray-800/50 border border-white/20 dark:border-gray-700/30 text-gray-600 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-800/80 transition-colors shadow-sm">
+                <i class="lni" :class="darkMode ? 'lni-night' : 'lni-sun'"></i>
+                <span class="text-xs font-bold uppercase tracking-wider"
+                    x-text="darkMode ? 'Dark Mode' : 'Light Mode'"></span>
+            </button>
+
+            <a href="faculty-profile.html"
+                class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors group">
+                <div
+                    class="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-gray-200 dark:border-gray-700 text-gray-400 font-bold text-xs uppercase shadow-sm group-hover:bg-white dark:group-hover:bg-gray-700 group-hover:shadow-md transition-all">
+                    <span data-user-initials>SJ</span></div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-black dark:text-white truncate" data-user-name>Dr. Sarah Johnson</p>
+                    <p class="text-xs text-gray-500 truncate" data-user-role>Faculty</p>
+                </div>
+                <i
+                    class="lni lni-cog text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors"></i>
+            </a>
+
+            <div class="mt-2 text-center">
+                <a href="#" onclick="(async()=>{ await window.api?.logout().catch(()=>{}); window.location.href='faculty-login.html'; })(); return false;"
+                    class="w-full flex items-center justify-center gap-2 text-xs font-bold text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 py-2 rounded-lg transition-all border border-transparent hover:border-gray-200 dark:hover:border-gray-700 uppercase tracking-tighter">
+                    <i class="lni lni-exit"></i><span>Sign Out</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 relative">
+
+        <!-- Mobile Header -->
+        <div
+            class="lg:hidden h-14 border-b border-gray-100/50 dark:border-gray-800/50 flex items-center justify-between px-4 sticky top-0 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl z-20 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+            <div class="flex items-center gap-2">
+                <div
+                    class="w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-black font-bold text-sm shadow-sm">
+                    AS</div>
+                <span class="font-semibold text-black dark:text-white">Schedule</span>
+            </div>
+            <button @click="sidebarOpen = !sidebarOpen"
+                class="p-2 -mr-2 text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md">
+                <i class="ri-menu-line text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Content -->
+        <main class="flex-1 overflow-y-auto scroll-smooth p-4 sm:p-6 lg:p-8" id="main-content">
+            <!-- Error boundary -->
+            <div x-show="initError" x-cloak class="mb-6 p-4 rounded-xl border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-900/20 flex items-start gap-3">
+                <i class="lni lni-warning text-red-500 mt-0.5 shrink-0 text-lg"></i>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-red-700 dark:text-red-300" x-text="initError"></p>
+                    <button @click="initError = ''; init()" class="mt-1.5 text-xs font-bold text-red-600 dark:text-red-400 hover:underline">Try again</button>
+                </div>
+                <button @click="initError = ''" aria-label="Dismiss error" class="text-red-300 hover:text-red-500 shrink-0"><i class="lni lni-close text-xs"></i></button>
+            </div>
+            <!-- Skeleton loading -->
+            <div x-show="loading" class="max-w-7xl mx-auto pb-12 animate-pulse space-y-6">
+                <div class="flex items-center justify-between">
+                    <div class="space-y-2"><div class="h-8 w-44 bg-gray-200 dark:bg-gray-700 rounded-xl"></div><div class="h-4 w-56 bg-gray-200 dark:bg-gray-700 rounded"></div></div>
+                    <div class="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div class="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between"><div class="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="flex gap-2"><div class="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded-xl"></div><div class="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded-xl"></div></div></div>
+                    <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                        <div class="flex items-center gap-4 p-4"><div class="w-1 h-12 bg-indigo-300 dark:bg-indigo-600 rounded shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-2/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/4 bg-gray-200 dark:bg-gray-700 rounded"></div></div><div class="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div></div>
+                        <div class="flex items-center gap-4 p-4"><div class="w-1 h-12 bg-blue-300 dark:bg-blue-600 rounded shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-3/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/3 bg-gray-200 dark:bg-gray-700 rounded"></div></div><div class="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div></div>
+                        <div class="flex items-center gap-4 p-4"><div class="w-1 h-12 bg-emerald-300 dark:bg-emerald-600 rounded shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/4 bg-gray-200 dark:bg-gray-700 rounded"></div></div><div class="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div></div>
+                        <div class="flex items-center gap-4 p-4"><div class="w-1 h-12 bg-purple-300 dark:bg-purple-600 rounded shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-2/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/3 bg-gray-200 dark:bg-gray-700 rounded"></div></div><div class="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto space-y-8 animate-fade-in-up pb-12" x-show="!loading">
+
+                <!-- Header -->
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div>
+                        <h1 class="text-3xl font-display font-bold text-black dark:text-white tracking-tight">
+                            My Schedule
+                        </h1>
+                        <p class="text-gray-500 mt-1">Manage your <span
+                                class="font-bold text-black dark:text-white border-b-2 border-black/20 dark:border-white/20">teaching
+                                schedule</span> and office hours.</p>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <button @click="currentWeekOffset--; updateWeekDisplay()"
+                                class="p-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                                <i class="ri-arrow-left-line text-lg"></i>
+                            </button>
+                            <span class="text-sm font-bold text-black dark:text-white min-w-[120px] text-center"
+                                x-text="weekDisplay"></span>
+                            <button @click="currentWeekOffset++; updateWeekDisplay()"
+                                class="p-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                                <i class="ri-arrow-right-line text-lg"></i>
+                            </button>
+                        </div>
+                        <button @click="showOfficeHoursModal = true"
+                            class="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-900 dark:hover:border-gray-500 transition-all shadow-sm">
+                            <i class="ri-time-line text-lg"></i>
+                            <span class="hidden sm:inline">Office Hours</span>
+                        </button>
+                        <button @click="showAddClassModal = true"
+                            class="flex items-center gap-2 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-bold hover:bg-gray-800 dark:hover:bg-gray-200 hover:shadow-lg hover:shadow-gray-200 dark:hover:shadow-none transition-all">
+                            <i class="ri-add-line text-lg"></i>
+                            <span>Add Class</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Schedule Grid -->
+                <div
+                    class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-bold text-black dark:text-white">Weekly Schedule</h2>
+                            <div class="flex items-center gap-4 text-sm">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded bg-indigo-500"></div>
+                                    <span class="text-gray-600 dark:text-gray-400">Classes</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded bg-emerald-500"></div>
+                                    <span class="text-gray-600 dark:text-gray-400">Office Hours</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <div class="min-w-[700px]">
+                            <!-- Header Row -->
+                            <div class="flex bg-gray-50 dark:bg-gray-900/60 border-b border-gray-200 dark:border-gray-700">
+                                <div class="w-20 shrink-0 flex items-center justify-center px-2 py-3">
+                                    <span class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Time</span>
+                                </div>
+                                <template x-for="day in days" :key="day">
+                                    <div class="flex-1 flex items-center justify-center px-2 py-3 border-l border-gray-200 dark:border-gray-700">
+                                        <span class="text-sm font-bold text-black dark:text-white" x-text="day"></span>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Time Slot Rows - one div per row so Alpine x-for works correctly -->
+                            <template x-for="time in timeSlots" :key="time">
+                                <div class="flex border-b border-gray-100 dark:border-gray-700/50">
+                                    <div class="w-20 shrink-0 flex items-center justify-center px-2 py-1 bg-gray-50/60 dark:bg-gray-900/30">
+                                        <span class="text-xs font-semibold text-gray-400 dark:text-gray-500" x-text="formatTime(time)"></span>
+                                    </div>
+                                    <template x-for="day in days" :key="day">
+                                        <div class="flex-1 min-h-[62px] p-1.5 border-l border-gray-100 dark:border-gray-700/40 relative group/cell">
+                                            <template x-for="classItem in getClassesForTimeAndDay(time, day)" :key="classItem.id">
+                                                <div class="relative group/card rounded-lg p-2 mb-1 border-l-4 transition-opacity hover:opacity-95"
+                                                    :style="getClassStyle(classItem)">
+                                                    <div class="text-xs font-bold truncate pr-4" :style="getClassTextStyle(classItem)" x-text="classItem.title"></div>
+                                                    <div class="text-xs opacity-70 truncate mt-0.5" :style="getClassTextStyle(classItem)" x-text="classItem.room"></div>
+                                                    <button @click.stop="removeClass(classItem.id)"
+                                                        class="absolute top-1 right-1 w-4 h-4 rounded-full bg-black/10 dark:bg-white/10 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-red-500 hover:text-white text-gray-600 dark:text-gray-300"
+                                                        title="Remove class">
+                                                        <i class="ri-close-line text-[10px] leading-none"></i>
+                                                    </button>
+                                                </div>
+                                            </template>
+                                            <!-- + button: centered for empty cells, bottom-right otherwise -->
+                                            <template x-if="getClassesForTimeAndDay(time, day).length === 0">
+                                                <button
+                                                    @click.stop="openAddClassAt(time, day)"
+                                                    class="absolute inset-0 w-full h-full flex items-center justify-center opacity-0 group-hover/cell:opacity-100 transition-opacity duration-150"
+                                                    title="Add class">
+                                                    <span class="w-7 h-7 rounded-full border-2 border-dashed border-gray-300 dark:border-gray-600 group-hover/cell:border-gray-400 dark:group-hover/cell:border-gray-400 flex items-center justify-center text-gray-400 dark:text-gray-500 group-hover/cell:text-gray-600 dark:group-hover/cell:text-gray-300 font-bold text-base leading-none transition-colors">+</span>
+                                                </button>
+                                            </template>
+                                            <template x-if="getClassesForTimeAndDay(time, day).length > 0">
+                                                <button
+                                                    @click.stop="openAddClassAt(time, day)"
+                                                    class="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center opacity-0 group-hover/cell:opacity-100 transition-opacity duration-150 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-300 font-bold text-xs leading-none z-10"
+                                                    title="Add another class">+</button>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div
+                        class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                                <i class="ri-calendar-event-line text-lg"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-black dark:text-white" x-text="classes.filter(c=>c.type==='class').length"></h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Classes This Week</p>
+                    </div>
+
+                    <div
+                        class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                                <i class="ri-time-line text-lg"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-black dark:text-white" x-text="officeHours.length"></h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Office Hours</p>
+                    </div>
+
+                    <div
+                        class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                                <i class="ri-user-line text-lg"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-black dark:text-white" x-text="totalStudents"></h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Students</p>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Class Modal -->
+    <div x-show="showAddClassModal" class="relative z-50" x-cloak>
+        <div x-show="showAddClassModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+            class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" @click="showAddClassModal = false">
+        </div>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div x-show="showAddClassModal" x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 text-left shadow-2xl transition-all w-full max-w-lg">
+
+                    <div
+                        class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-black dark:text-white">Add Class to Schedule</h3>
+                        <button @click="showAddClassModal = false"
+                            class="text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                            <i class="ri-close-line text-xl"></i>
+                        </button>
+                    </div>
+
+                    <form class="p-6 space-y-4" @submit.prevent="addClass()">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Course</label>
+                            <select x-model="newClass.course"
+                                class="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                                <option value="">Select Course</option>
+                                <template x-for="c in courseOptions" :key="c.id">
+                                    <option :value="c.name" x-text="c.name + ' (' + c.code + ')'" ></option>
+                                </template>
+                            </select>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Day</label>
+                                <select x-model="newClass.day"
+                                    class="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                                    <option value="">Select Day</option>
+                                    <option value="Monday">Monday</option>
+                                    <option value="Tuesday">Tuesday</option>
+                                    <option value="Wednesday">Wednesday</option>
+                                    <option value="Thursday">Thursday</option>
+                                    <option value="Friday">Friday</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Start Time</label>
+                                <select x-model="newClass.time"
+                                    class="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                                    <option value="">Select Start Time</option>
+                                    <option value="07:00">07:00 AM</option>
+                                    <option value="07:30">07:30 AM</option>
+                                    <option value="08:00">08:00 AM</option>
+                                    <option value="08:30">08:30 AM</option>
+                                    <option value="09:00">09:00 AM</option>
+                                    <option value="09:30">09:30 AM</option>
+                                    <option value="10:00">10:00 AM</option>
+                                    <option value="10:30">10:30 AM</option>
+                                    <option value="11:00">11:00 AM</option>
+                                    <option value="11:30">11:30 AM</option>
+                                    <option value="12:00">12:00 PM</option>
+                                    <option value="12:30">12:30 PM</option>
+                                    <option value="13:00">01:00 PM</option>
+                                    <option value="13:30">01:30 PM</option>
+                                    <option value="14:00">02:00 PM</option>
+                                    <option value="14:30">02:30 PM</option>
+                                    <option value="15:00">03:00 PM</option>
+                                    <option value="15:30">03:30 PM</option>
+                                    <option value="16:00">04:00 PM</option>
+                                    <option value="16:30">04:30 PM</option>
+                                    <option value="17:00">05:00 PM</option>
+                                    <option value="17:30">05:30 PM</option>
+                                    <option value="18:00">06:00 PM</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">End Time</label>
+                                <select x-model="newClass.endTime"
+                                    class="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                                    <option value="">Select End Time</option>
+                                    <option value="07:30">07:30 AM</option>
+                                    <option value="08:00">08:00 AM</option>
+                                    <option value="08:30">08:30 AM</option>
+                                    <option value="09:00">09:00 AM</option>
+                                    <option value="09:30">09:30 AM</option>
+                                    <option value="10:00">10:00 AM</option>
+                                    <option value="10:30">10:30 AM</option>
+                                    <option value="11:00">11:00 AM</option>
+                                    <option value="11:30">11:30 AM</option>
+                                    <option value="12:00">12:00 PM</option>
+                                    <option value="12:30">12:30 PM</option>
+                                    <option value="13:00">01:00 PM</option>
+                                    <option value="13:30">01:30 PM</option>
+                                    <option value="14:00">02:00 PM</option>
+                                    <option value="14:30">02:30 PM</option>
+                                    <option value="15:00">03:00 PM</option>
+                                    <option value="15:30">03:30 PM</option>
+                                    <option value="16:00">04:00 PM</option>
+                                    <option value="16:30">04:30 PM</option>
+                                    <option value="17:00">05:00 PM</option>
+                                    <option value="17:30">05:30 PM</option>
+                                    <option value="18:00">06:00 PM</option>
+                                    <option value="18:30">06:30 PM</option>
+                                    <option value="19:00">07:00 PM</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Room</label>
+                                <input x-model="newClass.room" type="text"
+                                    class="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                                    placeholder="e.g. SCI 304">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Color Tag</label>
+                            <div class="flex flex-wrap gap-2">
+                                <template x-for="col in colorOptions" :key="col.key">
+                                    <button type="button" @click="newClass.color = col.key"
+                                        :title="col.key"
+                                        class="w-7 h-7 rounded-full transition-all ring-offset-2 ring-offset-white dark:ring-offset-gray-900"
+                                        :class="[col.bg, newClass.color === col.key ? 'ring-2 ring-gray-800 dark:ring-white scale-110' : 'hover:scale-110']"
+                                    ></button>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 flex gap-3">
+                            <button type="button" @click="showAddClassModal = false"
+                                class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                :disabled="saving"
+                                class="flex-1 px-4 py-2.5 rounded-xl bg-black dark:bg-white text-white dark:text-black font-semibold hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="ri-loader-4-line animate-spin" x-show="saving"></i>
+                                <i class="ri-save-line" x-show="!saving"></i>
+                                <span x-text="saving ? 'Saving...' : 'Save Class'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Office Hours Modal -->
+    <div x-show="showOfficeHoursModal" class="relative z-50" x-cloak>
+        <div x-show="showOfficeHoursModal" x-transition:enter="ease-out duration-300"
+            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+            x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
+            @click="showOfficeHoursModal = false"></div>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div x-show="showOfficeHoursModal" x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 text-left shadow-2xl transition-all w-full max-w-lg">
+
+                    <div
+                        class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-black dark:text-white">Manage Office Hours</h3>
+                        <button @click="showOfficeHoursModal = false"
+                            class="text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                            <i class="ri-close-line text-xl"></i>
+                        </button>
+                    </div>
+
+                    <div class="p-6 space-y-4">
+                        <div class="space-y-3">
+                            <template x-for="(hour, index) in officeHours" :key="index">
+                                <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                    <div class="flex-1">
+                                        <p class="font-medium text-black dark:text-white"
+                                            x-text="hour.day + ' ' + hour.time"></p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400"
+                                            x-text="'Room ' + hour.room"></p>
+                                    </div>
+                                    <button @click="removeOfficeHour(index)"
+                                        class="p-2 text-gray-400 hover:text-red-600 transition-colors">
+                                        <i class="ri-delete-bin-line"></i>
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+
+                        <button @click="showAddOfficeHourForm = !showAddOfficeHourForm"
+                            class="w-full py-2 px-4 border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 rounded-lg hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white transition-colors">
+                            <i class="ri-add-line mr-2"></i>Add Office Hours
+                        </button>
+
+                        <div x-show="showAddOfficeHourForm"
+                            class="space-y-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <select x-model="newOfficeHour.day"
+                                    class="rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                                    <option value="">Day</option>
+                                    <option value="Monday">Monday</option>
+                                    <option value="Tuesday">Tuesday</option>
+                                    <option value="Wednesday">Wednesday</option>
+                                    <option value="Thursday">Thursday</option>
+                                    <option value="Friday">Friday</option>
+                                </select>
+                                <select x-model="newOfficeHour.time"
+                                    class="rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                                    <option value="">Time</option>
+                                    <option value="09:00-10:00">09:00-10:00</option>
+                                    <option value="11:00-12:00">11:00-12:00</option>
+                                    <option value="13:00-14:00">13:00-14:00</option>
+                                    <option value="15:00-16:00">15:00-16:00</option>
+                                </select>
+                            </div>
+                            <input x-model="newOfficeHour.room" type="text" placeholder="Room number"
+                                class="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                            <div class="flex gap-2">
+                                <button @click="addOfficeHour()"
+                                    class="flex-1 bg-black dark:bg-white text-white dark:text-black rounded-lg py-2 px-4 text-sm font-medium">Add</button>
+                                <button @click="showAddOfficeHourForm = false; resetOfficeHourForm()"
+                                    class="px-4 py-2 text-gray-500 dark:text-gray-400 text-sm">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/api.js?v=2"></script>
+    <script>
+        function facultySchedule() {
+            return {
+                sidebarOpen: false,
+                loading: true,
+                initError: '',
+                saving: false,
+                showAddClassModal: false,
+                showOfficeHoursModal: false,
+                showAddOfficeHourForm: false,
+                darkMode: localStorage.getItem('darkMode') === 'true',
+                currentWeekOffset: 0,
+                weekDisplay: '',
+                totalStudents: 0,
+                courseOptions: [],
+
+                days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+                timeSlots: ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'],
+
+                classes: [
+                    { id: 1, title: 'Advanced Algorithms', room: 'SCI 304', day: 'Monday',    time: '10:00', type: 'class', color: 'indigo' },
+                    { id: 2, title: 'Advanced Algorithms', room: 'SCI 304', day: 'Wednesday', time: '10:00', type: 'class', color: 'indigo' },
+                    { id: 3, title: 'Advanced Algorithms', room: 'SCI 304', day: 'Friday',    time: '10:00', type: 'class', color: 'indigo' },
+                    { id: 4, title: 'Database Systems',    room: 'LAB 2',   day: 'Tuesday',   time: '14:00', type: 'class', color: 'blue' },
+                    { id: 5, title: 'Database Systems',    room: 'LAB 2',   day: 'Thursday',  time: '14:00', type: 'class', color: 'blue' },
+                    { id: 6, title: 'Office Hours', room: 'OFF 201', day: 'Monday',    time: '15:00', type: 'office', color: 'emerald' },
+                    { id: 7, title: 'Office Hours', room: 'OFF 201', day: 'Wednesday', time: '15:00', type: 'office', color: 'emerald' },
+                    { id: 8, title: 'Office Hours', room: 'OFF 201', day: 'Friday',    time: '15:00', type: 'office', color: 'emerald' }
+                ],
+
+                newClass: {
+                    course: '',
+                    day: '',
+                    time: '',
+                    endTime: '',
+                    room: '',
+                    color: 'indigo'
+                },
+
+                colorOptions: [
+                    { key: 'indigo',  bg: 'bg-indigo-500'  },
+                    { key: 'emerald', bg: 'bg-emerald-500' },
+                    { key: 'purple',  bg: 'bg-purple-500'  },
+                    { key: 'rose',    bg: 'bg-rose-500'    },
+                    { key: 'orange',  bg: 'bg-orange-500'  },
+                    { key: 'cyan',    bg: 'bg-cyan-500'    },
+                    { key: 'blue',    bg: 'bg-blue-500'    },
+                    { key: 'pink',    bg: 'bg-pink-500'    },
+                ],
+
+                officeHours: [
+                    { day: 'Monday', time: '15:00-16:00', room: 'OFF 201' },
+                    { day: 'Wednesday', time: '15:00-16:00', room: 'OFF 201' },
+                    { day: 'Friday', time: '15:00-16:00', room: 'OFF 201' }
+                ],
+
+                newOfficeHour: {
+                    day: '',
+                    time: '',
+                    room: ''
+                },
+
+                closeAllModals() { this.showAddClassModal = false; this.showOfficeHoursModal = false; },
+
+                async init() {
+                    this._api = window.api || new AcademicSyncAPI(window._apiBase || 'http://localhost:5000');
+                    if (!this._api.checkAuth()) { window.location.href = 'faculty-login.html'; return; }
+                    const user = this._api.getUserData();
+                    if (user && user.role !== 'faculty') { this._api.clearToken(); window.location.href = 'faculty-login.html'; return; }
+                    if (user) this._api.populateSidebar(user);
+
+                    if (this.darkMode) document.documentElement.classList.add('dark');
+                    this.$watch('darkMode', val => {
+                        localStorage.setItem('darkMode', val);
+                        if (val) document.documentElement.classList.add('dark');
+                        else document.documentElement.classList.remove('dark');
+                    });
+                    this.$watch('showAddClassModal', val => { document.body.style.overflow = val ? 'hidden' : ''; });
+                    this.$watch('showOfficeHoursModal', val => { document.body.style.overflow = val ? 'hidden' : ''; });
+
+                    this.updateWeekDisplay();
+
+                    // Load courses for the dropdown
+                    try {
+                        const courses = await this._api.getFacultyCourses();
+                        const raw = Array.isArray(courses) ? courses : (courses.courses || []);
+                        this.courseOptions = raw.map(c => ({ id: c.id, name: c.course_name, code: c.course_code }));
+                        this.totalStudents = raw.reduce((s, c) => s + (c.enrolled_count || 0), 0);
+                    } catch (e) {
+                        this._api?.showNotification('Could not load courses', 'error');
+                        this.initError = 'Could not load schedule data. Please try again.';
+                        this.courseOptions = [
+                            { id: 1, name: 'Advanced Algorithms', code: 'CS 401' },
+                            { id: 2, name: 'Database Systems', code: 'CS 301' },
+                            { id: 3, name: 'Machine Learning', code: 'CS 501' }
+                        ];
+                    }
+
+                    // Load schedule from API
+                    try {
+                        const data = await this._api.getFacultySchedule();
+                        const sessions = Array.isArray(data) ? data : (data.schedule || data.sessions || []);
+                        const colorCycle = ['indigo','blue','emerald','purple','rose','orange','cyan','pink'];
+                        if (sessions.length > 0) {
+                            this.classes = sessions.map((s, i) => ({
+                                id:      s.id || (Date.now() + i),
+                                apiId:   s.id || null,
+                                fromApi: !!s.id,
+                                title:   s.course_name || s.title || 'Class',
+                                room:    s.room || s.location || '',
+                                day:     s.day_of_week || s.day || 'Monday',
+                                time:    (s.start_time || s.time || '08:00').substring(0, 5),
+                                type:    s.session_type === 'office_hours' ? 'office' : 'class',
+                                color:   colorCycle[i % colorCycle.length]
+                            }));
+                        }
+                    } catch (e) { this._api?.showNotification('Could not load schedule', 'error'); this.initError = 'Could not load schedule data. Please try again.'; }
+                    this.loading = false;
+                },
+
+                toggleDarkMode() {
+                    this.darkMode = !this.darkMode;
+                },
+
+                formatTime(t) {
+                    const [h, m] = t.split(':').map(Number);
+                    const ampm = h >= 12 ? 'PM' : 'AM';
+                    const h12 = h % 12 || 12;
+                    return `${h12}:${String(m).padStart(2,'0')} ${ampm}`;
+                },
+
+                updateWeekDisplay() {
+                    const now = new Date();
+                    const day = now.getDay(); // 0=Sun
+                    const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Monday
+                    const monday = new Date(now.setDate(diff + this.currentWeekOffset * 7));
+                    const friday = new Date(monday);
+                    friday.setDate(monday.getDate() + 4);
+                    const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    this.weekDisplay = `${fmt(monday)} � ${fmt(friday)}, ${friday.getFullYear()}`;
+                },
+
+                getClassesForTimeAndDay(time, day) {
+                    return this.classes.filter(cls => cls.time === time && cls.day === day);
+                },
+
+                async removeClass(id) {
+                    const cls = this.classes.find(c => c.id === id);
+                    if (!cls) return;
+
+                    // Optimistically remove from UI
+                    this.classes = this.classes.filter(c => c.id !== id);
+
+                    if (cls.fromApi && cls.apiId) {
+                        try {
+                            await this._api.deleteScheduleSession(cls.apiId);
+                            this._api?.showNotification('Class removed from schedule', 'success');
+                        } catch (e) {
+                            // Restore if backend delete failed
+                            this.classes = [...this.classes, cls].sort((a,b) => a.id - b.id);
+                            this._api?.showNotification('Could not remove class: ' + e.message, 'error');
+                        }
+                    } else {
+                        this._api?.showNotification('Class removed from schedule', 'success');
+                    }
+                },
+
+                _colorMap: {
+                    indigo:  { border: '#6366f1', bgLight: '#eef2ff', bgDark: 'rgba(99,102,241,0.2)',  text: '#3730a3', textDark: '#c7d2fe' },
+                    blue:    { border: '#3b82f6', bgLight: '#eff6ff', bgDark: 'rgba(59,130,246,0.2)',  text: '#1e40af', textDark: '#bfdbfe' },
+                    violet:  { border: '#7c3aed', bgLight: '#f5f3ff', bgDark: 'rgba(124,58,237,0.2)',  text: '#4c1d95', textDark: '#ddd6fe' },
+                    purple:  { border: '#a855f7', bgLight: '#faf5ff', bgDark: 'rgba(168,85,247,0.2)',  text: '#6b21a8', textDark: '#e9d5ff' },
+                    rose:    { border: '#f43f5e', bgLight: '#fff1f2', bgDark: 'rgba(244,63,94,0.2)',   text: '#9f1239', textDark: '#fecdd3' },
+                    orange:  { border: '#f97316', bgLight: '#fff7ed', bgDark: 'rgba(249,115,22,0.2)',  text: '#9a3412', textDark: '#fed7aa' },
+                    amber:   { border: '#f59e0b', bgLight: '#fffbeb', bgDark: 'rgba(245,158,11,0.2)',  text: '#92400e', textDark: '#fde68a' },
+                    teal:    { border: '#14b8a6', bgLight: '#f0fdfa', bgDark: 'rgba(20,184,166,0.2)',  text: '#134e4a', textDark: '#99f6e4' },
+                    cyan:    { border: '#06b6d4', bgLight: '#ecfeff', bgDark: 'rgba(6,182,212,0.2)',   text: '#164e63', textDark: '#a5f3fc' },
+                    emerald: { border: '#10b981', bgLight: '#ecfdf5', bgDark: 'rgba(16,185,129,0.2)',  text: '#064e3b', textDark: '#6ee7b7' },
+                    lime:    { border: '#84cc16', bgLight: '#f7fee7', bgDark: 'rgba(132,204,22,0.2)',  text: '#365314', textDark: '#d9f99d' },
+                    pink:    { border: '#ec4899', bgLight: '#fdf2f8', bgDark: 'rgba(236,72,153,0.2)',  text: '#831843', textDark: '#fbcfe8' },
+                },
+
+                getClassStyle(classItem) {
+                    const key = classItem.color || (classItem.type === 'office' ? 'emerald' : 'indigo');
+                    const c = this._colorMap[key] || this._colorMap.indigo;
+                    const bg = this.darkMode ? c.bgDark : c.bgLight;
+                    return `background:${bg}; border-left-color:${c.border};`;
+                },
+
+                getClassTextStyle(classItem) {
+                    const key = classItem.color || (classItem.type === 'office' ? 'emerald' : 'indigo');
+                    const c = this._colorMap[key] || this._colorMap.indigo;
+                    return `color:${this.darkMode ? c.textDark : c.text};`;
+                },
+
+                openAddClassAt(time, day) {
+                    this.newClass.day     = day;
+                    this.newClass.time    = time;
+                    this.newClass.endTime = '';
+                    this.newClass.course  = '';
+                    this.newClass.room    = '';
+                    this.newClass.color   = 'indigo';
+                    this.showAddClassModal = true;
+                },
+
+                async addClass() {
+                    if (!this.newClass.course || !this.newClass.day || !this.newClass.time || !this.newClass.room) {
+                        this._api?.showNotification('Please fill in Course, Day, Start Time and Room.', 'error');
+                        return;
+                    }
+
+                    // Auto-calculate end time (+1 hour) if not provided
+                    if (!this.newClass.endTime) {
+                        const [h, m] = this.newClass.time.split(':').map(Number);
+                        const endH = String(h + 1).padStart(2, '0');
+                        this.newClass.endTime = `${endH}:${String(m).padStart(2, '0')}`;
+                    }
+
+                    if (this.newClass.endTime <= this.newClass.time) {
+                        this._api?.showNotification('End time must be after start time.', 'error');
+                        return;
+                    }
+
+                    // Optimistically add to UI
+                    this.saving = true;
+                    const tempId = -(Date.now());
+                    const entry = {
+                        id: tempId,
+                        apiId: null,
+                        fromApi: false,
+                        title: this.newClass.course,
+                        room: this.newClass.room,
+                        day: this.newClass.day,
+                        time: this.newClass.time,
+                        color: this.newClass.color || 'indigo',
+                        type: 'class'
+                    };
+                    this.classes.push(entry);
+
+                    // Persist via API if available
+                    if (this._api && this._api.checkAuth()) {
+                        const courseObj = this.courseOptions.find(c => c.name === this.newClass.course);
+                        if (!courseObj) {
+                            this._api.showNotification('Could not find course ID. Please reload and try again.', 'error');
+                            this.classes = this.classes.filter(c => c.id !== tempId);
+                            return;
+                        }
+                        try {
+                            const result = await this._api.createScheduleSession({
+                                course_id:    courseObj.id,
+                                day_of_week:  this.newClass.day,
+                                start_time:   this.newClass.time + ':00',
+                                end_time:     this.newClass.endTime + ':00',
+                                room:         this.newClass.room,
+                                session_type: 'lecture'
+                            });
+                            // Update the temp ID with the real one from the server
+                            const idx = this.classes.findIndex(c => c.id === tempId);
+                            if (idx !== -1) {
+                                const realId = result.session?.id || result.id;
+                                if (realId) {
+                                    this.classes[idx].id     = realId;
+                                    this.classes[idx].apiId  = realId;
+                                    this.classes[idx].fromApi = true;
+                                }
+                            }
+                            this._api.showNotification('Class added to schedule.', 'success');
+                        } catch (e) {
+                            this._api.showNotification('Saved locally � API error: ' + e.message, 'warning');
+                        }
+                    }
+
+                    this.newClass = { course: '', day: '', time: '', endTime: '', room: '', color: 'indigo' };
+                    this.showAddClassModal = false;
+                    this.saving = false;
+                },
+
+                async addOfficeHour() {
+                    if (!this.newOfficeHour.day || !this.newOfficeHour.time || !this.newOfficeHour.room) {
+                        return;
+                    }
+
+                    const timeStart = this.newOfficeHour.time.split('-')[0];
+                    const timeEnd = this.newOfficeHour.time.split('-')[1] || (parseInt(timeStart) + 1).toString().padStart(2, '0') + ':00';
+                    const tempId = -(Date.now());
+
+                    this.officeHours.push({
+                        id: tempId,
+                        day: this.newOfficeHour.day,
+                        time: this.newOfficeHour.time,
+                        room: this.newOfficeHour.room
+                    });
+                    this.classes.push({
+                        id: tempId,
+                        title: 'Office Hours',
+                        room: this.newOfficeHour.room,
+                        day: this.newOfficeHour.day,
+                        time: timeStart,
+                        type: 'office'
+                    });
+
+                    if (this._api && this._api.checkAuth()) {
+                        try {
+                            const result = await this._api.createScheduleSession({
+                                day_of_week: this.newOfficeHour.day,
+                                start_time: timeStart + ':00',
+                                end_time: timeEnd + ':00',
+                                room: this.newOfficeHour.room,
+                                session_type: 'office_hours'
+                            });
+                            if (result.session) {
+                                const realId = result.session.id;
+                                const i1 = this.officeHours.findIndex(o => o.id === tempId);
+                                const i2 = this.classes.findIndex(c => c.id === tempId);
+                                if (i1 !== -1) this.officeHours[i1].id = realId;
+                                if (i2 !== -1) this.classes[i2].id = realId;
+                            }
+                            this._api.showNotification('Office hours saved.', 'success');
+                        } catch (e) {
+                            this._api.showNotification('Saved locally � API error: ' + e.message, 'warning');
+                        }
+                    }
+
+                    this.resetOfficeHourForm();
+                    this.showAddOfficeHourForm = false;
+                },
+
+                async removeOfficeHour(index) {
+                    const officeHour = this.officeHours[index];
+                    this.officeHours.splice(index, 1);
+
+                    const timeStart = (officeHour.time || '').split('-')[0];
+                    const classIndex = this.classes.findIndex(c =>
+                        c.day === officeHour.day &&
+                        c.time === timeStart &&
+                        c.type === 'office' &&
+                        c.room === officeHour.room
+                    );
+                    if (classIndex !== -1) this.classes.splice(classIndex, 1);
+
+                    // Persist deletion if we have a real server ID
+                    if (officeHour.id && officeHour.id > 0 && this._api && this._api.checkAuth()) {
+                        try {
+                            await this._api.deleteScheduleSession(officeHour.id);
+                            this._api.showNotification('Office hours removed.', 'success');
+                        } catch (e) {
+                            this._api.showNotification('Removed locally � API error: ' + e.message, 'warning');
+                        }
+                    }
+                },
+
+                resetOfficeHourForm() {
+                    this.newOfficeHour = { day: '', time: '', room: '' };
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

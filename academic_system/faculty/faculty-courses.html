@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <title>My Courses - Faculty Dashboard - AcademicSync</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter','sans-serif'], display: ['Inter','sans-serif'] },
+                    colors: { gray: { 750: '#2d3748' } },
+                    animation: { 'fade-in-up': 'fadeInUp 0.5s ease-out forwards' },
+                    keyframes: { fadeInUp: { '0%': { opacity:'0', transform:'translateY(10px)' }, '100%': { opacity:'1', transform:'translateY(0)' } } }
+                }
+            }
+        }
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak]{display:none!important}
+        .custom-scrollbar::-webkit-scrollbar{width:6px}
+        .custom-scrollbar::-webkit-scrollbar-track{background:transparent}
+        .custom-scrollbar::-webkit-scrollbar-thumb{background-color:#e5e7eb;border-radius:20px}
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb{background-color:#374151}
+        .year-bar{height:6px;border-radius:3px;transition:width 0.6s ease}
+    </style>
+</head>
+<body class="h-full flex overflow-hidden font-sans antialiased bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 text-gray-600 dark:text-gray-300 transition-colors duration-200"
+      x-data="facultyCourses()" @keydown.escape.window="closeAllModals()">
+
+    <!-- Toast -->
+    <div x-show="toast.show" x-cloak
+         x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         class="fixed top-5 right-5 z-[200] flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium"
+         :class="toast.type==='success'?'bg-emerald-50 border-emerald-200 text-emerald-800':'bg-red-50 border-red-200 text-red-800'">
+        <i :class="toast.type==='success'?'ri-checkbox-circle-line text-emerald-500':'ri-error-warning-line text-red-500'" class="text-lg"></i>
+        <span x-text="toast.message"></span>
+    </div>
+
+    <!-- Mobile Backdrop -->
+    <div x-show="sidebarOpen" @click="sidebarOpen=false" x-cloak
+         class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
+         x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
+
+    <!-- Sidebar -->
+    <aside :class="sidebarOpen?'translate-x-0':'-translate-x-full lg:translate-x-0'"
+           class="fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-800/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transform transition-transform duration-300 ease-in-out flex flex-col h-full">
+        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100/50 dark:border-gray-800/50">
+            <a href="../index.html" class="flex items-center gap-2.5 group">
+                <div class="w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform"><i class="lni lni-graduation"></i></div>
+                <span class="font-display font-bold text-xl text-black dark:text-white tracking-tight">AcademicSync</span>
+            </a>
+            <button @click="sidebarOpen=false" aria-label="Close sidebar" class="lg:hidden text-gray-400 hover:text-black transition-colors"><i class="lni lni-close text-xl"></i></button>
+        </div>
+        <div class="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Faculty Menu</p>
+            <a href="faculty-dashboard.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white transition-all group"><i class="lni lni-grid-alt text-lg group-hover:text-black dark:group-hover:text-white"></i> Dashboard</a>
+            <a href="faculty-courses.html" aria-current="page" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium bg-white/60 dark:bg-white/10 text-black dark:text-white shadow-sm border border-white/40 dark:border-white/5 backdrop-blur-sm transition-all"><i class="lni lni-library text-lg"></i> My Courses</a>
+            <a href="faculty-schedule.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white transition-all group"><i class="lni lni-calendar text-lg group-hover:text-black dark:group-hover:text-white"></i> Schedule</a>
+            <a href="faculty-students.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white transition-all group"><i class="lni lni-users text-lg group-hover:text-black dark:group-hover:text-white"></i> Students</a>
+            <a href="faculty-attendance.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white transition-all group"><i class="lni lni-checkmark-circle text-lg group-hover:text-black dark:group-hover:text-white"></i> Attendance</a>
+            <a href="faculty-grades.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white transition-all group"><i class="lni lni-clipboard text-lg group-hover:text-black dark:group-hover:text-white"></i> Grades</a>
+            <a href="faculty-assignments.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white transition-all group"><i class="lni lni-list text-lg group-hover:text-black dark:group-hover:text-white"></i> Assignments</a>
+            <a href="faculty-quiz.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white transition-all group"><i class="lni lni-pencil-alt text-lg group-hover:text-black dark:group-hover:text-white"></i> Quizzes</a>
+            <a href="faculty-resources.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white transition-all group"><i class="lni lni-folder text-lg group-hover:text-black dark:group-hover:text-white"></i> Resources</a>
+            <a href="faculty-profile.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white transition-all group"><i class="lni lni-user text-lg group-hover:text-black dark:group-hover:text-white"></i> Profile</a>
+        </div>
+        <div class="p-4 border-t border-gray-100/50 dark:border-gray-800/50 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md">
+            <button @click="darkMode=!darkMode" class="w-full flex items-center justify-center gap-2 mb-3 py-2 rounded-lg bg-white/50 dark:bg-gray-800/50 border border-white/20 dark:border-gray-700/30 text-gray-600 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-800/80 transition-colors shadow-sm">
+                <i class="lni" :class="darkMode?'lni-night':'lni-sun'"></i>
+                <span class="text-xs font-bold uppercase tracking-wider" x-text="darkMode?'Dark Mode':'Light Mode'"></span>
+            </button>
+            <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors group">
+                <div class="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-gray-200 dark:border-gray-700 text-gray-500 font-bold text-xs uppercase" x-text="userInitials"></div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-black dark:text-white truncate" x-text="userName"></p>
+                    <p class="text-xs text-gray-500 truncate" x-text="userDept"></p>
+                </div>
+            </div>
+            <div class="mt-2 text-center">
+                <button @click="logout()" class="w-full flex items-center justify-center gap-2 text-xs font-bold text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 py-2 rounded-lg transition-all border border-transparent hover:border-gray-200 dark:hover:border-gray-700 uppercase tracking-tighter">
+                    <i class="lni lni-exit"></i><span>Sign Out</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="flex-1 flex flex-col min-w-0 relative">
+        <!-- Mobile Header -->
+        <div class="lg:hidden h-14 border-b border-gray-100/50 dark:border-gray-800/50 flex items-center justify-between px-4 sticky top-0 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl z-20 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+            <span class="font-semibold text-black dark:text-white">My Courses</span>
+            <button @click="sidebarOpen=!sidebarOpen" aria-label="Open sidebar" class="p-2 text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md"><i class="ri-menu-line text-xl"></i></button>
+        </div>
+
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar" id="main-content">
+            <!-- Skeleton loading -->
+            <div x-show="loading" class="max-w-7xl mx-auto pb-12 animate-pulse space-y-6">
+                <div class="flex items-center justify-between">
+                    <div class="space-y-2">
+                        <div class="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                        <div class="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    </div>
+                    <div class="h-10 w-28 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                </div>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-3"><div class="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-8 w-12 bg-gray-200 dark:bg-gray-700 rounded-xl"></div></div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-3"><div class="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-8 w-12 bg-gray-200 dark:bg-gray-700 rounded-xl"></div></div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-3"><div class="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-8 w-12 bg-gray-200 dark:bg-gray-700 rounded-xl"></div></div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-3"><div class="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-8 w-12 bg-gray-200 dark:bg-gray-700 rounded-xl"></div></div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div class="p-5 border-b border-gray-100 dark:border-gray-700"><div class="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div></div>
+                    <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                        <div class="flex items-center gap-4 p-4"><div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-xl shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-2/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/4 bg-gray-200 dark:bg-gray-700 rounded"></div></div><div class="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div></div>
+                        <div class="flex items-center gap-4 p-4"><div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-xl shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-3/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/3 bg-gray-200 dark:bg-gray-700 rounded"></div></div><div class="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div></div>
+                        <div class="flex items-center gap-4 p-4"><div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-xl shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/4 bg-gray-200 dark:bg-gray-700 rounded"></div></div><div class="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div></div>
+                        <div class="flex items-center gap-4 p-4"><div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-xl shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-2/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/3 bg-gray-200 dark:bg-gray-700 rounded"></div></div><div class="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div></div>
+                        <div class="flex items-center gap-4 p-4"><div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-xl shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-2/5 bg-gray-200 dark:bg-gray-700 rounded"></div></div><div class="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="max-w-7xl mx-auto space-y-6 animate-fade-in-up pb-12" x-show="!loading">
+
+                <!-- Page Header -->
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div>
+                        <h1 class="text-3xl font-display font-bold text-black dark:text-white tracking-tight">My Courses</h1>
+                        <p class="text-gray-500 mt-1">
+                            <span x-text="loading?'Loading�':filteredCourses.length+' course'+(filteredCourses.length!==1?'s':'')"></span> found
+                            <template x-if="filterSemester||filterYear||searchQuery"> <span class="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full ml-1">filtered</span></template>
+                        </p>
+                    </div>
+                    <button @click="openCreate()" class="flex items-center gap-2 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-bold hover:bg-gray-800 dark:hover:bg-gray-200 hover:shadow-lg transition-all self-start md:self-auto">
+                        <i class="ri-add-line text-lg"></i> Add Course
+                    </button>
+                </div>
+
+                <!-- Stats Row -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Courses</p>
+                        <p class="text-3xl font-bold text-black dark:text-white mt-1" x-text="courses.length"></p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Enrolled</p>
+                        <p class="text-3xl font-bold text-black dark:text-white mt-1" x-text="courses.reduce((s,c)=>s+(c.enrolled_count||0),0)"></p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Semesters</p>
+                        <p class="text-3xl font-bold text-black dark:text-white mt-1" x-text="semesters.length"></p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Avg Capacity</p>
+                        <p class="text-3xl font-bold text-black dark:text-white mt-1" x-text="avgCapacity+'%'"></p>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-1">
+                        <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" x-model="searchQuery" placeholder="Search courses�"
+                               class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                    </div>
+                    <select x-model="filterSemester" class="px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                        <option value="">All Semesters</option>
+                        <template x-for="s in semesters" :key="s.id">
+                            <option :value="s.id" x-text="s.name"></option>
+                        </template>
+                    </select>
+                    <select x-model="filterYear" class="px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                        <option value="">All Years</option>
+                        <option value="1">Year 1</option>
+                        <option value="2">Year 2</option>
+                        <option value="3">Year 3</option>
+                        <option value="4">Year 4</option>
+                    </select>
+                </div>
+
+                <!-- Loading -->
+                <div x-show="loading" class="flex items-center justify-center py-20 text-gray-400">
+                    <i class="ri-loader-4-line animate-spin text-3xl mr-3"></i> Loading courses�
+                </div>
+
+                <!-- Empty -->
+                <div x-show="!loading && filteredCourses.length===0" class="flex flex-col items-center justify-center py-20 text-gray-400" x-cloak>
+                    <i class="ri-book-open-line text-5xl mb-4"></i>
+                    <p class="text-lg font-semibold text-gray-500 dark:text-gray-400">No courses found</p>
+                    <p class="text-sm mt-1">Try adjusting your filters or add a new course.</p>
+                </div>
+
+                <!-- Course Grid -->
+                <div x-show="!loading && filteredCourses.length>0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" x-cloak>
+                    <template x-for="(course,i) in filteredCourses" :key="course.id">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-black dark:hover:border-white transition-all overflow-hidden flex flex-col">
+                            <!-- Colored strip -->
+                            <div class="h-1.5" :class="stripColors[i%stripColors.length]"></div>
+
+                            <div class="p-5 flex-1 flex flex-col gap-4">
+                                <!-- Card header -->
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-sm shrink-0"
+                                             :class="iconBg[i%iconBg.length]"
+                                             x-text="initials(course.course_code||course.course_name)"></div>
+                                        <div>
+                                            <h3 class="font-bold text-black dark:text-white leading-tight" x-text="course.course_name||'Unnamed'"></h3>
+                                            <p class="text-xs text-gray-400 mt-0.5" x-text="(course.course_code||'')+(course.semester?' � '+course.semester:'')"></p>
+                                        </div>
+                                    </div>
+                                    <!-- three-dot menu -->
+                                    <div class="relative" x-data="{open:false}">
+                                        <button @click="open=!open" aria-label="More options" class="p-1.5 text-gray-400 hover:text-black dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"><i class="ri-more-2-line"></i></button>
+                                        <div x-show="open" @click.away="open=false" x-cloak
+                                             class="absolute right-0 top-8 w-36 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-10 py-1 text-sm">
+                                            <button @click="openEdit(course);open=false" class="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 flex items-center gap-2"><i class="ri-pencil-line"></i> Edit</button>
+                                            <button @click="openStudents(course);open=false" class="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 flex items-center gap-2"><i class="ri-user-line"></i> Students</button>
+                                            <button @click="promptArchive(course);open=false" class="w-full text-left px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center gap-2"><i class="ri-archive-line"></i> Archive</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Badges -->
+                                <div class="flex flex-wrap gap-1.5">
+                                    <span x-show="course.department" x-text="course.department" class="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full"></span>
+                                    <span x-show="course.credits" x-text="(course.credits||0)+' cr'" class="text-xs px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full"></span>
+                                    <span x-show="course.target_year" x-text="'Year '+course.target_year" class="text-xs px-2 py-0.5 bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-full"></span>
+                                </div>
+
+                                <!-- Stats row -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div class="p-3 bg-gray-50 dark:bg-gray-750 rounded-xl text-center">
+                                        <p class="text-2xl font-bold text-black dark:text-white" x-text="course.enrolled_count||0"></p>
+                                        <p class="text-xs text-gray-400 font-medium">Enrolled</p>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 dark:bg-gray-750 rounded-xl text-center">
+                                        <p class="text-2xl font-bold text-black dark:text-white" x-text="course.max_students||'8'"></p>
+                                        <p class="text-xs text-gray-400 font-medium">Capacity</p>
+                                    </div>
+                                </div>
+
+                                <!-- Year breakdown bar chart -->
+                                <div x-show="course._years && Object.keys(course._years).length>0" class="space-y-1.5" x-cloak>
+                                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">By Year</p>
+                                    <template x-for="yr in [1,2,3,4]" :key="yr">
+                                        <div x-show="(course._years||{})[yr]>0" class="flex items-center gap-2">
+                                            <span class="text-xs text-gray-400 w-6 shrink-0" x-text="'Y'+yr"></span>
+                                            <div class="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full h-1.5">
+                                                <div class="h-1.5 rounded-full year-bar"
+                                                     :class="['bg-indigo-500','bg-emerald-500','bg-violet-500','bg-orange-500'][yr-1]"
+                                                     :style="'width:'+Math.round(((course._years||{})[yr]||0)/(course.enrolled_count||1)*100)+'%'"></div>
+                                            </div>
+                                            <span class="text-xs text-gray-500 w-5 text-right" x-text="(course._years||{})[yr]||0"></span>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="flex gap-2 pt-1 mt-auto">
+                                    <button @click="openStudents(course)" class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg text-xs font-bold hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
+                                        <i class="ri-group-line"></i>
+                                        <span>Students</span>
+                                        <span x-show="(course.enrolled_count||0)>0" x-text="'('+course.enrolled_count+')'" class="opacity-75"></span>
+                                    </button>
+                                    <button @click="openEdit(course)" class="px-3 py-2 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-xs font-bold hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 transition-colors">
+                                        <i class="ri-pencil-line"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ===== ADD COURSE MODAL ===== -->
+    <div x-show="showCreateModal" class="relative z-50" x-cloak>
+        <div @click="showCreateModal=false" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm"
+             x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto flex items-center justify-center p-4">
+            <div class="relative bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl w-full max-w-lg"
+                 x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95">
+                <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-black dark:text-white">Add New Course</h3>
+                    <button @click="showCreateModal=false" aria-label="Close modal" class="text-gray-400 hover:text-gray-700 dark:hover:text-white"><i class="ri-close-line text-xl"></i></button>
+                </div>
+                <form @submit.prevent="submitCreate()" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-1">Course Name *</label>
+                        <input type="text" x-model="form.course_name" required placeholder="e.g. Advanced Algorithms"
+                               class="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-1">Course Code *</label>
+                            <input type="text" x-model="form.course_code" required placeholder="CS 401"
+                                   class="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-1">Credits</label>
+                            <select x-model="form.credits" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                                <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-1">Semester</label>
+                            <select x-model="form.semester_id" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                                <option value="">Select semester</option>
+                                <template x-for="s in semesters" :key="s.id">
+                                    <option :value="s.id" x-text="s.name"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-1">Target Year</label>
+                            <select x-model="form.target_year" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                                <option value="">All Years</option>
+                                <option value="1">Year 1 (Freshman)</option>
+                                <option value="2">Year 2 (Sophomore)</option>
+                                <option value="3">Year 3 (Junior)</option>
+                                <option value="4">Year 4 (Senior)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-1">Department</label>
+                            <input type="text" x-model="form.department" placeholder="Computer Science"
+                                   class="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-1">Max Students</label>
+                            <input type="number" x-model="form.max_students" placeholder="50" min="1"
+                                   class="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-1">Description</label>
+                        <textarea x-model="form.description" rows="2" placeholder="Brief course description�"
+                                  class="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 resize-none"></textarea>
+                    </div>
+                    <div class="flex gap-3 pt-2">
+                        <button type="button" @click="showCreateModal=false" class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Cancel</button>
+                        <button type="submit" :disabled="saving" class="flex-1 px-4 py-2.5 rounded-xl bg-black dark:bg-white text-sm font-bold text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors disabled:opacity-50">
+                            <span x-show="!saving">Create Course</span>
+                            <span x-show="saving" x-cloak><i class="ri-loader-4-line animate-spin mr-1"></i> Saving�</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== EDIT COURSE MODAL ===== -->
+    <div x-show="showEditModal" class="relative z-50" x-cloak>
+        <div @click="showEditModal=false" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm"
+             x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto flex items-center justify-center p-4">
+            <div class="relative bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl w-full max-w-lg"
+                 x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95">
+                <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-black dark:text-white">Edit Course</h3>
+                    <button @click="showEditModal=false" aria-label="Close modal" class="text-gray-400 hover:text-gray-700 dark:hover:text-white"><i class="ri-close-line text-xl"></i></button>
+                </div>
+                <form @submit.prevent="submitEdit()" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-1">Course Name</label>
+                        <input type="text" x-model="editForm.course_name"
+                               class="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-1">Credits</label>
+                            <select x-model="editForm.credits" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                                <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-1">Max Students</label>
+                            <input type="number" x-model="editForm.max_students" min="1"
+                                   class="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-1">Semester</label>
+                            <select x-model="editForm.semester_id" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                                <option value="">None</option>
+                                <template x-for="s in semesters" :key="s.id">
+                                    <option :value="s.id" x-text="s.name"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-1">Target Year</label>
+                            <select x-model="editForm.target_year" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                                <option value="">All Years</option>
+                                <option value="1">Year 1</option><option value="2">Year 2</option><option value="3">Year 3</option><option value="4">Year 4</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-1">Description</label>
+                        <textarea x-model="editForm.description" rows="2"
+                                  class="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 resize-none"></textarea>
+                    </div>
+                    <div class="flex gap-3 pt-2">
+                        <button type="button" @click="showEditModal=false" class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Cancel</button>
+                        <button type="submit" :disabled="saving" class="flex-1 px-4 py-2.5 rounded-xl bg-black dark:bg-white text-sm font-bold text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors disabled:opacity-50">
+                            <span x-show="!saving">Save Changes</span>
+                            <span x-show="saving" x-cloak><i class="ri-loader-4-line animate-spin mr-1"></i> Saving�</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== VIEW STUDENTS MODAL ===== -->
+    <div x-show="showStudentsModal" class="relative z-50" x-cloak>
+        <div @click="showStudentsModal=false" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm"
+             x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto flex items-center justify-center p-4">
+            <div class="relative bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl w-full max-w-xl max-h-[85vh] flex flex-col"
+                 x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95">
+                <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center shrink-0">
+                    <div>
+                        <h3 class="text-lg font-bold text-black dark:text-white" x-text="activeCourse?.course_name||'Students'"></h3>
+                        <p class="text-xs text-gray-400 mt-0.5" x-text="(activeCourse?.course_code||'')+(activeCourse?.semester?' � '+activeCourse.semester:'')"></p>
+                    </div>
+                    <button @click="showStudentsModal=false" aria-label="Close modal" class="text-gray-400 hover:text-gray-700 dark:hover:text-white"><i class="ri-close-line text-xl"></i></button>
+                </div>
+                <!-- Search + year filter -->
+                <div class="px-6 py-3 border-b border-gray-100 dark:border-gray-700 flex gap-2 shrink-0">
+                    <div class="relative flex-1">
+                        <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" x-model="studentSearch" placeholder="Search students�" class="w-full pl-8 pr-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                    </div>
+                    <select x-model="studentYearFilter" class="px-2 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                        <option value="">All Years</option><option value="1">Y1</option><option value="2">Y2</option><option value="3">Y3</option><option value="4">Y4</option>
+                    </select>
+                </div>
+                <!-- Students list grouped by year -->
+                <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                    <div x-show="studentsLoading" class="flex items-center justify-center py-12 text-gray-400">
+                        <i class="ri-loader-4-line animate-spin text-2xl mr-2"></i> Loading�
+                    </div>
+                    <div x-show="!studentsLoading && filteredStudentsByYear.length===0" class="flex flex-col items-center justify-center py-12 text-gray-400" x-cloak>
+                        <i class="ri-user-line text-4xl mb-3"></i>
+                        <p class="text-sm font-medium">No students found</p>
+                    </div>
+                    <template x-for="group in filteredStudentsByYear" :key="group.year">
+                        <div x-cloak>
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-xs font-bold text-white px-2 py-0.5 rounded-full"
+                                      :class="['bg-indigo-500','bg-emerald-500','bg-violet-500','bg-orange-500'][group.year-1]"
+                                      x-text="'Year '+group.year"></span>
+                                <span class="text-xs text-gray-400" x-text="group.students.length+' student'+(group.students.length!==1?'s':'')"></span>
+                            </div>
+                            <div class="space-y-2">
+                                <template x-for="s in group.students" :key="s.id">
+                                    <div class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+                                        <div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
+                                             :class="['bg-indigo-500','bg-emerald-500','bg-violet-500','bg-orange-500'][(group.year-1)%4]"
+                                             x-text="studentInitials(s.full_name||s.name||'?')"></div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-semibold text-black dark:text-white truncate" x-text="s.full_name||s.name||'Unknown'"></p>
+                                            <p class="text-xs text-gray-400" x-text="s.user_id||s.student_id||''"></p>
+                                        </div>
+                                        <div class="flex items-center gap-2 shrink-0">
+                                            <span x-show="s.gpa!=null" x-text="'GPA '+parseFloat(s.gpa||0).toFixed(2)"
+                                                  class="text-xs px-2 py-0.5 rounded-full font-medium"
+                                                  :class="(s.gpa||0)>=3.5?'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400':(s.gpa||0)>=2.5?'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400':'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'"></span>
+                                            <span x-show="s.grade" x-text="s.grade" class="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full font-semibold"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/api.js?v=2"></script>
+    <script>
+    function facultyCourses() {
+        return {
+            // UI state
+            sidebarOpen: false,
+            darkMode: localStorage.getItem('darkMode') === 'true',
+            loading: true,
+            saving: false,
+            toast: { show: false, message: '', type: 'success' },
+            // User info
+            userName: 'Faculty', userInitials: 'FA', userDept: '',
+            // Data
+            courses: [],
+            semesters: [],
+            students: [],
+            activeCourse: null,
+            // Filters
+            searchQuery: '',
+            filterSemester: '',
+            filterYear: '',
+            studentSearch: '',
+            studentYearFilter: '',
+            studentsLoading: false,
+            // Modals
+            showCreateModal: false,
+            showEditModal: false,
+            showStudentsModal: false,
+            // Forms
+            form: { course_name:'', course_code:'', credits:'3', semester_id:'', target_year:'', department:'', max_students:'', description:'' },
+            editForm: { id:null, course_name:'', credits:'', max_students:'', semester_id:'', target_year:'', description:'' },
+            // Color palettes
+            stripColors: ['bg-indigo-500','bg-emerald-500','bg-violet-500','bg-orange-500','bg-rose-500','bg-cyan-500'],
+            iconBg: [
+                'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400',
+                'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
+                'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400',
+                'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400',
+                'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400',
+                'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400',
+            ],
+
+            get filteredCourses() {
+                return this.courses.filter(c => {
+                    const q = this.searchQuery.toLowerCase();
+                    const matchQ = !q || (c.course_name||'').toLowerCase().includes(q) || (c.course_code||'').toLowerCase().includes(q);
+                    const matchSem = !this.filterSemester || String(c.semester_id) === String(this.filterSemester);
+                    const matchYr = !this.filterYear || String(c.target_year) === String(this.filterYear);
+                    return matchQ && matchSem && matchYr;
+                });
+            },
+            get avgCapacity() {
+                const cs = this.courses.filter(c => c.max_students > 0);
+                if (!cs.length) return 0;
+                const pct = cs.reduce((s,c) => s + (c.enrolled_count||0) / c.max_students * 100, 0);
+                return Math.round(pct / cs.length);
+            },
+            get filteredStudentsByYear() {
+                const q = (this.studentSearch||'').toLowerCase();
+                const yf = this.studentYearFilter;
+                const filtered = this.students.filter(s => {
+                    const matchQ = !q || (s.full_name||s.name||'').toLowerCase().includes(q) || (s.user_id||'').toLowerCase().includes(q);
+                    const matchY = !yf || String(s.year) === String(yf);
+                    return matchQ && matchY;
+                });
+                const groups = {};
+                filtered.forEach(s => { const y = s.year||0; if (!groups[y]) groups[y]=[]; groups[y].push(s); });
+                return Object.keys(groups).sort((a,b)=>a-b).map(y => ({ year: parseInt(y)||0, students: groups[y] }));
+            },
+
+            async init() {
+                // Dark mode
+                if (this.darkMode) document.documentElement.classList.add('dark');
+                this.$watch('darkMode', v => {
+                    localStorage.setItem('darkMode', v);
+                    v ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark');
+                });
+                this.$watch('showCreateModal', v => { document.body.style.overflow = v ? 'hidden' : ''; });
+                this.$watch('showEditModal', v => { document.body.style.overflow = v ? 'hidden' : ''; });
+                this.$watch('showStudentsModal', v => { document.body.style.overflow = v ? 'hidden' : ''; });
+
+                // Auth check
+                if (!window.api || !window.api.checkAuth()) { window.location.href = 'faculty-login.html'; return; }
+                const user = window.api.getUserData();
+                if (user && user.role !== 'faculty') { window.api.clearToken(); window.location.href = 'faculty-login.html'; return; }
+                if (user) {
+                    this.userName = user.full_name || user.name || 'Faculty';
+                    this.userInitials = (this.userName.split(' ').map(w=>w[0]).join('').substring(0,2)).toUpperCase();
+                    this.userDept = user.department || '';
+                }
+
+                await Promise.all([this._loadCourses(), this._loadSemesters()]);
+            },
+
+            async _loadCourses() {
+                this.loading = true;
+                try {
+                    const raw = await window.api.getFacultyCourses();
+                    this.courses = (Array.isArray(raw) ? raw : (raw.courses || [])).map(c => ({ ...c, _years: {} }));
+                    this._enrichYearBreakdowns();
+                } catch(e) {
+                    console.error(e);
+                    this._toast('Failed to load courses', 'error');
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            async _loadSemesters() {
+                try {
+                    const raw = await window.api.getSemesters();
+                    this.semesters = Array.isArray(raw) ? raw : (raw.semesters || []);
+                } catch(e) { console.warn('Could not load semesters', e); }
+            },
+
+            async _enrichYearBreakdowns() {
+                for (const course of this.courses) {
+                    try {
+                        const raw = await window.api.getCourseStudents(course.id);
+                        const list = Array.isArray(raw) ? raw : (raw.students || []);
+                        const yr = {};
+                        list.forEach(s => { const y = s.year||0; yr[y] = (yr[y]||0)+1; });
+                        course._years = yr;
+                    } catch(e) { /* silent */ }
+                }
+            },
+
+            openCreate() {
+                this.form = { course_name:'', course_code:'', credits:'3', semester_id:'', target_year:'', department:'', max_students:'', description:'' };
+                this.showCreateModal = true;
+            },
+
+            async submitCreate() {
+                if (!this.form.course_name || !this.form.course_code) { this._toast('Course name and code are required','error'); return; }
+                this.saving = true;
+                try {
+                    const payload = { ...this.form, credits: parseInt(this.form.credits)||3, max_students: parseInt(this.form.max_students)||50 };
+                    if (payload.semester_id) payload.semester_id = parseInt(payload.semester_id);
+                    if (payload.target_year) payload.target_year = parseInt(payload.target_year);
+                    const res = await window.api.createCourse(payload);
+                    const newCourse = res.course || res;
+                    this.courses.unshift({ ...newCourse, _years: {} });
+                    this.showCreateModal = false;
+                    this._toast('Course created successfully','success');
+                } catch(e) {
+                    console.error(e);
+                    this._toast(e.message||'Failed to create course','error');
+                } finally { this.saving = false; }
+            },
+
+            openEdit(course) {
+                this.editForm = {
+                    id: course.id,
+                    course_name: course.course_name||'',
+                    credits: String(course.credits||3),
+                    max_students: course.max_students||50,
+                    semester_id: course.semester_id||'',
+                    target_year: course.target_year||'',
+                    description: course.description||''
+                };
+                this.showEditModal = true;
+            },
+
+            async submitEdit() {
+                this.saving = true;
+                try {
+                    const payload = { ...this.editForm, credits: parseInt(this.editForm.credits)||3, max_students: parseInt(this.editForm.max_students)||50 };
+                    if (payload.semester_id) payload.semester_id = parseInt(payload.semester_id);
+                    if (payload.target_year) payload.target_year = parseInt(payload.target_year);
+                    const res = await window.api.updateCourse(this.editForm.id, payload);
+                    const updated = res.course || res;
+                    const idx = this.courses.findIndex(c => c.id === this.editForm.id);
+                    if (idx !== -1) this.courses[idx] = { ...this.courses[idx], ...updated };
+                    this.showEditModal = false;
+                    this._toast('Course updated','success');
+                } catch(e) {
+                    console.error(e);
+                    this._toast(e.message||'Failed to update course','error');
+                } finally { this.saving = false; }
+            },
+
+            promptArchive(course) {
+                if (!confirm(`Archive "${course.course_name}"? Students will no longer see this course.`)) return;
+                this._archiveCourse(course);
+            },
+
+            async _archiveCourse(course) {
+                try {
+                    await window.api.deleteCourse(course.id);
+                    this.courses = this.courses.filter(c => c.id !== course.id);
+                    this._toast('Course archived','success');
+                } catch(e) {
+                    console.error(e);
+                    this._toast(e.message||'Failed to archive course','error');
+                }
+            },
+
+            async openStudents(course) {
+                this.activeCourse = course;
+                this.students = [];
+                this.studentSearch = '';
+                this.studentYearFilter = '';
+                this.showStudentsModal = true;
+                this.studentsLoading = true;
+                try {
+                    const raw = await window.api.getCourseStudents(course.id);
+                    this.students = Array.isArray(raw) ? raw : (raw.students || []);
+                    // also update year breakdown in cards
+                    const yr = {};
+                    this.students.forEach(s => { const y = s.year||0; yr[y] = (yr[y]||0)+1; });
+                    course._years = yr;
+                } catch(e) {
+                    console.error(e);
+                    this._toast('Failed to load students','error');
+                } finally { this.studentsLoading = false; }
+            },
+
+            closeAllModals() {
+                this.showCreateModal = false;
+                this.showEditModal = false;
+                this.showStudentsModal = false;
+            },
+
+            logout() {
+                if (window.api) window.api.logout().catch(()=>{});
+                window.location.href = 'faculty-login.html';
+            },
+
+            initials(str) {
+                if (!str) return '??';
+                const parts = str.replace(/[^A-Za-z ]/g,' ').trim().split(/\s+/);
+                if (parts.length >= 2) return (parts[0][0]+(parts[parts.length-1][0])).toUpperCase();
+                return (str.replace(/[^A-Za-z]/g,'').substring(0,2)).toUpperCase() || '??';
+            },
+
+            studentInitials(name) {
+                if (!name) return '?';
+                const p = name.trim().split(' ');
+                return p.length >= 2 ? (p[0][0]+p[p.length-1][0]).toUpperCase() : name.substring(0,2).toUpperCase();
+            },
+
+            _toast(message, type='success') {
+                this.toast = { show: true, message, type };
+                setTimeout(() => { this.toast.show = false; }, 3000);
+            }
+        };
+    }
+    </script>
+</body>
+</html>

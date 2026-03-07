@@ -1,0 +1,290 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+/* --- 1. Variables & Theming System --- */
+:root {
+    /* Brand Colors */
+    --primary: #6366f1;
+    --primary-glow: conic-gradient(from 180deg at 50% 50%, #2a8af6 0deg, #a853ba 180deg, #e92a67 360deg);
+    
+    /* Light Mode Palette (Default) */
+    --bg-body: #f8fafc;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --input-bg: #ffffff;
+    
+    /* Glass Accents */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    
+    /* Scrollbar */
+    --scroll-track: transparent;
+    --scroll-thumb: #cbd5e1;
+    --scroll-thumb-hover: #94a3b8;
+
+    /* Animation config */
+    --ease-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Dark Mode Palette - Overrides Variables automatically */
+html.dark {
+    --bg-body: #0f172a;         /* Deep Slate */
+    --text-main: #f1f5f9;       /* Slate 100 */
+    --text-muted: #94a3b8;      /* Slate 400 */
+    --border-color: #334155;    /* Slate 700 */
+    --input-bg: #1e293b;        /* Slate 800 */
+    
+    /* Glass Accents Dark */
+    --glass-bg: rgba(15, 23, 42, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.08);
+
+    /* Scrollbar Dark */
+    --scroll-thumb: #475569;
+    --scroll-thumb-hover: #64748b;
+}
+
+/* --- 2. Reset & Base Typography --- */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-x: hidden; /* Prevent horizontal scroll from blobs */
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-main);
+    letter-spacing: -0.025em; /* Tighter headings look more modern */
+}
+
+/* --- 3. Refined Custom Scrollbar --- */
+::-webkit-scrollbar {
+    width: 8px; /* Slightly wider for better usability */
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scroll-track);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scroll-thumb);
+    border-radius: 99px;
+    border: 2px solid var(--bg-body); /* Creates padding effect */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scroll-thumb-hover);
+}
+
+/* --- 4. Advanced Utilities --- */
+
+/* Glassmorphism 2.0 */
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: inline-block; /* Fixes gradient cut-off issues */
+}
+
+/* --- 5. Modern Form Elements --- */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-label-modern {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    transition: color 0.2s;
+}
+
+.form-input-modern {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--input-bg);
+    color: var(--text-main);
+    font-size: 0.95rem;
+    transition: all 0.2s var(--ease-elastic);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.form-input-modern:hover {
+    border-color: var(--text-muted);
+}
+
+.form-input-modern:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15); /* More subtle ring */
+    transform: translateY(-1px); /* Micro-interaction */
+}
+
+.form-input-modern:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    background-color: rgba(0,0,0,0.05);
+}
+
+/* Error States */
+.errorlist {
+    color: #ef4444; /* Red-500 */
+    font-size: 0.85rem;
+    font-weight: 500;
+    list-style: none;
+    padding: 0;
+    margin-top: 0.5rem;
+    animation: fadeInUp 0.3s ease-out forwards;
+}
+
+/* Progress Bars */
+.progress-container {
+    background: var(--border-color);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.progress-bar-dynamic {
+    height: 100%;
+    width: var(--value, 0%);
+    background: var(--primary);
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- 6. Optimized Animations --- */
+
+/* Float with Hardware Acceleration */
+.animate-float {
+    animation: float 6s ease-in-out infinite;
+    will-change: transform; 
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Fade In Up */
+.fade-in-up {
+    opacity: 0;
+    animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInUp {
+    from { 
+        opacity: 0; 
+        transform: translateY(20px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+/* Stagger Utilities */
+.stagger-1 { animation-delay: 100ms; }
+.stagger-2 { animation-delay: 200ms; }
+.stagger-3 { animation-delay: 300ms; }
+.stagger-4 { animation-delay: 400ms; }
+.stagger-5 { animation-delay: 500ms; }
+
+/* Blob Animation */
+.animate-blob {
+    animation: blob 7s infinite;
+    filter: blur(40px); /* Add global blur to class for ease */
+    opacity: 0.7;
+    will-change: transform;
+}
+
+@keyframes blob {
+    0% { transform: translate(0px, 0px) scale(1); }
+    33% { transform: translate(30px, -50px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.9); }
+    100% { transform: translate(0px, 0px) scale(1); }
+}
+
+.animation-delay-2000 { animation-delay: 2s; }
+.animation-delay-4000 { animation-delay: 4s; }
+
+/* --- 7. Mobile Responsive Utilities --- */
+
+/**
+ * Prevent iOS Safari from auto-zooming on form input focus.
+ * iOS zooms in when the focused input's font-size < 16px.
+ * Using max(16px, 1em) keeps the visual size intact for
+ * already-large text while guaranteeing 16px minimum.
+ */
+@supports (-webkit-touch-callout: none) {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="search"],
+    input[type="tel"],
+    input[type="url"],
+    input[type="date"],
+    input[type="datetime-local"],
+    input[type="time"],
+    select,
+    textarea {
+        font-size: max(16px, 1em);
+    }
+}
+
+/**
+ * Prevent font size adjustment after orientation change on iOS/Android.
+ */
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+/**
+ * iOS safe-area insets — push content away from the notch/home-bar.
+ * Gracefully degrades to 1rem on non-notched devices.
+ */
+.safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+.safe-top {
+    padding-top: max(0px, env(safe-area-inset-top));
+}
+
+/**
+ * Horizontal-scrollable table helper.
+ * Adds momentum scrolling on iOS and a thin scrollbar hint.
+ */
+.table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+/**
+ * Subtle tap highlight on mobile (default opaque grey is jarring).
+ */
+* {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.08);
+}

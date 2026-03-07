@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <meta name="description" content="AcademicSync - Smart Academic Management">
+    <title>Register - AcademicSync</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db',
+                            400: '#9ca3af', 500: '#6b7280', 600: '#000000', 700: '#1f2937',
+                            800: '#111827', 900: '#000000',
+                        },
+                        gray: {
+                            50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db',
+                            400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151',
+                            800: '#1f2937', 900: '#111827',
+                        }
+                    },
+                    boxShadow: {
+                        'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                        'DEFAULT': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                        'md': '0 4px 12px rgba(0, 0, 0, 0.05)',
+                        'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03)',
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                        'blob': 'blob 7s infinite',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Alpine.js -->
+    <!-- Custom JS -->
+    <script src="assets/js/main.js" defer></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+
+<body
+    class="h-full flex overflow-hidden text-gray-600 font-sans antialiased bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors duration-200"
+    x-data="layout">
+
+    <!-- Theme Toggle -->
+    <button @click="darkMode = !darkMode"
+        class="fixed top-6 right-6 z-50 p-3 rounded-full bg-white/10 backdrop-blur-md border border-gray-200 dark:border-gray-700 shadow-lg text-gray-600 dark:text-gray-300 hover:scale-110 active:scale-95 transition-all">
+        <i class="lni lni-sun text-xl" x-show="!darkMode"></i>
+        <i class="lni lni-night text-xl" x-show="darkMode" style="display: none;"></i>
+    </button>
+    <div class="flex-1 flex flex-col min-w-0 bg-white dark:bg-gray-900 relative transition-colors duration-200">
+        <main class="flex-1 overflow-y-auto scroll-smooth p-0" id="main-content">
+            <div
+                class="min-h-screen relative flex items-center justify-center p-4 overflow-hidden bg-white dark:bg-gray-900 transition-colors">
+
+                <!-- Background Elements -->
+                <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                    <div
+                        class="absolute -top-[10%] -right-[10%] w-[50%] h-[50%] bg-gray-100 rounded-full blur-[100px] animate-blob">
+                    </div>
+                    <div
+                        class="absolute top-[30%] -left-[10%] w-[40%] h-[60%] bg-gray-200/50 rounded-full blur-[100px] animate-blob animation-delay-2000">
+                    </div>
+                    <div
+                        class="absolute -bottom-[20%] right-[30%] w-[60%] h-[40%] bg-gray-100 rounded-full blur-[100px] animate-blob animation-delay-4000">
+                    </div>
+                </div>
+
+                <!-- Register Card -->
+                <div class="relative w-full max-w-lg animate-fade-in-up">
+                    <div class="text-center mb-8">
+                        <a href="index.html"
+                            class="inline-flex items-center gap-2.5 mb-6 group cursor-pointer hover:-translate-y-0.5 transition-transform">
+                            <div
+                                class="w-12 h-12 bg-black rounded-xl flex items-center justify-center text-white shadow-lg shadow-gray-200">
+                                <i class="lni lni-graduation text-2xl"></i>
+                            </div>
+                            <span class="font-display font-bold text-2xl text-black tracking-tight">AcademicSync</span>
+                        </a>
+                        <h2 class="text-3xl font-display font-bold text-black dark:text-white mb-2">Create an account
+                        </h2>
+                        <p class="text-gray-500 dark:text-gray-400">Join thousands of students managing their academic
+                            life smartly.</p>
+                    </div>
+
+                    <div
+                        class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/50 dark:border-gray-700/50 shadow-2xl shadow-gray-200/50 dark:shadow-none rounded-3xl p-6 sm:p-10 hover:scale-[1.01] transition-transform">
+
+                        <form id="regForm" class="space-y-5"
+                            onsubmit="registerUser(event);">
+                            <!-- Helper for static form fields -->
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Full
+                                    Name</label>
+                                <div class="relative group">
+                                    <input type="text" id="regFullName" required
+                                        class="block w-full pl-4 pr-10 py-3.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-black dark:text-white placeholder-gray-400 focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all font-medium"
+                                        placeholder="John Doe">
+                                    <div
+                                        class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-black dark:group-focus-within:text-white transition-colors">
+                                        <i class="lni lni-user"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Email
+                                    Address</label>
+                                <div class="relative group">
+                                    <input type="email" id="regEmail" required
+                                        class="block w-full pl-4 pr-10 py-3.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-black dark:text-white placeholder-gray-400 focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all font-medium"
+                                        placeholder="john@university.edu">
+                                    <div
+                                        class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-black dark:group-focus-within:text-white transition-colors">
+                                        <i class="lni lni-envelope"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Password</label>
+                                <div class="relative group">
+                                    <input type="password" id="regPassword" required
+                                        class="block w-full pl-4 pr-10 py-3.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-black dark:text-white placeholder-gray-400 focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all font-medium"
+                                        placeholder="••••••••">
+                                    <div
+                                        class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-black dark:group-focus-within:text-white transition-colors">
+                                        <i class="lni lni-lock"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pt-4">
+                                <button type="submit"
+                                    class="w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-lg shadow-gray-300 dark:shadow-none text-sm font-bold text-white dark:text-black bg-black dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white transition-all transform hover:-translate-y-0.5">
+                                    Create Account
+                                </button>
+                                <p class="text-[10px] text-center text-gray-400 mt-4 leading-relaxed">
+                                    By creating an account, you agree to our <a href="#"
+                                        class="underline hover:text-black">Terms of Service</a> and <a href="#"
+                                        class="underline hover:text-black">Privacy Policy</a>.
+                                </p>
+                            </div>
+                        </form>
+
+                        <div class="mt-8 pt-8 border-t border-gray-100 dark:border-gray-700">
+                            <p class="text-center text-sm text-gray-500 font-medium">
+                                Already have an account?
+                                <a href="student/student-login.html"
+                                    class="font-bold text-black dark:text-white hover:underline transition-colors ml-1">
+                                    Sign in
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="assets/js/api.js?v=2"></script>
+    <script>
+        const api = new AcademicSyncAPI(window._apiBase || 'http://localhost:5000');
+
+        async function registerUser(event) {
+            event.preventDefault();
+            const fullName = document.getElementById('regFullName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const btn = event.target.querySelector('button[type="submit"]');
+
+            if (!fullName || !email || !password) {
+                showRegNotification('Please fill in all fields.', 'error');
+                return;
+            }
+            if (password.length < 6) {
+                showRegNotification('Password must be at least 6 characters.', 'error');
+                return;
+            }
+
+            if (btn) { btn.disabled = true; btn.textContent = 'Creating account...'; }
+
+            try {
+                await api.register({ full_name: fullName, email, password, role: 'student' });
+                showRegNotification('Account created! Redirecting to login...', 'success');
+                setTimeout(() => { window.location.href = 'student/student-login.html'; }, 1500);
+            } catch(err) {
+                showRegNotification(err.message || 'Registration failed. Please try again.', 'error');
+                if (btn) { btn.disabled = false; btn.textContent = 'Create Account'; }
+            }
+        }
+
+        function showRegNotification(msg, type) {
+            const n = document.createElement('div');
+            n.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 text-sm font-medium ${
+                type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+            }`;
+            n.textContent = msg;
+            document.body.appendChild(n);
+            setTimeout(() => n.remove(), 4000);
+        }
+    </script>
+</body>
+
+</html>

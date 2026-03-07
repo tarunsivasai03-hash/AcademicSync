@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <meta name="description" content="AcademicSync - Faculty Grade Management">
+    <title>Grades - Faculty Dashboard - AcademicSync</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db',
+                            400: '#9ca3af', 500: '#6b7280', 600: '#000000', 700: '#1f2937',
+                            800: '#111827', 900: '#000000',
+                        },
+                        gray: {
+                            750: '#2d3748',
+                        }
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #e5e7eb; border-radius: 20px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #374151; }
+    </style>
+</head>
+
+<body class="h-full flex overflow-hidden text-gray-600 font-sans antialiased bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 dark:text-gray-300 transition-colors duration-200"
+      x-data="facultyGrades()" x-init="init()"
+    @keydown.window.escape="closeAllModals()">
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-300"
+        x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+        x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0" @click="sidebarOpen = false"
+        class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden" aria-hidden="true" x-cloak>
+    </div>
+
+    <!-- Sidebar -->
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+        class="fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-800/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transform transition-transform duration-300 ease-in-out flex flex-col h-full">
+
+        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100/50 dark:border-gray-800/50">
+            <a href="../index.html" class="flex items-center gap-2.5 group">
+                <div class="w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-lg shadow-gray-200/50 dark:shadow-none group-hover:scale-105 transition-transform">
+                    <i class="lni lni-graduation"></i>
+                </div>
+                <span class="font-display font-bold text-xl text-black dark:text-white tracking-tight">AcademicSync</span>
+            </a>
+            <button @click="sidebarOpen = false" aria-label="Close Sidebar"
+                class="lg:hidden text-gray-400 hover:text-black transition-colors">
+                <i class="lni lni-close text-xl"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Faculty Menu</p>
+
+            <a href="faculty-dashboard.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-grid-alt text-lg group-hover:text-black dark:group-hover:text-white"></i> Dashboard
+            </a>
+
+            <a href="faculty-courses.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-library text-lg group-hover:text-black dark:group-hover:text-white"></i> My Courses
+            </a>
+
+            <a href="faculty-schedule.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-calendar text-lg group-hover:text-black dark:group-hover:text-white"></i> Schedule
+            </a>
+
+            <a href="faculty-students.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-users text-lg group-hover:text-black dark:group-hover:text-white"></i> Students
+            </a>
+
+            <a href="faculty-attendance.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-checkmark-circle text-lg group-hover:text-black dark:group-hover:text-white"></i> Attendance
+            </a>
+
+            <a href="faculty-grades.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group bg-white/60 dark:bg-white/10 text-black dark:text-white shadow-sm border border-white/40 dark:border-white/5 backdrop-blur-sm"
+                aria-current="page">
+                <i class="lni lni-clipboard text-lg"></i> Grades
+            </a>
+
+            <a href="faculty-assignments.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-list text-lg group-hover:text-black dark:group-hover:text-white"></i> Assignments
+            </a>
+            <a href="faculty-quiz.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-pencil-alt text-lg group-hover:text-black dark:group-hover:text-white"></i> Quizzes
+            </a>
+            <a href="faculty-resources.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-folder text-lg group-hover:text-black dark:group-hover:text-white"></i> Resources
+            </a>
+            <a href="faculty-profile.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-700 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-user text-lg group-hover:text-black dark:group-hover:text-white"></i> Profile
+            </a>        </div>
+
+        <div class="p-4 border-t border-gray-100/50 dark:border-gray-800/50 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md">
+            <button @click="toggleDarkMode()" aria-label="Toggle Dark Mode"
+                class="w-full flex items-center justify-center gap-2 mb-3 py-2 rounded-lg bg-white/50 dark:bg-gray-800/50 border border-white/20 dark:border-gray-700/30 text-gray-600 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-800/80 transition-colors shadow-sm">
+                <i class="lni" :class="darkMode ? 'lni-night' : 'lni-sun'"></i>
+                <span class="text-xs font-bold uppercase tracking-wider" x-text="darkMode ? 'Dark Mode' : 'Light Mode'"></span>
+            </button>
+
+            <a href="faculty-profile.html" class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors group">
+                <div class="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-gray-200 dark:border-gray-700 text-gray-400 font-bold text-xs uppercase shadow-sm group-hover:bg-white dark:group-hover:bg-gray-700 group-hover:shadow-md transition-all"
+                     x-text="userInitials"></div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-black dark:text-white truncate" x-text="userName"></p>
+                    <p class="text-xs text-gray-500 truncate" x-text="userDept"></p>
+                </div>
+                <i class="lni lni-cog text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors"></i>
+            </a>
+            
+            <div class="mt-2 text-center">
+                <a href="../index.html"
+                    class="w-full flex items-center justify-center gap-2 text-xs font-bold text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 py-2 rounded-lg transition-all border border-transparent hover:border-gray-200 dark:hover:border-gray-700 uppercase tracking-tighter">
+                    <i class="lni lni-exit"></i><span>Sign Out</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 relative">
+
+        <!-- Mobile Header -->
+        <div class="lg:hidden h-14 border-b border-gray-100/50 dark:border-gray-800/50 flex items-center justify-between px-4 sticky top-0 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl z-20 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-black font-bold text-sm shadow-sm">AS</div>
+                <span class="font-semibold text-black dark:text-white">Grade Management</span>
+            </div>
+            <button @click="sidebarOpen = !sidebarOpen"
+                class="p-2 -mr-2 text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md">
+                <i class="ri-menu-line text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Alert Banner -->
+        <div x-show="alertMsg" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2"
+            class="absolute top-16 lg:top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4">
+            <div class="flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium"
+                :class="alertType === 'success' ? 'bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800'">
+                <i :class="alertType === 'success' ? 'ri-checkbox-circle-line text-green-500' : 'ri-error-warning-line text-red-500'" class="text-lg flex-shrink-0"></i>
+                <span x-text="alertMsg"></span>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <main class="flex-1 overflow-y-auto scroll-smooth p-4 sm:p-6 lg:p-8" id="main-content">
+            <!-- Error boundary -->
+            <div x-show="initError" x-cloak class="mb-6 p-4 rounded-xl border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-900/20 flex items-start gap-3">
+                <i class="lni lni-warning text-red-500 mt-0.5 shrink-0 text-lg"></i>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-red-700 dark:text-red-300" x-text="initError"></p>
+                    <button @click="initError = ''; init()" class="mt-1.5 text-xs font-bold text-red-600 dark:text-red-400 hover:underline">Try again</button>
+                </div>
+                <button @click="initError = ''" aria-label="Dismiss error" class="text-red-300 hover:text-red-500 shrink-0"><i class="lni lni-close text-xs"></i></button>
+            </div>
+            <div class="max-w-7xl mx-auto space-y-8 animate-fade-in-up pb-12">
+
+                <!-- Loading Skeleton -->
+                <div x-show="loading" class="space-y-6">
+                    <div class="h-10 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse w-64"></div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <template x-for="i in 4">
+                            <div class="h-32 bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse"></div>
+                        </template>
+                    </div>
+                    <div class="h-64 bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse"></div>
+                </div>
+
+                <!-- Main Content (when loaded) -->
+                <div x-show="!loading" x-cloak>
+
+                    <!-- Header -->
+                    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+                        <div>
+                            <h1 class="text-3xl font-display font-bold text-black dark:text-white tracking-tight">Grade Management</h1>
+                            <p class="text-gray-500 mt-1">
+                                Manage enrollment grades and grade submitted assignments.
+                                <span x-show="pendingCount > 0" class="font-bold text-orange-600 dark:text-orange-400" x-text="`${pendingCount} pending submission(s) to grade.`"></span>
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <!-- Course selector -->
+                            <select x-model="selectedCourseId" @change="loadCourseStudents()"
+                                class="px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl text-sm font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white">
+                                <option value="" disabled>Select Course</option>
+                                <template x-for="c in courses" :key="c.id">
+                                    <option :value="c.id" x-text="`${c.course_code} \u2014 ${c.course_name}`"></option>
+                                </template>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Stats Row -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                            <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4">
+                                <i class="ri-user-line text-lg"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-black dark:text-white" x-text="totalStudents"></h3>
+                            <p class="text-sm text-gray-500 font-medium">Students Enrolled</p>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                            <div class="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center mb-4">
+                                <i class="ri-bar-chart-line text-lg"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-black dark:text-white" x-text="classAverage"></h3>
+                            <p class="text-sm text-gray-500 font-medium">Class Average</p>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                            <div class="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-4">
+                                <i class="ri-time-line text-lg"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-black dark:text-white" x-text="pendingCount"></h3>
+                            <p class="text-sm text-gray-500 font-medium">Pending Submissions</p>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                            <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-4">
+                                <i class="ri-checkbox-circle-line text-lg"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-black dark:text-white" x-text="gradedCount"></h3>
+                            <p class="text-sm text-gray-500 font-medium">Graded Submissions</p>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl mb-6 w-fit">
+                        <button @click="activeTab = 'gradebook'"
+                            :class="activeTab === 'gradebook' ? 'bg-white dark:bg-gray-700 text-black dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'"
+                            class="px-5 py-2 rounded-lg text-sm font-bold transition-all">
+                            <i class="ri-table-line mr-1"></i> Gradebook
+                        </button>
+                        <button @click="activeTab = 'submissions'"
+                            :class="activeTab === 'submissions' ? 'bg-white dark:bg-gray-700 text-black dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'"
+                            class="px-5 py-2 rounded-lg text-sm font-bold transition-all">
+                            <i class="ri-file-list-3-line mr-1"></i> Submissions
+                            <span x-show="pendingCount > 0" class="ml-1 px-1.5 py-0.5 bg-orange-500 text-white text-xs rounded-full" x-text="pendingCount"></span>
+                        </button>
+                    </div>
+
+                    <!-- ── TAB: GRADEBOOK ── -->
+                    <div x-show="activeTab === 'gradebook'">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                            <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between flex-wrap gap-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-black dark:bg-white text-white dark:text-black flex items-center justify-center">
+                                        <i class="ri-table-line"></i>
+                                    </div>
+                                    <h2 class="text-lg font-bold text-black dark:text-white">
+                                        Gradebook
+                                        <span x-show="selectedCourseId" class="text-gray-400 font-normal text-sm ml-1"
+                                            x-text="'\u2014 ' + (courses.find(c => c.id == selectedCourseId)?.course_code || '')"></span>
+                                    </h2>
+                                </div>
+                                <button @click="saveGrades()" :disabled="savingGrades || loadingStudents"
+                                    class="flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-bold hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                                    <span x-show="!savingGrades"><i class="ri-save-line mr-1"></i> Save All Grades</span>
+                                    <span x-show="savingGrades" x-cloak class="flex items-center gap-2">
+                                        <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                                        Saving…
+                                    </span>
+                                </button>
+                            </div>
+
+                            <!-- Loading state -->
+                            <div x-show="loadingStudents" class="p-12 text-center text-gray-400">
+                                <svg class="animate-spin h-8 w-8 mx-auto mb-3" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                                Loading students…
+                            </div>
+
+                            <!-- Empty state -->
+                            <div x-show="!loadingStudents && students.length === 0" class="p-12 text-center text-gray-400">
+                                <i class="ri-user-search-line text-4xl mb-3 block"></i>
+                                <p class="font-medium">No students enrolled in this course.</p>
+                            </div>
+
+                            <!-- Student grade table -->
+                            <div x-show="!loadingStudents && students.length > 0" class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead class="bg-gray-50/50 dark:bg-gray-900/50">
+                                        <tr class="text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200/60 dark:border-gray-700/60">
+                                            <th class="px-6 py-4">Student</th>
+                                            <th class="px-6 py-4">Student ID</th>
+                                            <th class="px-6 py-4">Attendance</th>
+                                            <th class="px-6 py-4">GPA</th>
+                                            <th class="px-6 py-4">Current Grade</th>
+                                            <th class="px-6 py-4">Set Grade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                                        <template x-for="s in students" :key="s.user_id">
+                                            <tr class="group hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-colors">
+                                                <td class="px-6 py-4">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center font-bold text-xs text-gray-600 dark:text-gray-300 flex-shrink-0"
+                                                            x-text="initials(s.full_name)"></div>
+                                                        <div>
+                                                            <p class="font-semibold text-gray-900 dark:text-white text-sm" x-text="s.full_name"></p>
+                                                            <p class="text-xs text-gray-400" x-text="s.email"></p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <span class="text-sm font-mono text-gray-600 dark:text-gray-400" x-text="s.user_id"></span>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <div class="flex items-center gap-2">
+                                                        <div class="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                            <div class="h-full rounded-full transition-all"
+                                                                :style="`width:${s.attendance_pct||0}%`"
+                                                                :class="(s.attendance_pct||0) >= 75 ? 'bg-green-500' : (s.attendance_pct||0) >= 60 ? 'bg-yellow-500' : 'bg-red-500'"></div>
+                                                        </div>
+                                                        <span class="text-sm font-medium" x-text="`${s.attendance_pct||0}%`"></span>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <span class="text-sm font-bold" x-text="s.gpa ? s.gpa.toFixed(2) : '—'"></span>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <span x-show="s.grade"
+                                                        class="px-2.5 py-1 rounded-lg text-xs font-bold"
+                                                        :class="letterBg(s.grade)"
+                                                        x-text="s.grade"></span>
+                                                    <span x-show="!s.grade" class="text-gray-400 text-sm">—</span>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <select x-model="editedGrades[s.id]"
+                                                        class="px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white">
+                                                        <option value="">— No grade —</option>
+                                                        <option value="A+">A+</option>
+                                                        <option value="A">A</option>
+                                                        <option value="A-">A-</option>
+                                                        <option value="B+">B+</option>
+                                                        <option value="B">B</option>
+                                                        <option value="B-">B-</option>
+                                                        <option value="C+">C+</option>
+                                                        <option value="C">C</option>
+                                                        <option value="C-">C-</option>
+                                                        <option value="D+">D+</option>
+                                                        <option value="D">D</option>
+                                                        <option value="F">F</option>
+                                                    </select>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Grade distribution footer -->
+                            <div x-show="!loadingStudents && students.length > 0" class="px-6 py-4 bg-gray-50/50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-700 flex flex-wrap gap-4 text-xs font-medium text-gray-500">
+                                <span><span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span> A: <span x-text="students.filter(s=>gradeToNum(s.grade)>=90).length" class="font-bold text-gray-700 dark:text-gray-300"></span></span>
+                                <span><span class="inline-block w-2 h-2 rounded-full bg-blue-500 mr-1"></span> B: <span x-text="students.filter(s=>{const n=gradeToNum(s.grade);return n>=80&&n<90}).length" class="font-bold text-gray-700 dark:text-gray-300"></span></span>
+                                <span><span class="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-1"></span> C: <span x-text="students.filter(s=>{const n=gradeToNum(s.grade);return n>=70&&n<80}).length" class="font-bold text-gray-700 dark:text-gray-300"></span></span>
+                                <span><span class="inline-block w-2 h-2 rounded-full bg-red-500 mr-1"></span> D/F: <span x-text="students.filter(s=>{const n=gradeToNum(s.grade);return s.grade&&n<70}).length" class="font-bold text-gray-700 dark:text-gray-300"></span></span>
+                                <span class="ml-auto">Ungraded: <span x-text="students.filter(s=>!s.grade).length" class="font-bold text-gray-700 dark:text-gray-300"></span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── TAB: SUBMISSIONS ── -->
+                    <div x-show="activeTab === 'submissions'" x-cloak>
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                            <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-black dark:bg-white text-white dark:text-black flex items-center justify-center">
+                                        <i class="ri-file-list-3-line"></i>
+                                    </div>
+                                    <h2 class="text-lg font-bold text-black dark:text-white">Assignment Submissions</h2>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400 text-xs font-bold rounded-full"
+                                        x-text="`${pendingCount} Pending`"></span>
+                                </div>
+                            </div>
+
+                            <!-- Loading state -->
+                            <div x-show="loadingSubmissions" class="p-12 text-center text-gray-400">
+                                <svg class="animate-spin h-8 w-8 mx-auto mb-3" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                                Loading submissions…
+                            </div>
+
+                            <!-- Empty state -->
+                            <div x-show="!loadingSubmissions && submissions.length === 0" class="p-12 text-center text-gray-400">
+                                <i class="ri-inbox-line text-4xl mb-3 block"></i>
+                                <p class="font-medium">No submissions yet.</p>
+                            </div>
+
+                            <!-- Submissions table -->
+                            <div x-show="!loadingSubmissions && submissions.length > 0" class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead class="bg-gray-50/50 dark:bg-gray-900/50">
+                                        <tr class="text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200/60 dark:border-gray-700/60">
+                                            <th class="px-6 py-4">Assignment</th>
+                                            <th class="px-6 py-4">Student</th>
+                                            <th class="px-6 py-4">Course</th>
+                                            <th class="px-6 py-4">Submitted</th>
+                                            <th class="px-6 py-4">Grade</th>
+                                            <th class="px-6 py-4 text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                                        <template x-for="sub in submissions" :key="sub.id">
+                                            <tr class="group hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-colors">
+                                                <td class="px-6 py-4">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+                                                            <i class="ri-file-text-line text-gray-500 dark:text-gray-400"></i>
+                                                        </div>
+                                                        <div>
+                                                            <p class="font-semibold text-gray-800 dark:text-gray-200 text-sm" x-text="sub._assignment?.title || sub.assignment_title || 'Assignment'"></p>
+                                                            <p class="text-xs text-gray-400" x-text="`Max: ${sub._assignment?.total_points || 100} pts`"></p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <div class="flex items-center gap-2">
+                                                        <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center font-bold text-xs text-gray-500 dark:text-gray-300 flex-shrink-0"
+                                                            x-text="initials(sub.student?.full_name || sub.student_name || '')"></div>
+                                                        <div>
+                                                            <p class="font-medium text-gray-800 dark:text-gray-200 text-sm" x-text="sub.student?.full_name || sub.student_name || '—'"></p>
+                                                            <p class="text-xs text-gray-400" x-text="sub.student?.user_id || sub.student_id || ''"></p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <span class="text-sm text-gray-600 dark:text-gray-400" x-text="sub._assignment?.course_name || sub._assignment?.course_code || '-'"></span>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <span class="text-sm text-gray-500" x-text="sub.submitted_at ? new Date(sub.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—'"></span>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <span x-show="sub.grade !== null && sub.grade !== undefined && sub.status === 'graded'"
+                                                        class="px-2.5 py-1 rounded-lg text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400"
+                                                        x-text="`${sub.grade} / ${sub._assignment?.total_points || 100}`"></span>
+                                                    <span x-show="sub.status !== 'graded'"
+                                                        class="px-2.5 py-1 rounded-lg text-xs font-bold bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400">Pending</span>
+                                                </td>
+                                                <td class="px-6 py-4 text-right">
+                                                    <button @click="openGradeModal(sub)"
+                                                        :class="sub.status === 'graded' ? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200' : 'bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200'"
+                                                        class="px-3 py-1.5 rounded-lg text-sm font-bold transition-colors"
+                                                        x-text="sub.status === 'graded' ? 'Re-grade' : 'Grade'">
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /!loading -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Grade Submission Modal -->
+    <div x-show="gradeModal" class="relative z-50" x-cloak>
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" @click="!submittingGrade && (gradeModal = null)"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div x-show="gradeModal"
+                    x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                    x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                    class="relative bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl w-full max-w-lg">
+
+                    <template x-if="gradeModal">
+                        <div>
+                            <!-- Modal Header -->
+                            <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-lg font-bold text-black dark:text-white"
+                                        x-text="'Grade: ' + (gradeModal._assignment?.title || 'Assignment')"></h3>
+                                    <p class="text-sm text-gray-500 mt-0.5"
+                                        x-text="(gradeModal.student?.full_name || gradeModal.student_name || 'Student') + ' · Max: ' + (gradeModal._assignment?.total_points || 100) + ' pts'"></p>
+                                </div>
+                                <button @click="gradeModal = null" :disabled="submittingGrade"
+                                    class="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors p-1">
+                                    <i class="ri-close-line text-xl"></i>
+                                </button>
+                            </div>
+
+                            <!-- Submission text preview -->
+                            <div x-show="gradeModal.submission_text" class="mx-6 mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 max-h-32 overflow-y-auto">
+                                <p class="text-xs font-bold text-gray-500 uppercase mb-1">Student Submission</p>
+                                <p class="text-sm text-gray-700 dark:text-gray-300" x-text="gradeModal.submission_text"></p>
+                            </div>
+
+                            <form class="p-6 space-y-4" @submit.prevent="submitGrade()">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">
+                                        Points Earned
+                                        <span class="font-normal text-gray-400" x-text="`(0 – ${gradeModal._assignment?.total_points || 100})`"></span>
+                                    </label>
+                                    <div class="relative">
+                                        <input x-model="gradeForm.points" type="number" min="0"
+                                            :max="gradeModal._assignment?.total_points || 100"
+                                            class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2.5 pr-16 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                                            placeholder="85" required>
+                                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"
+                                            x-text="`/ ${gradeModal._assignment?.total_points || 100}`"></span>
+                                    </div>
+                                    <!-- Live letter grade preview -->
+                                    <div x-show="gradeForm.points !== ''" class="mt-2 flex items-center gap-2">
+                                        <span class="text-xs text-gray-500">Letter grade:</span>
+                                        <span class="px-2 py-0.5 rounded text-xs font-bold"
+                                            :class="letterBg(pointsToLetter(gradeForm.points, gradeModal._assignment?.total_points || 100))"
+                                            x-text="pointsToLetter(gradeForm.points, gradeModal._assignment?.total_points || 100)"></span>
+                                        <span class="text-xs text-gray-500"
+                                            x-text="gradeForm.points && gradeModal._assignment?.total_points ? `(${Math.round(gradeForm.points/gradeModal._assignment.total_points*100)}%)` : ''"></span>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Feedback <span class="font-normal text-gray-400">(optional)</span></label>
+                                    <textarea x-model="gradeForm.feedback" rows="3"
+                                        class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white resize-none"
+                                        placeholder="Great work on the implementation…"></textarea>
+                                </div>
+
+                                <div class="pt-2 flex gap-3">
+                                    <button type="button" @click="gradeModal = null" :disabled="submittingGrade"
+                                        class="flex-1 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" :disabled="submittingGrade || gradeForm.points === ''"
+                                        class="flex-1 rounded-xl bg-black dark:bg-white px-4 py-2.5 text-sm font-bold text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 transition-all flex items-center justify-center gap-2">
+                                        <span x-show="!submittingGrade">Submit Grade</span>
+                                        <span x-show="submittingGrade" x-cloak class="flex items-center gap-2">
+                                            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                                            Saving…
+                                        </span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/api.js?v=2"></script>
+    <script>
+        function facultyGrades() {
+            return {
+                sidebarOpen: false,
+                darkMode: localStorage.getItem('darkMode') === 'true',
+                loading: true,
+                initError: '',
+                activeTab: 'gradebook',
+
+                // User display
+                userName: 'Faculty',
+                userInitials: 'FA',
+                userDept: '',
+
+                // Data
+                courses: [],
+                selectedCourseId: '',
+                students: [],
+                assignments: [],
+                submissions: [],
+
+                loadingStudents: false,
+                loadingSubmissions: false,
+
+                // Gradebook
+                editedGrades: {},
+                savingGrades: false,
+
+                // Grade modal (submissions)
+                gradeModal: null,
+                gradeForm: { points: '', feedback: '' },
+                submittingGrade: false,
+
+                // Alert
+                alertMsg: '',
+                alertType: 'success',
+
+                /* ── computed ── */
+                get totalStudents() { return this.students.length; },
+
+                get classAverage() {
+                    const graded = this.students.filter(s => s.grade);
+                    if (!graded.length) return 'N/A';
+                    const avg = graded.reduce((sum, s) => sum + this.gradeToNum(s.grade), 0) / graded.length;
+                    return avg.toFixed(1);
+                },
+
+                get pendingCount() {
+                    return this.submissions.filter(s => s.status !== 'graded').length;
+                },
+
+                get gradedCount() {
+                    return this.submissions.filter(s => s.status === 'graded').length;
+                },
+
+                /* ── helpers ── */
+                gradeToNum(g) {
+                    if (!g) return 0;
+                    const map = { 'A+': 100, 'A': 95, 'A-': 92, 'B+': 88, 'B': 85, 'B-': 82, 'C+': 78, 'C': 75, 'C-': 72, 'D+': 68, 'D': 65, 'F': 50 };
+                    return map[String(g).toUpperCase()] ?? parseFloat(g) ?? 0;
+                },
+
+                pointsToLetter(points, max) {
+                    const pct = parseFloat(points) / (parseFloat(max) || 100) * 100;
+                    if (pct >= 97) return 'A+';
+                    if (pct >= 93) return 'A';
+                    if (pct >= 90) return 'A-';
+                    if (pct >= 87) return 'B+';
+                    if (pct >= 83) return 'B';
+                    if (pct >= 80) return 'B-';
+                    if (pct >= 77) return 'C+';
+                    if (pct >= 73) return 'C';
+                    if (pct >= 70) return 'C-';
+                    if (pct >= 67) return 'D+';
+                    if (pct >= 60) return 'D';
+                    return 'F';
+                },
+
+                letterBg(g) {
+                    if (!g) return 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400';
+                    const n = this.gradeToNum(g);
+                    if (n >= 90) return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400';
+                    if (n >= 80) return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400';
+                    if (n >= 70) return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400';
+                    return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400';
+                },
+
+                initials(name) {
+                    return (name || '--').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+                },
+
+                closeAllModals() { this.gradeModal = false; },
+
+                /* ── lifecycle ── */
+                async init() {
+                    document.documentElement.classList.toggle('dark', this.darkMode);
+                    this.$watch('darkMode', val => {
+                        localStorage.setItem('darkMode', val);
+                        document.documentElement.classList[val ? 'add' : 'remove']('dark');
+                    });
+                    this.$watch('gradeModal', val => { document.body.style.overflow = val ? 'hidden' : ''; });
+
+                    if (typeof window.api !== 'undefined') {
+                        if (!window.api.checkAuth()) { window.location.href = 'faculty-login.html'; return; }
+                        const user = window.api.getUserData();
+                        if (user && user.role !== 'faculty') { window.api.clearToken(); window.location.href = 'faculty-login.html'; return; }
+                        if (user) {
+                            window.api.populateSidebar(user);
+                            this.userName = user.full_name || user.name || 'Faculty';
+                            this.userInitials = this.initials(this.userName);
+                            this.userDept = user.department || '';
+                        }
+                    }
+
+                    this.loading = true;
+                    try {
+                        const [coursesData, assignData] = await Promise.all([
+                            window.api.getFacultyCourses(),
+                            window.api.getFacultyAssignments()
+                        ]);
+                        this.courses = Array.isArray(coursesData) ? coursesData : (coursesData.courses || []);
+                        if (this.courses.length) {
+                            this.selectedCourseId = this.courses[0].id;
+                            await this.loadCourseStudents();
+                        }
+                        this.assignments = Array.isArray(assignData) ? assignData : (assignData.assignments || []);
+                        await this.loadPendingSubmissions(this.assignments);
+                    } catch (e) {
+                        this.initError = 'Could not load grades data. Please try again.';
+                        this.showAlert('Could not load data. Please refresh the page.', 'error');
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async loadCourseStudents() {
+                    if (!this.selectedCourseId) return;
+                    this.loadingStudents = true;
+                    this.editedGrades = {};
+                    try {
+                        const data = await window.api.getCourseStudents(this.selectedCourseId);
+                        this.students = Array.isArray(data) ? data : [];
+                        this.students.forEach(s => { this.editedGrades[s.id] = s.grade || ''; });
+                    } catch (e) {
+                        this.showAlert('Could not load student list. Please try again.', 'error');
+                        this.students = [];
+                    } finally {
+                        this.loadingStudents = false;
+                    }
+                },
+
+                async loadPendingSubmissions(assignments) {
+                    this.loadingSubmissions = true;
+                    const all = [];
+                    for (const a of assignments.slice(0, 30)) {
+                        try {
+                            const subs = await window.api.getSubmissions(a.id);
+                            const list = Array.isArray(subs) ? subs : [];
+                            list.forEach(s => { s._assignment = a; });
+                            all.push(...list);
+                        } catch (e) { /* skip */ }
+                    }
+                    this.submissions = all;
+                    this.loadingSubmissions = false;
+                },
+
+                async saveGrades() {
+                    if (!this.selectedCourseId || this.savingGrades) return;
+                    this.savingGrades = true;
+                    try {
+                        const grades = this.students
+                            .filter(s => this.editedGrades[s.id])
+                            .map(s => ({ student_id: s.id, grade: this.editedGrades[s.id] }));
+
+                        if (!grades.length) {
+                            this.showAlert('No grades to save. Set at least one grade first.', 'error');
+                            return;
+                        }
+                        await window.api.bulkUpdateGrades({ course_id: this.selectedCourseId, grades });
+                        await this.loadCourseStudents();
+                        this.showAlert('Grades saved successfully!', 'success');
+                    } catch (e) {
+                        this.showAlert('Failed to save grades. Please try again.', 'error');
+                    } finally {
+                        this.savingGrades = false;
+                    }
+                },
+
+                openGradeModal(sub) {
+                    this.gradeModal = sub;
+                    this.gradeForm = {
+                        points: (sub.grade !== null && sub.grade !== undefined) ? sub.grade : '',
+                        feedback: sub.feedback || ''
+                    };
+                },
+
+                async submitGrade() {
+                    if (!this.gradeModal || this.submittingGrade) return;
+                    this.submittingGrade = true;
+                    try {
+                        await window.api.gradeSubmission(this.gradeModal.id, {
+                            grade: parseFloat(this.gradeForm.points),
+                            feedback: this.gradeForm.feedback
+                        });
+                        const idx = this.submissions.findIndex(s => s.id === this.gradeModal.id);
+                        if (idx !== -1) {
+                            this.submissions[idx].grade = parseFloat(this.gradeForm.points);
+                            this.submissions[idx].status = 'graded';
+                        }
+                        this.gradeModal = null;
+                        this.showAlert('Grade submitted successfully!', 'success');
+                        if (this.selectedCourseId) await this.loadCourseStudents();
+                    } catch (e) {
+                        this.showAlert('Failed to submit grade. Please try again.', 'error');
+                    } finally {
+                        this.submittingGrade = false;
+                    }
+                },
+
+                showAlert(msg, type) {
+                    this.alertMsg = msg;
+                    this.alertType = type;
+                    setTimeout(() => { this.alertMsg = ''; }, 3500);
+                },
+
+                toggleDarkMode() { this.darkMode = !this.darkMode; }
+            };
+        }
+    </script>
+</body>
+</html>

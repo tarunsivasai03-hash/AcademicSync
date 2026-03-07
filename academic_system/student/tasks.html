@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <meta name="description" content="AcademicSync - Smart Academic Management">
+    <title>Tasks - AcademicSync</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['Inter', 'sans-serif'], 
+                        display: ['Inter', 'sans-serif'],
+                        heading: ['"Plus Jakarta Sans"', 'sans-serif']
+                    },
+                    colors: {
+                        glass: {
+                            border: 'rgba(255, 255, 255, 0.125)',
+                            surface: 'rgba(255, 255, 255, 0.7)',
+                            darkSurface: 'rgba(17, 24, 39, 0.7)'
+                        }
+                    },
+                    animation: {
+                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'fade-in': 'fadeIn 0.3s ease-out'
+                    },
+                    keyframes: {
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #e5e7eb; border-radius: 20px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #374151; }
+
+        .glass-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .glass-scroll::-webkit-scrollbar-track { background: transparent; }
+        .glass-scroll::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.5); border-radius: 10px; }
+        
+        /* Checkbox Animation */
+        .checkbox-wrapper input:checked + div {
+            background-color: #10B981;
+            border-color: #10B981;
+        }
+        .checkbox-wrapper input:checked + div svg {
+            stroke-dashoffset: 0;
+        }
+    </style>
+</head>
+
+<body class="h-full flex overflow-hidden text-gray-600 font-sans antialiased bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 dark:text-gray-300 transition-colors duration-200"
+      x-data="taskManager()"
+    @keydown.window.escape="closeAllModals()">
+
+    <div x-show="sidebarOpen" @click="sidebarOpen = false"
+        class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden" x-cloak></div>
+
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+        class="fixed inset-y-0 left-0 z-50 w-64 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-800/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 flex flex-col h-full">
+
+        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100/50 dark:border-gray-800/50">
+            <a href="../index.html" class="flex items-center gap-2.5 group">
+                <div class="w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-lg shadow-gray-200/50 dark:shadow-none group-hover:scale-105 transition-transform">
+                    <i class="lni lni-graduation"></i>
+                </div>
+                <span class="font-display font-bold text-xl text-black dark:text-white tracking-tight">AcademicSync</span>
+            </a>
+            <button @click="sidebarOpen = false" aria-label="Close Sidebar"
+                class="lg:hidden text-gray-400 hover:text-black transition-colors"><i
+                    class="lni lni-close text-xl"></i></button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Menu</p>
+            
+            <a href="student-dashboard.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-grid-alt text-lg"></i> Dashboard
+            </a>
+            
+            <a href="schedules.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-calendar text-lg"></i> Schedule
+            </a>
+            
+            <a href="tasks.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group bg-white/60 dark:bg-white/10 text-black dark:text-white shadow-sm border border-white/40 dark:border-white/5 backdrop-blur-sm"
+                aria-current="page">
+                <i class="lni lni-list text-lg"></i> Tasks
+            </a>
+            
+            <a href="courses.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-graduation text-lg"></i> Courses
+            </a>
+            
+            <a href="student-attendance.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-checkmark-circle text-lg"></i> Attendance
+            </a>
+
+            <a href="student-grades.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-stats-up text-lg"></i> Grades
+            </a>
+
+            <a href="student-assignments.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-files text-lg"></i> Assignments
+            </a>
+
+            <a href="student-announcements.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-bullhorn text-lg"></i> Announcements
+            </a>
+
+            <a href="resources.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-library text-lg"></i> Resources
+            </a>
+
+            <a href="student-profile.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-user text-lg"></i> Profile
+            </a>
+        </div>
+
+        <div class="p-4 border-t border-gray-100/50 dark:border-gray-800/50 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md">
+            <button @click="darkMode = !darkMode" aria-label="Toggle Dark Mode"
+                class="w-full flex items-center justify-center gap-2 mb-3 py-2 rounded-lg bg-white/50 dark:bg-gray-800/50 border border-white/20 dark:border-gray-700/30 text-gray-600 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-800/80 transition-colors shadow-sm">
+                <i class="lni" :class="darkMode ? 'lni-night' : 'lni-sun'"></i>
+                <span class="text-xs font-bold uppercase tracking-wider"
+                    x-text="darkMode ? 'Dark Mode' : 'Light Mode'"></span>
+            </button>
+            <a href="student-profile.html"
+                class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors group">
+                <div
+                    class="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-gray-200 dark:border-gray-700 text-gray-400 font-bold text-xs uppercase shadow-sm group-hover:bg-white dark:group-hover:bg-gray-700 group-hover:shadow-md transition-all">
+                    <span data-user-initials>AT</span></div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-black dark:text-white truncate" data-user-name>Alex Thompson</p>
+                    <p class="text-xs text-gray-500 truncate" data-user-role>CS Student - Year 3</p>
+                </div>
+                <i class="lni lni-cog text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors"></i>
+            </a>
+            <div class="mt-2 text-center">
+                <a href="#" @click.prevent="logout()"
+                    class="w-full flex items-center justify-center gap-2 text-xs font-bold text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 py-2 rounded-lg transition-all uppercase tracking-tighter">
+                    <i class="lni lni-exit"></i><span>Sign Out</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col min-w-0 relative h-full">
+        
+        <div class="lg:hidden h-14 border-b border-gray-100/50 dark:border-gray-800/50 flex items-center justify-between px-4 sticky top-0 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl z-30 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-black font-bold text-sm shadow-sm">
+                    AS</div>
+                <span class="font-semibold text-black dark:text-white">AcademicSync</span>
+            </div>
+            <button @click="sidebarOpen = !sidebarOpen"
+                class="p-2 -mr-2 text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md">
+                <i class="ri-menu-line text-xl"></i>
+            </button>
+        </div>
+
+        <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 glass-scroll" id="main-content">
+            <div class="max-w-5xl mx-auto animate-slide-up pb-12">
+
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+                    <div>
+                        <h1 class="text-3xl font-heading font-bold text-gray-900 dark:text-white tracking-tight">My Tasks</h1>
+                        <p class="text-gray-500 dark:text-gray-400 mt-1">Manage your assignments and deadlines.</p>
+                        
+                        <div class="mt-4 flex items-center gap-3 w-full sm:w-80">
+                            <div class="flex-1 h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-black dark:bg-white rounded-full transition-all duration-500 ease-out"
+                                     :style="`width: ${progressPercentage}%`"></div>
+                            </div>
+                            <span class="text-xs font-bold text-gray-900 dark:text-white" x-text="`${progressPercentage}%`"></span>
+                        </div>
+                    </div>
+                    <button @click="openModal()"
+                        class="flex items-center gap-2 px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-bold hover:bg-gray-800 dark:hover:bg-gray-200 shadow-lg shadow-gray-900/10 dark:shadow-white/10 transition-all transform hover:-translate-y-0.5 active:scale-95">
+                        <i class="ri-add-line text-lg"></i>
+                        <span>New Task</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                    <div class="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm p-5 rounded-2xl border border-gray-200 dark:border-gray-700 hover:border-black dark:hover:border-white transition-all group shadow-sm">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Pending</span>
+                            <div class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-700/50 flex items-center justify-center text-black dark:text-white group-hover:scale-105 transition-transform">
+                                <i class="ri-loader-4-line text-xl"></i>
+                            </div>
+                        </div>
+                        <span class="text-3xl font-heading font-bold text-black dark:text-white" x-text="activeTaskCount"></span>
+                    </div>
+
+                    <div class="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm p-5 rounded-2xl border border-gray-200 dark:border-gray-700 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all group shadow-sm">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Completed</span>
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition-transform">
+                                <i class="ri-checkbox-circle-line text-xl"></i>
+                            </div>
+                        </div>
+                        <span class="text-3xl font-heading font-bold text-black dark:text-white" x-text="completedTaskCount"></span>
+                    </div>
+
+                    <div class="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm p-5 rounded-2xl border border-gray-200 dark:border-gray-700 hover:border-red-500 dark:hover:border-red-500 transition-all group shadow-sm">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Overdue</span>
+                            <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-600 dark:text-red-400 group-hover:scale-105 transition-transform">
+                                <i class="ri-alarm-warning-line text-xl"></i>
+                            </div>
+                        </div>
+                        <span class="text-3xl font-heading font-bold text-black dark:text-white" x-text="overdueTaskCount"></span>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800/50 rounded-3xl shadow-xl shadow-gray-200/20 dark:shadow-none border border-gray-200/50 dark:border-gray-700/50 overflow-hidden min-h-[400px]">
+
+                    <div x-show="tasks.length === 0"
+                         class="p-12 text-center flex flex-col items-center justify-center h-[400px]" x-cloak>
+                        <div class="w-20 h-20 bg-gray-50 dark:bg-gray-700/50 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                            <i class="ri-cup-line text-3xl text-gray-400"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">All caught up!</h3>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1 max-w-xs mx-auto">You have no pending tasks. Enjoy your free time or add a new task to get started.</p>
+                        <button @click="openModal()" class="mt-6 text-indigo-600 dark:text-indigo-400 font-bold text-sm hover:underline">Create a task</button>
+                    </div>
+
+                    <div x-show="tasks.length > 0" class="divide-y divide-gray-100 dark:divide-gray-800/50">
+                        <template x-for="task in sortedTasks" :key="task.id">
+                            <div class="group p-5 hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-all duration-200 flex items-start gap-4 relative"
+                                 :class="{'bg-gray-50/80 dark:bg-gray-800/40': task.completed, 'bg-red-50/30 dark:bg-red-900/10': isOverdue(task.date) && !task.completed}">
+                                
+                                <div x-show="isOverdue(task.date) && !task.completed" class="absolute left-0 top-0 bottom-0 w-1 bg-red-500 rounded-r-full"></div>
+
+                                <label class="checkbox-wrapper relative flex items-center justify-center cursor-pointer mt-1">
+                                    <input type="checkbox" x-model="task.completed" class="peer sr-only">
+                                    <div class="w-6 h-6 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-transparent transition-all hover:border-black dark:hover:border-white flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-white stroke-current stroke-2 fill-none stroke-dasharray-16 stroke-dashoffset-16 transition-all duration-300" viewBox="0 0 24 24">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </div>
+                                </label>
+
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                                        <div class="pr-4 transition-all duration-300"
+                                             :class="{'opacity-40 grayscale': task.completed}">
+                                            
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <h3 class="text-base font-bold text-gray-900 dark:text-white"
+                                                    :class="{'line-through decoration-gray-400': task.completed}"
+                                                    x-text="task.title"></h3>
+                                                
+                                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border"
+                                                      :class="{
+                                                          'bg-red-50 text-red-600 border-red-100 dark:bg-red-900/20 dark:text-red-300 dark:border-red-900/30': task.priority === 'high',
+                                                          'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-900/30': task.priority === 'medium',
+                                                          'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-900/30': task.priority === 'low'
+                                                      }" x-text="task.priority"></span>
+                                            </div>
+
+                                            <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2"
+                                                x-text="task.desc"></p>
+                                        </div>
+
+                                        <div class="flex items-center gap-4 shrink-0 self-start sm:self-center mt-2 sm:mt-0">
+                                            
+                                            <div class="flex items-center gap-1.5 text-xs font-bold"
+                                                  :class="isOverdue(task.date) && !task.completed ? 'text-red-600 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'">
+                                                <i class="ri-calendar-line text-sm"></i>
+                                                <span x-text="formatDate(task.date)"></span>
+                                                <span x-show="isOverdue(task.date) && !task.completed" class="ml-1 text-[10px] bg-red-100 dark:bg-red-900/50 px-1.5 py-0.5 rounded">LATE</span>
+                                            </div>
+
+                                            <button @click="deleteTask(task.id)" aria-label="Delete Task"
+                                                class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 dark:hover:text-red-400 rounded-lg transition-all">
+                                                <i class="ri-delete-bin-line text-lg"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div x-show="showModal" class="relative z-50 font-sans" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
+        <div x-show="showModal" 
+             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" @click="showModal = false"></div>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                <div x-show="showModal" 
+                     x-transition:enter="ease-out duration-300" 
+                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave="ease-in duration-200" 
+                     x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     class="relative transform overflow-hidden rounded-3xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                    
+                    <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/80 dark:bg-gray-800/50">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Add New Task</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Create a new assignment or todo.</p>
+                        </div>
+                        <button @click="showModal = false" class="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors bg-white dark:bg-gray-700 p-2 rounded-full shadow-sm border border-gray-100 dark:border-gray-600">
+                            <i class="ri-close-line text-xl leading-none"></i>
+                        </button>
+                    </div>
+
+                    <form class="p-8 space-y-6" @submit.prevent="addTask">
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 pl-1">Task Title</label>
+                            <input type="text" x-model="newTask.title" required placeholder="e.g., Finish Finite Automata Report"
+                                   class="block w-full rounded-xl border-0 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-black dark:focus:ring-white transition-all py-3 px-4 sm:text-sm font-semibold shadow-sm ring-1 ring-inset ring-gray-200 dark:ring-gray-700">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 pl-1">Description</label>
+                            <textarea rows="3" x-model="newTask.desc" placeholder="Add specific details..."
+                                   class="block w-full rounded-xl border-0 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-black dark:focus:ring-white transition-all py-3 px-4 sm:text-sm font-medium shadow-sm ring-1 ring-inset ring-gray-200 dark:ring-gray-700 resize-none"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 pl-1">Due Date</label>
+                                <input type="date" x-model="newTask.date" required
+                                       class="block w-full rounded-xl border-0 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-black dark:focus:ring-white transition-all py-3 px-4 sm:text-sm font-semibold shadow-sm ring-1 ring-inset ring-gray-200 dark:ring-gray-700">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 pl-1">Priority</label>
+                                <div class="relative">
+                                    <select x-model="newTask.priority"
+                                            class="block w-full rounded-xl border-0 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white transition-all py-3 px-4 sm:text-sm font-semibold shadow-sm ring-1 ring-inset ring-gray-200 dark:ring-gray-700 appearance-none cursor-pointer">
+                                        <option value="low">Low</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="high">High</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                        <i class="ri-arrow-down-s-line"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 flex gap-3">
+                            <button type="button" @click="showModal = false"
+                                    class="flex-1 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3.5 text-sm font-bold text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none transition-all">Cancel</button>
+                            <button type="submit"
+                                    :disabled="submitting"
+                                    class="flex-1 rounded-xl border border-transparent bg-black dark:bg-white px-4 py-3.5 text-sm font-bold text-white dark:text-black shadow-lg hover:shadow-xl hover:bg-gray-800 dark:hover:bg-gray-200 focus:outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                <i class="ri-loader-4-line animate-spin" x-show="submitting"></i>
+                                <span x-text="submitting ? 'Creating...' : 'Create Task'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/api.js?v=2"></script>
+    <script>
+        // Normalize API task to the shape the UI uses
+        function normalizeTask(t) {
+            return {
+                id: t.id,
+                title: t.title,
+                desc: t.description || '',
+                date: t.due_date ? t.due_date.split('T')[0] : new Date().toISOString().split('T')[0],
+                priority: t.priority || 'medium',
+                completed: !!t.completed
+            };
+        }
+
+        function taskManager() {
+            return {
+                sidebarOpen: false,
+                showModal: false,
+                loading: true,
+                submitting: false,
+                darkMode: localStorage.getItem('darkMode') === 'true',
+
+                newTask: { title: '', desc: '', date: new Date().toISOString().split('T')[0], priority: 'medium' },
+                tasks: [],
+
+                async init() {
+                    // Auth guard
+                    const apiClient = new AcademicSyncAPI(window._apiBase || 'http://localhost:5000');
+                    if (!apiClient.checkAuth()) { window.location.href = 'student-login.html'; return; }
+
+                    // Dark mode
+                    if (this.darkMode) document.documentElement.classList.add('dark');
+                    this.$watch('darkMode', val => {
+                        localStorage.setItem('darkMode', val);
+                        if (val) document.documentElement.classList.add('dark');
+                        else document.documentElement.classList.remove('dark');
+                    });
+
+                    // Watch for checkbox completions to sync with API
+                    this.$watch('tasks', (newVal, oldVal) => {
+                        if (!oldVal || !oldVal.length) return;
+                        newVal.forEach(task => {
+                            const old = oldVal.find(t => t.id === task.id);
+                            if (old && old.completed !== task.completed) {
+                                apiClient.updateTask(task.id, { completed: task.completed })
+                                    .catch(e => console.warn('Task sync error:', e));
+                            }
+                        });
+                    });
+
+                    // Load tasks from API
+                    try {
+                        const rawTasks = await apiClient.getTasks();
+                        this.tasks = rawTasks.map(normalizeTask);
+                    } catch (e) {
+                        console.warn('Could not load tasks from API:', e);
+                        // Fallback to localStorage if offline
+                        this.tasks = JSON.parse(localStorage.getItem('academicSync_tasks') || '[]');
+                    }
+                    this.loading = false;
+
+                    // Store apiClient on component for use in methods
+                    this._api = apiClient;
+
+                    // Sidebar user info
+                    const user = apiClient.getUserData();
+                    if (user) apiClient.populateSidebar(user);
+                },
+
+                toggleDarkMode() { this.darkMode = !this.darkMode; },
+
+                closeAllModals() { this.showModal = false; },
+
+                logout() {
+                    this._api?.logout().catch(() => {});
+                    window.location.href = 'student-login.html';
+                },
+
+                // Computed
+                get activeTaskCount()    { return this.tasks.filter(t => !t.completed).length; },
+                get completedTaskCount() { return this.tasks.filter(t => t.completed).length; },
+                get overdueTaskCount()   { return this.tasks.filter(t => !t.completed && this.isOverdue(t.date)).length; },
+                get progressPercentage() {
+                    if (!this.tasks.length) return 0;
+                    return Math.round((this.completedTaskCount / this.tasks.length) * 100);
+                },
+                get sortedTasks() {
+                    return [...this.tasks].sort((a, b) => {
+                        if (a.completed !== b.completed) return a.completed ? 1 : -1;
+                        if (!a.completed) {
+                            const aO = this.isOverdue(a.date), bO = this.isOverdue(b.date);
+                            if (aO !== bO) return aO ? -1 : 1;
+                        }
+                        const pMap = { high: 3, medium: 2, low: 1 };
+                        if (pMap[a.priority] !== pMap[b.priority]) return pMap[b.priority] - pMap[a.priority];
+                        return new Date(a.date) - new Date(b.date);
+                    });
+                },
+
+                openModal() {
+                    this.newTask = { title: '', desc: '', date: new Date().toISOString().split('T')[0], priority: 'medium' };
+                    this.showModal = true;
+                },
+
+                async addTask() {
+                    if (!this.newTask.title) return;
+                    this.submitting = true;
+                    try {
+                        const created = await this._api.createTask({
+                            title:       this.newTask.title,
+                            description: this.newTask.desc,
+                            due_date:    this.newTask.date,
+                            priority:    this.newTask.priority
+                        });
+                        this.tasks.push(normalizeTask(created.task || created));
+                        this.showModal = false;
+                        this._api.showNotification('Task created!', 'success');
+                    } catch (e) {
+                        this._api.showNotification('Could not create task: ' + e.message, 'error');
+                    } finally {
+                        this.submitting = false;
+                    }
+                },
+
+                async deleteTask(id) {
+                    if (!confirm('Delete this task?')) return;
+                    try {
+                        await this._api.deleteTask(id);
+                        this.tasks = this.tasks.filter(t => t.id !== id);
+                        this._api.showNotification('Task deleted.', 'success');
+                    } catch (e) {
+                        this._api.showNotification('Could not delete task: ' + e.message, 'error');
+                    }
+                },
+
+                isOverdue(dateString) {
+                    const d = new Date(dateString), today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    return d < today;
+                },
+
+                formatDate(dateString) {
+                    const d = new Date(dateString), today = new Date();
+                    const isToday = d.toDateString() === today.toDateString();
+                    const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+                    const isTomorrow = d.toDateString() === tomorrow.toDateString();
+                    if (isToday) return 'Today';
+                    if (isTomorrow) return 'Tomorrow';
+                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                }
+            }
+        }
+    </script>
+</body>
+</html>

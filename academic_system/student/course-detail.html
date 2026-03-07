@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <meta name="description" content="AcademicSync - Smart Academic Management">
+    <title>Course Details - AcademicSync</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db',
+                            400: '#9ca3af', 500: '#6b7280', 600: '#000000', 700: '#1f2937',
+                            800: '#111827', 900: '#000000',
+                        },
+                        gray: {
+                            50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db',
+                            400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151',
+                            800: '#1f2937', 900: '#111827',
+                        }
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/components/scrollbar.css">
+    
+    <script src="../assets/js/main.js" defer></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #e5e7eb; border-radius: 20px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #374151; }
+    </style>
+</head>
+
+<body
+    class="h-full flex overflow-hidden text-gray-600 font-sans antialiased bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 dark:text-gray-300 transition-colors duration-200"
+    x-data="layout">
+
+    <!-- Sidebar -->
+    <div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-300"
+        x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+        x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0" @click="sidebarOpen = false"
+        class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden" aria-hidden="true" x-cloak>
+    </div>
+
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+        class="fixed inset-y-0 left-0 z-50 w-64 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-800/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 flex flex-col h-full">
+
+        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100/50 dark:border-gray-800/50">
+            <a href="../index.html" class="flex items-center gap-2.5 group">
+                <div class="w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-lg shadow-gray-200/50 dark:shadow-none group-hover:scale-105 transition-transform">
+                    <i class="lni lni-graduation"></i>
+                </div>
+                <span class="font-display font-bold text-xl text-black dark:text-white tracking-tight">AcademicSync</span>
+            </a>
+            <button @click="sidebarOpen = false" aria-label="Close Sidebar"
+                class="lg:hidden text-gray-400 hover:text-black transition-colors"><i class="lni lni-close text-xl"></i></button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Menu</p>
+            
+            <a href="student-dashboard.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-grid-alt text-lg"></i> Dashboard
+            </a>
+            
+            <a href="schedules.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-calendar text-lg"></i> Schedule
+            </a>
+            
+            <a href="tasks.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-list text-lg"></i> Tasks
+            </a>
+            
+            <a href="courses.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group bg-white/60 dark:bg-white/10 text-black dark:text-white shadow-sm border border-white/40 dark:border-white/5 backdrop-blur-sm"
+                aria-current="page">
+                <i class="lni lni-graduation text-lg"></i> Courses
+            </a>
+            
+            <a href="student-attendance.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-checkmark-circle text-lg"></i> Attendance
+            </a>
+
+            <a href="student-grades.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-stats-up text-lg"></i> Grades
+            </a>
+
+            <a href="student-assignments.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-files text-lg"></i> Assignments
+            </a>
+
+            <a href="student-announcements.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-bullhorn text-lg"></i> Announcements
+            </a>
+
+            <a href="resources.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-library text-lg"></i> Resources
+            </a>
+
+            <a href="student-profile.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-user text-lg"></i> Profile
+            </a>
+        </div>
+
+        <div class="p-4 border-t border-gray-100/50 dark:border-gray-800/50 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md">
+            <button @click="darkMode = !darkMode" aria-label="Toggle Dark Mode"
+                class="w-full flex items-center justify-center gap-2 mb-3 py-2 rounded-lg bg-white/50 dark:bg-gray-800/50 border border-white/20 dark:border-gray-700/30 text-gray-600 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-800/80 transition-colors shadow-sm">
+                <i class="lni" :class="darkMode ? 'lni-night' : 'lni-sun'"></i>
+                <span class="text-xs font-bold uppercase tracking-wider" x-text="darkMode ? 'Dark Mode' : 'Light Mode'"></span>
+            </button>
+            
+            <a href="student-profile.html"
+                class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors group">
+                <div class="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-gray-200 dark:border-gray-700 text-gray-400 font-bold text-xs uppercase shadow-sm group-hover:bg-white dark:group-hover:bg-gray-700 group-hover:shadow-md transition-all">
+                    <span data-user-initials>AT</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-black dark:text-white truncate" data-user-name>Alex Thompson</p>
+                    <p class="text-xs text-gray-500 truncate" data-user-role>CS Student - Year 3</p>
+                </div>
+                <i class="lni lni-cog text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors"></i>
+            </a>
+            
+            <div class="mt-2 text-center">
+                <button @click="logout()"
+                    class="w-full flex items-center justify-center gap-2 text-xs font-bold text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 py-2 rounded-lg transition-all uppercase tracking-tighter">
+                    <i class="lni lni-exit"></i><span>Sign Out</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 relative h-full">
+        <!-- Mobile Header -->
+        <div class="lg:hidden h-14 border-b border-gray-100/50 dark:border-gray-800/50 flex items-center justify-between px-4 sticky top-0 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl z-20 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-black font-bold text-sm shadow-sm">
+                    AS</div>
+                <span class="font-semibold text-black dark:text-white">AcademicSync</span>
+            </div>
+            <button @click="sidebarOpen = !sidebarOpen"
+                class="p-2 -mr-2 text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md">
+                <i class="ri-menu-line text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Content Scroller -->
+        <main class="flex-1 overflow-y-auto scroll-smooth p-4 sm:p-6 lg:p-8" id="main-content" x-data="courseDetail">
+
+            <!-- Toast Notifications -->
+            <div class="fixed top-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none" aria-live="polite">
+                <template x-for="toast in toasts" :key="toast.id">
+                    <div x-show="toast.visible"
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 translate-x-8"
+                        x-transition:enter-end="opacity-100 translate-x-0"
+                        x-transition:leave="transition ease-in duration-200"
+                        x-transition:leave-start="opacity-100 translate-x-0"
+                        x-transition:leave-end="opacity-0 translate-x-8"
+                        :class="{
+                            'bg-green-50 border-green-200 dark:bg-green-900/40 dark:border-green-700': toast.type==='success',
+                            'bg-red-50 border-red-200 dark:bg-red-900/40 dark:border-red-700': toast.type==='error',
+                            'bg-blue-50 border-blue-200 dark:bg-blue-900/40 dark:border-blue-700': toast.type==='info',
+                            'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/40 dark:border-yellow-700': toast.type==='warning'
+                        }"
+                        class="pointer-events-auto flex items-start gap-3 w-80 px-4 py-3 rounded-xl border shadow-lg">
+                        <i :class="{
+                            'lni lni-checkmark-circle text-green-500': toast.type==='success',
+                            'lni lni-close-circle text-red-500': toast.type==='error',
+                            'lni lni-information text-blue-500': toast.type==='info',
+                            'lni lni-warning text-yellow-500': toast.type==='warning'
+                        }" class="mt-0.5 text-lg flex-shrink-0"></i>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-semibold text-black dark:text-white" x-text="toast.title"></p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5" x-text="toast.message"></p>
+                        </div>
+                        <button @click="dismissToast(toast.id)" class="text-gray-400 hover:text-black dark:hover:text-white transition-colors flex-shrink-0">
+                            <i class="lni lni-close text-xs"></i>
+                        </button>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Skeleton loading -->
+            <div x-show="loading" class="max-w-5xl mx-auto pb-12 animate-pulse space-y-6">
+                <div class="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 sm:p-8">
+                    <div class="flex flex-col lg:flex-row lg:items-start gap-6">
+                        <div class="flex-1 space-y-4">
+                            <div class="h-7 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                            <div class="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded"></div>
+                            <div class="h-4 w-5/6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                            <div class="flex flex-wrap gap-3 pt-2">
+                                <div class="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                <div class="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                <div class="h-6 w-28 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                            </div>
+                        </div>
+                        <div class="w-40 h-28 bg-gray-200 dark:bg-gray-700 rounded-2xl shrink-0"></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-3"><div class="h-4 w-28 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-10 w-full bg-gray-200 dark:bg-gray-700 rounded-xl"></div><div class="h-10 w-full bg-gray-200 dark:bg-gray-700 rounded-xl"></div></div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-3"><div class="h-4 w-28 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-10 w-full bg-gray-200 dark:bg-gray-700 rounded-xl"></div><div class="h-10 w-full bg-gray-200 dark:bg-gray-700 rounded-xl"></div></div>
+                </div>
+            </div>
+
+            <div class="max-w-5xl mx-auto space-y-8 animate-fade-in-up" x-show="!loading">
+                
+                <!-- Breadcrumb -->
+                <nav class="flex items-center gap-2 text-sm text-gray-500">
+                    <a href="courses.html" class="hover:text-black dark:hover:text-white transition-colors">Courses</a>
+                    <i class="lni lni-chevron-right"></i>
+                    <span class="text-black dark:text-white" x-text="currentCourse.name">Course Details</span>
+                </nav>
+
+                <!-- Course Header -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                    <div class="p-6 sm:p-8">
+                        <div class="flex flex-col lg:flex-row lg:items-start gap-6">
+                            <div class="flex-1">
+                                <div class="flex items-start gap-4 mb-6">
+                                    <div class="w-16 h-16 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl font-bold border border-indigo-200 dark:border-indigo-700">
+                                        <span x-text="currentCourse.code">CS</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h1 class="text-2xl lg:text-3xl font-bold text-black dark:text-white mb-2" x-text="currentCourse.name">Advanced Algorithms</h1>
+                                        <p class="text-gray-600 dark:text-gray-300 mb-4" x-text="currentCourse.description">Deep dive into advanced algorithmic concepts including dynamic programming, graph algorithms, and complexity analysis.</p>
+                                        
+                                        <div class="flex flex-wrap items-center gap-4 text-sm">
+                                            <div class="flex items-center gap-2">
+                                                <i class="lni lni-calendar text-gray-400"></i>
+                                                <span class="text-gray-600 dark:text-gray-300" x-text="currentCourse.schedule">Mon/Wed 10:00 AM</span>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <i class="lni lni-map-marker text-gray-400"></i>
+                                                <span class="text-gray-600 dark:text-gray-300" x-text="currentCourse.location">Room 201A</span>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <i class="lni lni-users text-gray-400"></i>
+                                                <span class="text-gray-600 dark:text-gray-300"><span x-text="currentCourse.enrolled">24</span>/<span x-text="currentCourse.capacity">30</span> Students</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="lg:w-80">
+                                <!-- Faculty Info -->
+                                <div class="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-100 dark:border-gray-700">
+                                    <h3 class="text-lg font-bold text-black dark:text-white mb-4">Instructor</h3>
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-sm font-bold text-gray-600 dark:text-gray-300">
+                                            <span x-text="currentCourse.faculty.initials">SJ</span>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="font-semibold text-black dark:text-white" x-text="currentCourse.faculty.name">Dr. Sarah Johnson</p>
+                                            <p class="text-sm text-gray-500" x-text="currentCourse.faculty.department">Computer Science</p>
+                                            <p class="text-sm text-gray-500" x-text="currentCourse.faculty.email">sarah.johnson@university.edu</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                                        <div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+                                            <i class="lni lni-clock"></i>
+                                            <span x-text="currentCourse.faculty.officeHours">Office Hours: Tue/Thu 2-4 PM</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Course Content Tabs -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                    <!-- Tab Navigation -->
+                    <div class="border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex overflow-x-auto">
+                            <button @click="activeTab = 'syllabus'"
+                                    :class="activeTab === 'syllabus' ? 'border-black dark:border-white text-black dark:text-white' : 'border-transparent text-gray-500 hover:text-black dark:hover:text-white'"
+                                    class="px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap">
+                                Syllabus
+                            </button>
+                            <button @click="activeTab = 'schedule'"
+                                    :class="activeTab === 'schedule' ? 'border-black dark:border-white text-black dark:text-white' : 'border-transparent text-gray-500 hover:text-black dark:hover:text-white'"
+                                    class="px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap">
+                                Schedule
+                            </button>
+                            <button @click="activeTab = 'assessments'"
+                                    :class="activeTab === 'assessments' ? 'border-black dark:border-white text-black dark:text-white' : 'border-transparent text-gray-500 hover:text-black dark:hover:text-white'"
+                                    class="px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap">
+                                Assessments
+                            </button>
+                            <button @click="activeTab = 'resources'"
+                                    :class="activeTab === 'resources' ? 'border-black dark:border-white text-black dark:text-white' : 'border-transparent text-gray-500 hover:text-black dark:hover:text-white'"
+                                    class="px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap">
+                                Resources
+                            </button>
+                            <button @click="activeTab = 'quizzes'; loadQuizzes()"
+                                    :class="activeTab === 'quizzes' ? 'border-black dark:border-white text-black dark:text-white' : 'border-transparent text-gray-500 hover:text-black dark:hover:text-white'"
+                                    class="px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap">
+                                Quizzes
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="p-6 sm:p-8">
+                        
+                        <!-- Syllabus Tab -->
+                        <div x-show="activeTab === 'syllabus'" class="space-y-8">
+                            <div>
+                                <h2 class="text-xl font-bold text-black dark:text-white mb-4">Course Overview</h2>
+                                <p class="text-gray-600 dark:text-gray-300 mb-6">This course provides an in-depth study of advanced algorithms and data structures. Students will learn to analyze algorithmic complexity, implement efficient solutions, and understand the mathematical foundations of computer science.</p>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <h3 class="font-semibold text-black dark:text-white mb-3">Learning Objectives</h3>
+                                        <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                                            <li class="flex items-start gap-2">
+                                                <i class="lni lni-checkmark text-green-500 mt-1"></i>
+                                                Analyze time and space complexity of algorithms
+                                            </li>
+                                            <li class="flex items-start gap-2">
+                                                <i class="lni lni-checkmark text-green-500 mt-1"></i>
+                                                Implement dynamic programming solutions
+                                            </li>
+                                            <li class="flex items-start gap-2">
+                                                <i class="lni lni-checkmark text-green-500 mt-1"></i>
+                                                Design graph algorithms for real-world problems
+                                            </li>
+                                            <li class="flex items-start gap-2">
+                                                <i class="lni lni-checkmark text-green-500 mt-1"></i>
+                                                Apply advanced data structures effectively
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div>
+                                        <h3 class="font-semibold text-black dark:text-white mb-3">Prerequisites</h3>
+                                        <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                                            <li class="flex items-start gap-2">
+                                                <i class="lni lni-graduation text-indigo-500 mt-1"></i>
+                                                Data Structures (CS 201)
+                                            </li>
+                                            <li class="flex items-start gap-2">
+                                                <i class="lni lni-graduation text-indigo-500 mt-1"></i>
+                                                Discrete Mathematics (MATH 150)
+                                            </li>
+                                            <li class="flex items-start gap-2">
+                                                <i class="lni lni-graduation text-indigo-500 mt-1"></i>
+                                                Programming Fundamentals (CS 100)
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h3 class="font-semibold text-black dark:text-white mb-4">Course Topics</h3>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
+                                        <h4 class="font-medium text-black dark:text-white mb-2">Week 1-4: Algorithmic Analysis</h4>
+                                        <ul class="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                                            <li>• Big O, Omega, and Theta notation</li>
+                                            <li>• Master theorem applications</li>
+                                            <li>• Recurrence relations</li>
+                                        </ul>
+                                    </div>
+                                    <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
+                                        <h4 class="font-medium text-black dark:text-white mb-2">Week 5-8: Dynamic Programming</h4>
+                                        <ul class="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                                            <li>• Optimal substructure</li>
+                                            <li>• Memoization techniques</li>
+                                            <li>• Classic DP problems</li>
+                                        </ul>
+                                    </div>
+                                    <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
+                                        <h4 class="font-medium text-black dark:text-white mb-2">Week 9-12: Graph Algorithms</h4>
+                                        <ul class="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                                            <li>• Shortest path algorithms</li>
+                                            <li>• Network flow problems</li>
+                                            <li>• Minimum spanning trees</li>
+                                        </ul>
+                                    </div>
+                                    <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
+                                        <h4 class="font-medium text-black dark:text-white mb-2">Week 13-16: Advanced Topics</h4>
+                                        <ul class="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                                            <li>• String algorithms</li>
+                                            <li>• Computational geometry</li>
+                                            <li>• NP-completeness</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Schedule Tab -->
+                        <div x-show="activeTab === 'schedule'" class="space-y-6">
+                            <div>
+                                <h2 class="text-xl font-bold text-black dark:text-white mb-4">Class Schedule</h2>
+                                <p class="text-gray-600 dark:text-gray-300 mb-6">Regular class meetings and important dates for the semester.</p>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h3 class="font-semibold text-black dark:text-white">Mondays</h3>
+                                        <span class="text-sm text-gray-500">10:00 AM - 11:30 AM</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">Lecture - Room 201A, Computer Science Building</p>
+                                </div>
+                                
+                                <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h3 class="font-semibold text-black dark:text-white">Wednesdays</h3>
+                                        <span class="text-sm text-gray-500">10:00 AM - 11:30 AM</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">Lecture - Room 201A, Computer Science Building</p>
+                                </div>
+                                
+                                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h3 class="font-semibold text-blue-700 dark:text-blue-400">Lab Sessions</h3>
+                                        <span class="text-sm text-blue-600 dark:text-blue-400">Fridays 2:00 PM - 4:00 PM</span>
+                                    </div>
+                                    <p class="text-sm text-blue-600 dark:text-blue-300">Programming Lab - Room CS-Lab2, Computer Science Building</p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="font-semibold text-black dark:text-white mb-4">Important Dates</h3>
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-600">
+                                        <span class="text-gray-600 dark:text-gray-300">First Assignment Due</span>
+                                        <span class="font-medium text-black dark:text-white">Feb 15, 2024</span>
+                                    </div>
+                                    <div class="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-600">
+                                        <span class="text-gray-600 dark:text-gray-300">Midterm Exam</span>
+                                        <span class="font-medium text-black dark:text-white">Mar 20, 2024</span>
+                                    </div>
+                                    <div class="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-600">
+                                        <span class="text-gray-600 dark:text-gray-300">Final Project Due</span>
+                                        <span class="font-medium text-black dark:text-white">May 10, 2024</span>
+                                    </div>
+                                    <div class="flex items-center justify-between py-2">
+                                        <span class="text-gray-600 dark:text-gray-300">Final Exam</span>
+                                        <span class="font-medium text-black dark:text-white">May 15, 2024</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Assessments Tab -->
+                        <div x-show="activeTab === 'assessments'" class="space-y-6">
+                            <div>
+                                <h2 class="text-xl font-bold text-black dark:text-white mb-4">Assessment Structure</h2>
+                                <p class="text-gray-600 dark:text-gray-300 mb-6">Grading breakdown and assessment methods for the course.</p>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div>
+                                    <h3 class="font-semibold text-black dark:text-white mb-4">Grade Distribution</h3>
+                                    <div class="space-y-3">
+                                        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                                            <span class="text-gray-600 dark:text-gray-300">Online Quizzes</span>
+                                            <span class="font-bold text-black dark:text-white">40%</span>
+                                        </div>
+                                        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                                            <span class="text-gray-600 dark:text-gray-300">Midterm Exam</span>
+                                            <span class="font-bold text-black dark:text-white">25%</span>
+                                        </div>
+                                        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                                            <span class="text-gray-600 dark:text-gray-300">Final Exam</span>
+                                            <span class="font-bold text-black dark:text-white">30%</span>
+                                        </div>
+                                        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                                            <span class="text-gray-600 dark:text-gray-300">Class Participation</span>
+                                            <span class="font-bold text-black dark:text-white">5%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <h3 class="font-semibold text-black dark:text-white mb-4">Assignment Types</h3>
+                                    <div class="space-y-4">
+                                        <div class="border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <i class="lni lni-folder text-blue-600 dark:text-blue-400"></i>
+                                                <h4 class="font-medium text-blue-800 dark:text-blue-300">Offline Assignments</h4>
+                                            </div>
+                                            <p class="text-sm text-blue-700 dark:text-blue-400">Faculty uploads assignment files to the Resources section. Check the <button @click="activeTab='resources'" class="underline font-medium">Resources tab</button> to download and submit.</p>
+                                        </div>
+                                        <div class="border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <i class="lni lni-pencil-alt text-purple-600 dark:text-purple-400"></i>
+                                                <h4 class="font-medium text-purple-800 dark:text-purple-300">Online Quizzes</h4>
+                                            </div>
+                                            <p class="text-sm text-purple-700 dark:text-purple-400">Take online MCQ/True-False quizzes directly here. Check the <button @click="activeTab='quizzes'" class="underline font-medium">Quizzes tab</button> to see available quizzes.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resources Tab -->
+                        <div x-show="activeTab === 'resources'" class="space-y-6">
+                            <div>
+                                <h2 class="text-xl font-bold text-black dark:text-white mb-4">Course Resources</h2>
+                                <p class="text-gray-600 dark:text-gray-300 mb-6">Required textbooks, supplementary materials, and offline assignments uploaded by your instructor.</p>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div>
+                                    <h3 class="font-semibold text-black dark:text-white mb-4">Required Textbooks</h3>
+                                    <div class="space-y-4">
+                                        <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                                            <h4 class="font-medium text-black dark:text-white">Introduction to Algorithms</h4>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">by Cormen, Leiserson, Rivest, and Stein (4th Edition)</p>
+                                            <span class="inline-block mt-2 px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded">Required</span>
+                                        </div>
+                                        
+                                        <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                                            <h4 class="font-medium text-black dark:text-white">Algorithm Design</h4>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">by Kleinberg and Tardos</p>
+                                            <span class="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded">Recommended</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <h3 class="font-semibold text-black dark:text-white mb-4">Online Resources</h3>
+                                    <div class="space-y-3">
+                                        <a href="#" class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+                                            <i class="lni lni-link text-blue-500"></i>
+                                            <div>
+                                                <p class="font-medium text-black dark:text-white">Course Website</p>
+                                                <p class="text-xs text-gray-500">Lecture slides and announcements</p>
+                                            </div>
+                                        </a>
+                                        
+                                        <a href="#" class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+                                            <i class="lni lni-github text-gray-700 dark:text-gray-300"></i>
+                                            <div>
+                                                <p class="font-medium text-black dark:text-white">GitHub Repository</p>
+                                                <p class="text-xs text-gray-500">Code examples and templates</p>
+                                            </div>
+                                        </a>
+                                        
+                                        <a href="#" class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+                                            <i class="lni lni-video text-red-500"></i>
+                                            <div>
+                                                <p class="font-medium text-black dark:text-white">Video Lectures</p>
+                                                <p class="text-xs text-gray-500">Recorded sessions and tutorials</p>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h3 class="font-semibold text-black dark:text-white mb-4">Programming Resources</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
+                                        <h4 class="font-medium text-black dark:text-white mb-2">Languages</h4>
+                                        <ul class="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                                            <li>• Python (Recommended)</li>
+                                            <li>• Java</li>
+                                            <li>• C++</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
+                                        <h4 class="font-medium text-black dark:text-white mb-2">Development Tools</h4>
+                                        <ul class="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                                            <li>• VS Code / PyCharm</li>
+                                            <li>• Git version control</li>
+                                            <li>• Jupyter Notebooks</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
+                                        <h4 class="font-medium text-black dark:text-white mb-2">Testing Platforms</h4>
+                                        <ul class="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                                            <li>• LeetCode</li>
+                                            <li>• HackerRank</li>
+                                            <li>• Codeforces</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Quizzes Tab -->
+                        <div x-show="activeTab === 'quizzes'" class="space-y-6">
+                            <!-- Loading -->
+                            <div x-show="quizzesLoading" class="text-center py-12 text-gray-400">
+                                <i class="lni lni-spinner-arrow text-3xl animate-spin"></i>
+                                <p class="mt-2 text-sm">Loading quizzes…</p>
+                            </div>
+
+                            <!-- No quizzes -->
+                            <div x-show="!quizzesLoading && courseQuizzes.length === 0" class="text-center py-12">
+                                <div class="w-14 h-14 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="lni lni-pencil-alt text-2xl text-gray-400"></i>
+                                </div>
+                                <p class="text-gray-500 text-sm">No quizzes available for this course yet.</p>
+                            </div>
+
+                            <!-- Quiz cards -->
+                            <template x-for="quiz in courseQuizzes" :key="quiz.id">
+                                <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                                    <div class="p-5 flex flex-col sm:flex-row sm:items-start gap-4">
+                                        <div class="flex-1">
+                                            <h3 class="font-bold text-black dark:text-white" x-text="quiz.title"></h3>
+                                            <p class="text-sm text-gray-500 mt-1" x-text="quiz.description || 'No description'"></p>
+                                            <div class="flex flex-wrap gap-4 mt-3 text-xs text-gray-500">
+                                                <span class="flex items-center gap-1"><i class="lni lni-help"></i> <span x-text="quiz.question_count + ' questions'"></span></span>
+                                                <span class="flex items-center gap-1"><i class="lni lni-star"></i> <span x-text="quiz.total_points + ' pts'"></span></span>
+                                                <span class="flex items-center gap-1"><i class="lni lni-timer"></i> <span x-text="quiz.time_limit_minutes ? quiz.time_limit_minutes + ' min' : 'No time limit'"></span></span>
+                                                <span class="flex items-center gap-1"><i class="lni lni-reload"></i> <span x-text="(quiz.max_attempts === 0 ? 'Unlimited' : quiz.max_attempts) + ' attempt(s)'"></span></span>
+                                                <span x-show="quiz.due_date" class="flex items-center gap-1 text-red-500"><i class="lni lni-calendar"></i> Due: <span x-text="quiz.due_date ? new Date(quiz.due_date).toLocaleDateString() : ''"></span></span>
+                                            </div>
+
+                                            <!-- Already submitted result -->
+                                            <div x-show="quiz.student_attempt" class="mt-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
+                                                <div class="flex items-center gap-3">
+                                                    <span :class="quiz.student_attempt?.passed ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'"
+                                                          class="px-2 py-0.5 rounded-full text-xs font-medium" x-text="quiz.student_attempt?.passed ? 'Passed' : 'Not Passed'"></span>
+                                                    <span class="text-sm font-medium text-black dark:text-white"
+                                                          x-text="'Score: ' + quiz.student_attempt?.score + '/' + quiz.student_attempt?.max_score + ' (' + quiz.student_attempt?.percentage + '%)'">
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex-shrink-0">
+                                            <!-- Can attempt -->
+                                            <a x-show="quiz.can_attempt && quiz.question_count > 0"
+                                               :href="'student-quiz-take.html?quiz_id=' + quiz.id"
+                                               class="inline-flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-semibold hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors">
+                                                <i class="lni lni-pencil-alt"></i>
+                                                <span x-text="quiz.student_attempt ? 'Retry Quiz' : 'Start Quiz'"></span>
+                                            </a>
+                                            <!-- No more attempts -->
+                                            <span x-show="!quiz.can_attempt && quiz.student_attempt"
+                                                  class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded-xl text-sm">
+                                                <i class="lni lni-checkmark"></i> Completed
+                                            </span>
+                                            <!-- No questions yet -->
+                                            <span x-show="quiz.question_count === 0"
+                                                  class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 rounded-xl text-sm">
+                                                Coming Soon
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="../assets/js/api.js?v=2"></script>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('courseDetail', () => ({
+                activeTab: 'syllabus',
+                courseQuizzes: [],
+                quizzesLoading: false,
+                loading: true,
+                toasts: [], _toastId: 0,
+                _courseDbId: null,
+                
+                currentCourse: {
+                    code: 'CS',
+                    name: 'Advanced Algorithms',
+                    description: 'Deep dive into advanced algorithmic concepts including dynamic programming, graph algorithms, and complexity analysis.',
+                    schedule: 'Mon/Wed 10:00 AM',
+                    location: 'Room 201A',
+                    enrolled: 24,
+                    capacity: 30,
+                    faculty: {
+                        initials: 'SJ',
+                        name: 'Dr. Sarah Johnson',
+                        department: 'Computer Science',
+                        email: 'sarah.johnson@university.edu',
+                        officeHours: 'Office Hours: Tue/Thu 2-4 PM'
+                    }
+                },
+                
+                async init() {
+                    // Auth guard
+                    if (typeof window.api !== 'undefined') {
+                        if (!window.api.checkAuth()) { window.location.href = 'student-login.html'; return; }
+                        const user = window.api.getUserData();
+                        if (user && user.role !== 'student') { window.api.clearToken(); window.location.href = 'student-login.html'; return; }
+                        if (user) window.api.populateSidebar(user);
+                    }
+
+                    // Parse URL parameters to get course details
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const courseId = urlParams.get('id');
+
+                    // Set _courseDbId IMMEDIATELY from the URL so loadQuizzes()
+                    // never blocks on the async getCourse() call below
+                    if (courseId) this._courseDbId = courseId;
+
+                    // Try loading from API first
+                    if (courseId && typeof window.api !== 'undefined') {
+                        try {
+                            const data = await window.api.getCourse(courseId);
+                            const c = data.course || data;
+                            if (c && c.course_name) {
+                                // Update to the real numeric DB id if different
+                                this._courseDbId = c.id || courseId;
+                                this.currentCourse = {
+                                    code: (c.course_code || c.course_name || 'CS').substring(0, 2).toUpperCase(),
+                                    name: c.course_name || c.name || this.currentCourse.name,
+                                    description: c.description || this.currentCourse.description,
+                                    schedule: c.schedule || this.currentCourse.schedule,
+                                    location: c.room || c.location || this.currentCourse.location,
+                                    enrolled: c.enrolled_count || c.enrolled || this.currentCourse.enrolled,
+                                    capacity: c.capacity || this.currentCourse.capacity,
+                                    faculty: {
+                                        initials: c.faculty_name ? c.faculty_name.split(' ').map(p=>p[0]).join('').substring(0,2) : this.currentCourse.faculty.initials,
+                                        name: c.faculty_name || this.currentCourse.faculty.name,
+                                        department: c.department || this.currentCourse.faculty.department,
+                                        email: c.faculty_email || this.currentCourse.faculty.email,
+                                        officeHours: c.office_hours || this.currentCourse.faculty.officeHours
+                                    }
+                                };
+                                return;
+                            }
+                        } catch(e) { console.warn('Could not load course from API:', e); }
+                        this._courseDbId = courseId;
+                    }
+                    
+                    // Course data mapping
+                    const courses = {
+                        'cs401': {
+                            code: 'CS',
+                            name: 'Advanced Algorithms',
+                            description: 'Deep dive into advanced algorithmic concepts including dynamic programming, graph algorithms, and complexity analysis.',
+                            schedule: 'Mon/Wed 10:00 AM',
+                            location: 'Room 201A',
+                            enrolled: 24,
+                            capacity: 30,
+                            faculty: {
+                                initials: 'SJ',
+                                name: 'Dr. Sarah Johnson',
+                                department: 'Computer Science',
+                                email: 'sarah.johnson@university.edu',
+                                officeHours: 'Office Hours: Tue/Thu 2-4 PM'
+                            }
+                        },
+                        'cs302': {
+                            code: 'DB',
+                            name: 'Database Systems',
+                            description: 'Comprehensive study of database design, SQL, NoSQL databases, and modern data management systems.',
+                            schedule: 'Tue/Thu 2:00 PM',
+                            location: 'Room 105B',
+                            enrolled: 18,
+                            capacity: 25,
+                            faculty: {
+                                initials: 'MK',
+                                name: 'Prof. Michael Kim',
+                                department: 'Computer Science',
+                                email: 'michael.kim@university.edu',
+                                officeHours: 'Office Hours: Mon/Wed 3-5 PM'
+                            }
+                        },
+                        'cs450': {
+                            code: 'ML',
+                            name: 'Machine Learning',
+                            description: 'Introduction to machine learning algorithms, neural networks, and practical applications in AI.',
+                            schedule: 'Mon/Wed/Fri 1:00 PM',
+                            location: 'Room 301C',
+                            enrolled: 30,
+                            capacity: 30,
+                            faculty: {
+                                initials: 'AL',
+                                name: 'Dr. Alice Lee',
+                                department: 'Computer Science',
+                                email: 'alice.lee@university.edu',
+                                officeHours: 'Office Hours: Tue/Thu 1-3 PM'
+                            }
+                        },
+                        'math301': {
+                            code: 'MA',
+                            name: 'Linear Algebra',
+                            description: 'Fundamental concepts of linear algebra including vectors, matrices, eigenvalues, and applications.',
+                            schedule: 'Tue/Thu 11:00 AM',
+                            location: 'Room 220',
+                            enrolled: 22,
+                            capacity: 35,
+                            faculty: {
+                                initials: 'RB',
+                                name: 'Prof. Robert Brown',
+                                department: 'Mathematics',
+                                email: 'robert.brown@university.edu',
+                                officeHours: 'Office Hours: Mon/Fri 10-12 PM'
+                            }
+                        },
+                        'phys401': {
+                            code: 'PH',
+                            name: 'Quantum Physics',
+                            description: 'Explore the fascinating world of quantum mechanics, wave functions, and quantum applications.',
+                            schedule: 'Mon/Wed 3:00 PM',
+                            location: 'Room 410',
+                            enrolled: 15,
+                            capacity: 20,
+                            faculty: {
+                                initials: 'EW',
+                                name: 'Dr. Emily Wilson',
+                                department: 'Physics',
+                                email: 'emily.wilson@university.edu',
+                                officeHours: 'Office Hours: Tue/Thu 4-6 PM'
+                            }
+                        },
+                        'bus301': {
+                            code: 'BU',
+                            name: 'Digital Marketing',
+                            description: 'Learn modern digital marketing strategies, social media marketing, and analytics for business growth.',
+                            schedule: 'Fri 9:00 AM',
+                            location: 'Room 150',
+                            enrolled: 28,
+                            capacity: 40,
+                            faculty: {
+                                initials: 'JD',
+                                name: 'Prof. James Davis',
+                                department: 'Business',
+                                email: 'james.davis@university.edu',
+                                officeHours: 'Office Hours: Wed/Fri 11-1 PM'
+                            }
+                        }
+                    };
+                    
+                    if (courseId && courses[courseId]) {
+                        this.currentCourse = courses[courseId];
+                    }
+                    this.loading = false;
+                },
+
+                async loadQuizzes() {
+                    // Always reload when the tab is opened (so published quizzes appear without a hard refresh)
+                    if (this.quizzesLoading) return;
+                    // Resolve course id — use DB id or fall back to URL param
+                    let id = this._courseDbId;
+                    if (!id) {
+                        const p = new URLSearchParams(window.location.search);
+                        id = p.get('id');
+                        if (id) this._courseDbId = id;
+                    }
+                    if (!id || typeof window.api === 'undefined') return;
+                    this.quizzesLoading = true;
+                    try {
+                        const result = await window.api.getCourseQuizzes(id);
+                        this.courseQuizzes = Array.isArray(result) ? result : (result.quizzes || []);
+                    } catch(e) {
+                        console.warn('Could not load quizzes:', e);
+                        this.courseQuizzes = [];
+                        this.addToast('Warning', 'Could not load quizzes for this course.', 'warning');
+                    } finally {
+                        this.quizzesLoading = false;
+                    }
+                },
+
+                addToast(title, message, type = 'info') {
+                    const id = ++this._toastId;
+                    this.toasts.push({ id, title, message, type, visible: false });
+                    setTimeout(() => { const t = this.toasts.find(x => x.id===id); if(t) t.visible = true; }, 50);
+                    setTimeout(() => this.dismissToast(id), 5000);
+                },
+                dismissToast(id) {
+                    const t = this.toasts.find(x => x.id===id);
+                    if (t) { t.visible = false; setTimeout(() => { this.toasts = this.toasts.filter(x => x.id!==id); }, 300); }
+                }
+            }));
+        });
+    </script>
+
+</body>
+</html>

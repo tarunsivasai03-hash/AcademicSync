@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <title>Mark Attendance - AcademicSync</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { fontFamily: { sans: ['Inter','sans-serif'] } } }
+        }
+    </script>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/components/scrollbar.css">
+    <script src="../assets/js/api.js?v=2"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display:none !important; }
+
+        /* Shimmer skeleton */
+        .skeleton {
+            background: linear-gradient(90deg,#f3f4f6 25%,#e9eaec 50%,#f3f4f6 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 8px;
+        }
+        .dark .skeleton {
+            background: linear-gradient(90deg,#1f2937 25%,#2d3748 50%,#1f2937 75%);
+            background-size: 200% 100%;
+        }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+        /* Scrollbar */
+        .cs::-webkit-scrollbar { width:5px; }
+        .cs::-webkit-scrollbar-track { background:transparent; }
+        .cs::-webkit-scrollbar-thumb { background:#e5e7eb; border-radius:10px; }
+        .dark .cs::-webkit-scrollbar-thumb { background:#374151; }
+
+        /* Row left accent */
+        .row-present { border-left:3px solid #22c55e; }
+        .row-late    { border-left:3px solid #f59e0b; }
+        .row-absent  { border-left:3px solid #ef4444; }
+        .row-none    { border-left:3px solid #e5e7eb; }
+        .dark .row-none { border-left:3px solid #374151; }
+
+        /* Status buttons */
+        .sb { display:inline-flex; align-items:center; gap:5px; padding:6px 13px;
+               border-radius:10px; font-size:12px; font-weight:600; border:1.5px solid;
+               transition:all .15s; cursor:pointer; user-select:none; }
+        .sb-p-off { border-color:#bbf7d0; color:#9ca3af; background:transparent; }
+        .sb-p-off:hover { border-color:#4ade80; color:#16a34a; background:#f0fdf4; }
+        .sb-p-on  { border-color:#22c55e; color:#fff; background:#22c55e; box-shadow:0 2px 8px #22c55e33; }
+
+        .sb-l-off { border-color:#fde68a; color:#9ca3af; background:transparent; }
+        .sb-l-off:hover { border-color:#fbbf24; color:#d97706; background:#fffbeb; }
+        .sb-l-on  { border-color:#f59e0b; color:#fff; background:#f59e0b; box-shadow:0 2px 8px #f59e0b33; }
+
+        .sb-a-off { border-color:#fecaca; color:#9ca3af; background:transparent; }
+        .sb-a-off:hover { border-color:#f87171; color:#dc2626; background:#fef2f2; }
+        .sb-a-on  { border-color:#ef4444; color:#fff; background:#ef4444; box-shadow:0 2px 8px #ef444433; }
+
+        .dark .sb-p-off { border-color:#14532d50; color:#6b7280; }
+        .dark .sb-p-off:hover { border-color:#16a34a; color:#4ade80; background:#14532d25; }
+        .dark .sb-l-off { border-color:#78350f50; color:#6b7280; }
+        .dark .sb-l-off:hover { border-color:#d97706; color:#fbbf24; background:#78350f25; }
+        .dark .sb-a-off { border-color:#7f1d1d50; color:#6b7280; }
+        .dark .sb-a-off:hover { border-color:#dc2626; color:#f87171; background:#7f1d1d25; }
+
+        /* Progress bar */
+        .prog { transition: width .6s cubic-bezier(.4,0,.2,1); }
+
+        /* Avatar color by status */
+        .av-present { background:#22c55e; color:#fff; }
+        .av-late    { background:#f59e0b; color:#fff; }
+        .av-absent  { background:#ef4444; color:#fff; }
+        .av-none    { background:#f3f4f6; color:#6b7280; }
+        .dark .av-none { background:#374151; color:#9ca3af; }
+    </style>
+</head>
+
+<body class="h-full flex overflow-hidden font-sans antialiased bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-200 transition-colors duration-200"
+    x-data="page()" x-init="init()" x-cloak>
+
+    <!-- Mobile overlay -->
+    <div x-show="nav" @click="nav=false" x-transition:enter="transition-opacity duration-200"
+        x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+        x-transition:leave="transition-opacity duration-150" x-transition:leave-end="opacity-0"
+        class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden"></div>
+
+    <!-- ══════════════ SIDEBAR ══════════════ -->
+    <aside :class="nav ? 'translate-x-0' : '-translate-x-full'"
+        class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 shadow-xl
+               transform transition-transform duration-300 ease-in-out
+               lg:static lg:translate-x-0 flex flex-col h-full shrink-0">
+
+        <!-- Brand -->
+        <div class="h-16 flex items-center justify-between px-5 border-b border-gray-100 dark:border-gray-800">
+            <a href="../index.html" class="flex items-center gap-2.5 group">
+                <div class="w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                    <i class="lni lni-graduation text-sm"></i>
+                </div>
+                <span class="font-bold text-lg text-black dark:text-white tracking-tight">AcademicSync</span>
+            </a>
+            <button @click="nav=false" aria-label="Close sidebar" class="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black dark:hover:text-white transition-all">
+                <i class="ri-close-line text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Nav links -->
+        <nav class="flex-1 overflow-y-auto py-5 px-3 cs">
+            <p class="px-3 mb-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">Menu</p>
+
+            <template x-for="link in links" :key="link.href">
+                <a :href="link.href" :aria-current="link.active ? 'page' : null"
+                    :class="link.active
+                        ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm font-semibold'
+                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/70 hover:text-black dark:hover:text-white font-medium'"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all mb-0.5 group">
+                    <i :class="link.icon + ' text-base shrink-0 group-hover:scale-110 transition-transform'"></i>
+                    <span x-text="link.label"></span>
+                </a>
+            </template>
+        </nav>
+
+        <!-- Footer -->
+        <div class="p-4 border-t border-gray-100 dark:border-gray-800 space-y-2 shrink-0">
+            <button @click="darkMode=!darkMode; localStorage.setItem('darkMode',darkMode)"
+                class="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all text-xs font-bold uppercase tracking-wider">
+                <i :class="darkMode ? 'ri-sun-line' : 'ri-moon-line'"></i>
+                <span x-text="darkMode ? 'Light Mode' : 'Dark Mode'"></span>
+            </button>
+            <div class="flex items-center gap-3 px-2 py-1">
+                <div class="w-8 h-8 rounded-full bg-gray-900 dark:bg-white text-white dark:text-black flex items-center justify-center font-bold text-xs uppercase shrink-0"
+                    x-text="initials"></div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-black dark:text-white truncate" x-text="uname"></p>
+                    <p class="text-xs text-gray-400">Faculty</p>
+                </div>
+            </div>
+            <button @click="logout()"
+                class="w-full flex items-center justify-center gap-2 text-xs font-semibold text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 py-2 rounded-lg transition-all">
+                <i class="ri-logout-box-r-line"></i> Sign Out
+            </button>
+        </div>
+    </aside>
+
+    <!-- ══════════════ MAIN ══════════════ -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+        <!-- Mobile top bar -->
+        <header class="lg:hidden flex items-center justify-between h-14 px-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 shrink-0 z-10">
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 bg-black dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-black font-bold text-xs">AS</div>
+                <span class="font-semibold text-sm text-black dark:text-white">Attendance</span>
+            </div>
+            <button @click="nav=!nav" aria-label="Open sidebar"
+                class="w-9 h-9 flex items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black dark:hover:text-white transition-all">
+                <i class="ri-menu-2-line text-xl"></i>
+            </button>
+        </header>
+
+        <!-- Scrollable content -->
+        <main class="flex-1 overflow-y-auto cs" id="main-content">
+            <!-- Error boundary -->
+            <div x-show="initError" x-cloak class="m-4 p-4 rounded-xl border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-900/20 flex items-start gap-3">
+                <i class="lni lni-warning text-red-500 mt-0.5 shrink-0 text-lg"></i>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-red-700 dark:text-red-300" x-text="initError"></p>
+                    <button @click="initError = ''; init()" class="mt-1.5 text-xs font-bold text-red-600 dark:text-red-400 hover:underline">Try again</button>
+                </div>
+                <button @click="initError = ''" aria-label="Dismiss error" class="text-red-300 hover:text-red-500 shrink-0"><i class="lni lni-close text-xs"></i></button>
+            </div>
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10 space-y-6">
+
+                <!-- ── Header ── -->
+                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-[11px] font-bold uppercase tracking-widest text-gray-400">Faculty Portal</span>
+                            <span class="text-gray-300 dark:text-gray-700">·</span>
+                            <span class="text-[11px] font-bold uppercase tracking-widest text-black dark:text-white">Attendance</span>
+                        </div>
+                        <h1 class="text-2xl lg:text-3xl font-bold text-black dark:text-white leading-tight">Mark Attendance</h1>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1" x-text="todayLabel()"></p>
+                    </div>
+
+                    <!-- Live mini-summary (once students loaded) -->
+                    <template x-if="students.length > 0 && !loadingStudents">
+                        <div class="flex items-center gap-2 sm:gap-3 self-start sm:mt-2 shrink-0">
+                            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/50 select-none">
+                                <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                <span class="text-xs font-bold text-green-700 dark:text-green-400" x-text="cnt('present')"></span>
+                            </div>
+                            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-900/50 select-none">
+                                <span class="w-2 h-2 rounded-full bg-yellow-400"></span>
+                                <span class="text-xs font-bold text-yellow-700 dark:text-yellow-400" x-text="cnt('late')"></span>
+                            </div>
+                            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/50 select-none">
+                                <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                                <span class="text-xs font-bold text-red-700 dark:text-red-400" x-text="cnt('absent')"></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- ── Session Setup Card ── -->
+                <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                    <div class="flex items-center gap-2.5 px-5 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/40">
+                        <i class="ri-settings-3-line text-gray-400 text-sm"></i>
+                        <span class="text-[11px] font-bold uppercase tracking-widest text-gray-400">Session Setup</span>
+                    </div>
+
+                    <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <!-- Course -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
+                                Course
+                            </label>
+                            <div class="relative">
+                                <select x-model="courseId" @change="loadStudents()" :disabled="loadingCourses"
+                                    class="w-full pl-3 pr-9 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700
+                                           bg-gray-50 dark:bg-gray-800 text-black dark:text-white text-sm
+                                           focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10
+                                           focus:border-black dark:focus:border-white transition-all appearance-none
+                                           disabled:opacity-50 cursor-pointer">
+                                    <option value="" x-text="loadingCourses ? 'Loading courses…' : '— Select a course —'"></option>
+                                    <template x-for="c in courses" :key="c.id">
+                                        <option :value="c.id" x-text="c.course_code + ' · ' + c.course_name"></option>
+                                    </template>
+                                </select>
+                                <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                                    <i x-show="loadingCourses" class="ri-loader-4-line animate-spin text-sm"></i>
+                                    <i x-show="!loadingCourses" class="ri-arrow-down-s-line text-base"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Date -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
+                                Date
+                            </label>
+                            <input type="date" x-model="date" :max="todayStr()"
+                                class="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700
+                                       bg-gray-50 dark:bg-gray-800 text-black dark:text-white text-sm
+                                       focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10
+                                       focus:border-black dark:focus:border-white transition-all">
+                        </div>
+                    </div>
+
+                    <!-- Progress bar -->
+                    <template x-if="students.length > 0 && !loadingStudents">
+                        <div class="px-5 pb-5">
+                            <div class="flex items-center justify-between text-xs mb-1.5">
+                                <span class="text-gray-400 font-medium" x-text="markedCount + ' / ' + students.length + ' marked'"></span>
+                                <span class="font-bold text-black dark:text-white" x-text="pct + '%'"></span>
+                            </div>
+                            <div class="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                <div class="h-full rounded-full prog transition-colors"
+                                    :class="pct === 100 ? 'bg-green-500' : 'bg-black dark:bg-white'"
+                                    :style="'width:' + pct + '%'"></div>
+                            </div>
+                            <p x-show="pct === 100" class="text-xs font-semibold text-green-600 dark:text-green-400 mt-1.5 flex items-center gap-1">
+                                <i class="ri-check-double-line"></i> All students marked — ready to save!
+                            </p>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- ── Empty: no course chosen ── -->
+                <template x-if="!loadingCourses && !courseId">
+                    <div class="bg-white dark:bg-gray-900 rounded-2xl border border-dashed border-gray-200 dark:border-gray-800 py-24 text-center">
+                        <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+                            <i class="lni lni-users text-3xl text-gray-300 dark:text-gray-600"></i>
+                        </div>
+                        <p class="font-semibold text-gray-600 dark:text-gray-300 text-base">Select a course to begin</p>
+                        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1 max-w-sm mx-auto leading-relaxed">
+                            Enrolled students will appear here. Choose a course and date above.
+                        </p>
+                    </div>
+                </template>
+
+                <!-- ── Student List ── -->
+                <template x-if="courseId">
+                    <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+
+                        <!-- List toolbar -->
+                        <div class="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center gap-3">
+                            <!-- Title -->
+                            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                                <div class="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
+                                    <i class="lni lni-users text-sm text-gray-400"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-black dark:text-white leading-tight">
+                                        <span x-text="filtered.length"></span>
+                                        <span x-show="search" x-text="' of ' + students.length"></span> Students
+                                    </p>
+                                    <p class="text-xs text-gray-400" x-text="dateFmt()"></p>
+                                </div>
+                            </div>
+
+                            <!-- Controls -->
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <!-- Search -->
+                                <div class="relative">
+                                    <i class="ri-search-line absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none"></i>
+                                    <input type="search" x-model="search" placeholder="Search…"
+                                        class="pl-8 pr-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700
+                                               bg-gray-50 dark:bg-gray-800 text-black dark:text-white text-xs
+                                               focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 transition-all w-36">
+                                </div>
+                                <!-- Bulk: All Present -->
+                                <button @click="markAll('present')"
+                                    class="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-green-200 dark:border-green-900/60
+                                           bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400
+                                           text-xs font-semibold hover:bg-green-100 dark:hover:bg-green-900/40
+                                           active:scale-95 transition-all">
+                                    <i class="ri-check-line"></i> All Present
+                                </button>
+                                <!-- Bulk: All Absent -->
+                                <button @click="markAll('absent')"
+                                    class="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-red-200 dark:border-red-900/60
+                                           bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400
+                                           text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-900/40
+                                           active:scale-95 transition-all">
+                                    <i class="ri-close-line"></i> All Absent
+                                </button>
+                                <!-- Reset -->
+                                <button @click="resetAll()" title="Reset all to Present" aria-label="Reset all attendance to Present"
+                                    class="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700
+                                           text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800
+                                           active:scale-95 transition-all">
+                                    <i class="ri-refresh-line text-base"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Skeleton rows -->
+                        <template x-if="loadingStudents">
+                            <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                                <template x-for="n in [1,2,3,4,5,6]" :key="n">
+                                    <div class="px-5 py-4 flex items-center gap-4">
+                                        <div class="skeleton w-10 h-10 rounded-full shrink-0"></div>
+                                        <div class="flex-1 space-y-2">
+                                            <div class="skeleton h-3 w-1/3 rounded"></div>
+                                            <div class="skeleton h-2.5 w-1/5 rounded"></div>
+                                        </div>
+                                        <div class="hidden sm:flex gap-1.5">
+                                            <div class="skeleton h-8 w-20 rounded-xl"></div>
+                                            <div class="skeleton h-8 w-16 rounded-xl"></div>
+                                            <div class="skeleton h-8 w-19 rounded-xl"></div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template x-if="!loadingStudents">
+                            <div>
+                                <!-- Empty: no students enrolled -->
+                                <template x-if="students.length === 0">
+                                    <div class="py-20 text-center">
+                                        <div class="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+                                            <i class="lni lni-users text-2xl text-gray-300 dark:text-gray-600"></i>
+                                        </div>
+                                        <p class="font-semibold text-gray-400 dark:text-gray-500">No students enrolled in this course</p>
+                                    </div>
+                                </template>
+
+                                <!-- Empty: search no results -->
+                                <template x-if="students.length > 0 && filtered.length === 0">
+                                    <div class="py-14 text-center">
+                                        <i class="ri-search-line text-3xl text-gray-300 dark:text-gray-700 block mb-3"></i>
+                                        <p class="font-medium text-gray-500">No match for "<span class="text-black dark:text-white" x-text="search"></span>"</p>
+                                        <button @click="search=''" class="mt-2 text-xs text-gray-400 underline hover:text-black dark:hover:text-white transition-colors">Clear</button>
+                                    </div>
+                                </template>
+
+                                <!-- Student rows -->
+                                <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                                    <template x-for="(s, i) in filtered" :key="s.id">
+                                        <div class="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5
+                                                    hover:bg-gray-50/80 dark:hover:bg-gray-800/40 transition-colors"
+                                            :class="{
+                                                'row-present': att[s.id] === 'present',
+                                                'row-late':    att[s.id] === 'late',
+                                                'row-absent':  att[s.id] === 'absent',
+                                                'row-none':    !att[s.id]
+                                            }">
+
+                                            <!-- Row number -->
+                                            <span class="text-xs text-gray-300 dark:text-gray-700 font-mono w-5 text-right hidden sm:block shrink-0"
+                                                x-text="i + 1"></span>
+
+                                            <!-- Avatar (color changes with status) -->
+                                            <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs uppercase shrink-0 transition-all duration-200"
+                                                :class="{
+                                                    'av-present': att[s.id] === 'present',
+                                                    'av-late':    att[s.id] === 'late',
+                                                    'av-absent':  att[s.id] === 'absent',
+                                                    'av-none':    !att[s.id]
+                                                }"
+                                                x-text="initials2(s.full_name || s.user_id)">
+                                            </div>
+
+                                            <!-- Name + ID -->
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-semibold text-black dark:text-white truncate" x-text="s.full_name || '—'"></p>
+                                                <p class="text-xs text-gray-400 truncate" x-text="s.user_id || s.email || ''"></p>
+                                            </div>
+
+                                            <!-- Desktop status buttons -->
+                                            <div class="hidden sm:flex items-center gap-1.5 shrink-0">
+                                                <button @click="set(s.id,'present')"
+                                                    :class="att[s.id]==='present' ? 'sb-p-on' : 'sb-p-off'"
+                                                    class="sb">
+                                                    <i class="ri-check-line text-sm"></i> Present
+                                                </button>
+                                                <button @click="set(s.id,'late')"
+                                                    :class="att[s.id]==='late' ? 'sb-l-on' : 'sb-l-off'"
+                                                    class="sb">
+                                                    <i class="ri-time-line text-sm"></i> Late
+                                                </button>
+                                                <button @click="set(s.id,'absent')"
+                                                    :class="att[s.id]==='absent' ? 'sb-a-on' : 'sb-a-off'"
+                                                    class="sb">
+                                                    <i class="ri-close-line text-sm"></i> Absent
+                                                </button>
+                                            </div>
+
+                                            <!-- Mobile: status badge + cycle button -->
+                                            <div class="sm:hidden flex items-center gap-2 shrink-0">
+                                                <span class="text-[11px] font-bold px-2 py-0.5 rounded-lg"
+                                                    :class="{
+                                                        'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400': att[s.id]==='present',
+                                                        'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400': att[s.id]==='late',
+                                                        'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400': att[s.id]==='absent',
+                                                        'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600': !att[s.id]
+                                                    }"
+                                                    x-text="att[s.id] ? att[s.id][0].toUpperCase()+att[s.id].slice(1) : 'Tap'">
+                                                </span>
+                                                <button @click="cycle(s.id)" title="Tap to cycle"
+                                                    class="w-9 h-9 rounded-xl border-2 flex items-center justify-center transition-all active:scale-90"
+                                                    :class="{
+                                                        'border-green-400 bg-green-50 dark:bg-green-900/20 text-green-600': att[s.id]==='present',
+                                                        'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600': att[s.id]==='late',
+                                                        'border-red-400 bg-red-50 dark:bg-red-900/20 text-red-600': att[s.id]==='absent',
+                                                        'border-gray-200 dark:border-gray-700 text-gray-400': !att[s.id]
+                                                    }">
+                                                    <i :class="{
+                                                        'ri-check-line': att[s.id]==='present',
+                                                        'ri-time-line': att[s.id]==='late',
+                                                        'ri-close-line': att[s.id]==='absent',
+                                                        'ri-question-line': !att[s.id]
+                                                    }" class="text-base"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Spacer so content isn't hidden behind sticky bar -->
+                <div class="h-4"></div>
+
+            </div>
+
+            <!-- ══ Sticky Bottom Submit Bar ══ -->
+            <template x-if="students.length > 0 && !loadingStudents">
+                <div class="sticky bottom-0 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md
+                            border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
+                    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
+
+                        <!-- Summary -->
+                        <div class="flex items-center gap-4 flex-wrap">
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+                                <span class="text-sm font-bold text-green-700 dark:text-green-400" x-text="cnt('present')"></span>
+                                <span class="text-xs text-gray-400">present</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
+                                <span class="text-sm font-bold text-yellow-600 dark:text-yellow-400" x-text="cnt('late')"></span>
+                                <span class="text-xs text-gray-400">late</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                                <span class="text-sm font-bold text-red-600 dark:text-red-400" x-text="cnt('absent')"></span>
+                                <span class="text-xs text-gray-400">absent</span>
+                            </div>
+                            <template x-if="unmarked > 0">
+                                <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-900/50">
+                                    <i class="ri-alert-line text-orange-500 text-xs"></i>
+                                    <span class="text-xs font-bold text-orange-600 dark:text-orange-400" x-text="unmarked + ' unmarked'"></span>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Save button -->
+                        <button @click="save()" :disabled="saving"
+                            class="flex items-center gap-2.5 px-6 py-2.5 rounded-xl bg-black dark:bg-white
+                                   text-white dark:text-black text-sm font-bold
+                                   hover:opacity-80 active:scale-95 transition-all
+                                   disabled:opacity-50 disabled:cursor-not-allowed
+                                   shadow-lg shadow-black/15 dark:shadow-white/10 shrink-0">
+                            <i x-show="saving"  class="ri-loader-4-line animate-spin text-base"></i>
+                            <i x-show="!saving" class="ri-save-line text-base"></i>
+                            <span x-text="saving ? 'Saving…' : 'Save Attendance'"></span>
+                        </button>
+                    </div>
+                </div>
+            </template>
+
+        </main>
+    </div>
+
+<script>
+function page() {
+    return {
+        /* ── state ── */
+        darkMode: false,
+        nav: false,
+        loadingCourses: true,
+        initError: '',
+        loadingStudents: false,
+        saving: false,
+        uname: '—',
+        initials: 'F',
+        courses: [],
+        students: [],
+        courseId: '',
+        date: new Date().toISOString().slice(0, 10),
+        att: {},
+        search: '',
+
+        /* ── sidebar links ── */
+        links: [
+            { label:'Dashboard',   icon:'lni lni-grid-alt',          href:'faculty-dashboard.html',   active:false },
+            { label:'My Courses',  icon:'lni lni-library',            href:'faculty-courses.html',     active:false },
+            { label:'Schedule',    icon:'lni lni-calendar',           href:'faculty-schedule.html',    active:false },
+            { label:'Students',    icon:'lni lni-users',              href:'faculty-students.html',    active:false },
+            { label:'Grades',      icon:'lni lni-clipboard',          href:'faculty-grades.html',      active:false },
+            { label:'Attendance',  icon:'lni lni-checkmark-circle',   href:'faculty-attendance.html',  active:true  },
+            { label:'Assignments', icon:'lni lni-list',               href:'faculty-assignments.html', active:false },
+            { label:'Quizzes',     icon:'lni lni-pencil-alt',         href:'faculty-quiz.html',        active:false },
+            { label:'Resources',   icon:'lni lni-folder',             href:'faculty-resources.html',   active:false },
+            { label:'Profile',     icon:'lni lni-user',               href:'faculty-profile.html',     active:false },
+        ],
+
+        /* ── computed ── */
+        get filtered() {
+            if (!this.search.trim()) return this.students;
+            const q = this.search.trim().toLowerCase();
+            return this.students.filter(s =>
+                (s.full_name||'').toLowerCase().includes(q) ||
+                (s.user_id||'').toLowerCase().includes(q) ||
+                (s.email||'').toLowerCase().includes(q)
+            );
+        },
+        get unmarked()    { return this.students.filter(s => !this.att[s.id]).length; },
+        get markedCount() { return this.students.filter(s => !!this.att[s.id]).length; },
+        get pct()         { return this.students.length ? Math.round(this.markedCount/this.students.length*100) : 0; },
+
+        /* ── helpers ── */
+        todayStr()  { return new Date().toISOString().slice(0, 10); },
+        todayLabel(){ return new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); },
+        dateFmt() {
+            if (!this.date) return '';
+            const d = new Date(this.date + 'T00:00:00');
+            return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+        },
+        cnt(s)     { return Object.values(this.att).filter(v => v === s).length; },
+        initials2(name) {
+            return (name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+        },
+
+        /* ── actions ── */
+        set(id, status) { this.att = {...this.att, [id]: status}; },
+        cycle(id) {
+            const map = {present:'late', late:'absent', absent:'present'};
+            const cur = this.att[id] || 'absent';
+            this.att = {...this.att, [id]: map[cur] || 'present'};
+        },
+        markAll(status) {
+            const n = {};
+            this.students.forEach(s => { n[s.id] = status; });
+            this.att = n;
+        },
+        resetAll() { this.markAll('present'); },
+
+        /* ── API ── */
+        async loadStudents() {
+            if (!this.courseId) { this.students = []; this.att = {}; return; }
+            this.loadingStudents = true;
+            this.att = {};
+            this.search = '';
+            try {
+                const res = await window.api.getCourseStudents(this.courseId);
+                this.students = Array.isArray(res) ? res : [];
+                const n = {};
+                this.students.forEach(s => { n[s.id] = 'present'; });
+                this.att = n;
+            } catch(e) {
+                window.api?.showNotification('Could not load students', 'error');
+            } finally {
+                this.loadingStudents = false;
+            }
+        },
+
+        async save() {
+            if (this.saving || !this.courseId) return;
+            if (this.unmarked > 0 && !confirm(`${this.unmarked} student(s) are unmarked and will be skipped. Continue?`)) return;
+            this.saving = true;
+            try {
+                const list = this.students
+                    .filter(s => this.att[s.id])
+                    .map(s => ({student_id: s.id, status: this.att[s.id]}));
+                await window.api.recordAttendance({
+                    course_id:  parseInt(this.courseId),
+                    date:       this.date,
+                    attendance: list
+                });
+                window.api?.showNotification(
+                    `Saved: ${this.cnt('present')} present · ${this.cnt('late')} late · ${this.cnt('absent')} absent`,
+                    'success'
+                );
+            } catch(e) {
+                window.api?.showNotification('Failed to save: ' + (e.message||'Unknown error'), 'error');
+            } finally {
+                this.saving = false;
+            }
+        },
+
+        async init() {
+            this.darkMode = localStorage.getItem('darkMode') === 'true';
+            document.documentElement.classList.toggle('dark', this.darkMode);
+            this.$watch('darkMode', v => document.documentElement.classList.toggle('dark', v));
+            if (!window.api?.checkAuth()) { window.location.href = 'faculty-login.html'; return; }
+            const u = window.api.getUserData();
+            if (u) {
+                if (u.role !== 'faculty') { window.api.clearToken(); window.location.href = 'faculty-login.html'; return; }
+                this.uname    = u.full_name || u.user_id || '—';
+                this.initials = (u.full_name||u.user_id||'F').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+            }
+            try {
+                const res = await window.api.getFacultyCourses();
+                this.courses = Array.isArray(res) ? res : [];
+            } catch(e) {
+                window.api?.showNotification('Could not load courses', 'error');
+                this.initError = 'Could not load courses. Please try again.';
+            } finally {
+                this.loadingCourses = false;
+            }
+        },
+
+        logout() {
+            window.api?.logout()
+                .then(() => { window.location.href = 'faculty-login.html'; })
+                .catch(()  => { window.location.href = 'faculty-login.html'; });
+        }
+    };
+}
+</script>
+</body>
+</html>

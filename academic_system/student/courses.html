@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <meta name="description" content="AcademicSync - Smart Academic Management">
+    <title>Courses - AcademicSync</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db',
+                            400: '#9ca3af', 500: '#6b7280', 600: '#000000', 700: '#1f2937',
+                            800: '#111827', 900: '#000000',
+                        },
+                        gray: {
+                            50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db',
+                            400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151',
+                            800: '#1f2937', 900: '#111827',
+                        }
+                    },
+                    boxShadow: {
+                        'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                        'DEFAULT': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                        'md': '0 4px 12px rgba(0, 0, 0, 0.05)',
+                        'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03)',
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/components/scrollbar.css">
+    
+    <script src="../assets/js/main.js" defer></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #e5e7eb; border-radius: 20px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #374151; }
+    </style>
+</head>
+
+<body
+    class="h-full flex overflow-hidden text-gray-600 font-sans antialiased bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 dark:text-gray-300 transition-colors duration-200"
+    x-data="layout">
+
+    <!-- Sidebar -->
+    <div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-300"
+        x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+        x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0" @click="sidebarOpen = false"
+        class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden" aria-hidden="true" x-cloak>
+    </div>
+
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+        class="fixed inset-y-0 left-0 z-50 w-64 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-800/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 flex flex-col h-full">
+
+        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100/50 dark:border-gray-800/50">
+            <a href="../index.html" class="flex items-center gap-2.5 group">
+                <div class="w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-lg shadow-gray-200/50 dark:shadow-none group-hover:scale-105 transition-transform">
+                    <i class="lni lni-graduation"></i>
+                </div>
+                <span class="font-display font-bold text-xl text-black dark:text-white tracking-tight">AcademicSync</span>
+            </a>
+            <button @click="sidebarOpen = false" aria-label="Close Sidebar"
+                class="lg:hidden text-gray-400 hover:text-black transition-colors"><i class="lni lni-close text-xl"></i></button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Menu</p>
+            
+            <a href="student-dashboard.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-grid-alt text-lg"></i> Dashboard
+            </a>
+            
+            <a href="schedules.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-calendar text-lg"></i> Schedule
+            </a>
+            
+            <a href="tasks.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-list text-lg"></i> Tasks
+            </a>
+            
+            <a href="courses.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group bg-white/60 dark:bg-white/10 text-black dark:text-white shadow-sm border border-white/40 dark:border-white/5 backdrop-blur-sm"
+                aria-current="page">
+                <i class="lni lni-graduation text-lg"></i> Courses
+            </a>
+            
+            <a href="student-attendance.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-checkmark-circle text-lg"></i> Attendance
+            </a>
+
+            <a href="student-grades.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-stats-up text-lg"></i> Grades
+            </a>
+
+            <a href="student-assignments.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-files text-lg"></i> Assignments
+            </a>
+
+            <a href="student-announcements.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-bullhorn text-lg"></i> Announcements
+            </a>
+
+            <a href="resources.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-library text-lg"></i> Resources
+            </a>
+
+            <a href="student-profile.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-user text-lg"></i> Profile
+            </a>
+        </div>
+
+        <div class="p-4 border-t border-gray-100/50 dark:border-gray-800/50 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md">
+            <button @click="darkMode = !darkMode" aria-label="Toggle Dark Mode"
+                class="w-full flex items-center justify-center gap-2 mb-3 py-2 rounded-lg bg-white/50 dark:bg-gray-800/50 border border-white/20 dark:border-gray-700/30 text-gray-600 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-800/80 transition-colors shadow-sm">
+                <i class="lni" :class="darkMode ? 'lni-night' : 'lni-sun'"></i>
+                <span class="text-xs font-bold uppercase tracking-wider" x-text="darkMode ? 'Dark Mode' : 'Light Mode'"></span>
+            </button>
+            
+            <a href="student-profile.html"
+                class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors group">
+                <div class="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-gray-200 dark:border-gray-700 text-gray-400 font-bold text-xs uppercase shadow-sm group-hover:bg-white dark:group-hover:bg-gray-700 group-hover:shadow-md transition-all">
+                    <span data-user-initials>AT</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-black dark:text-white truncate" data-user-name>Alex Thompson</p>
+                    <p class="text-xs text-gray-500 truncate" data-user-role>CS Student - Year 3</p>
+                </div>
+                <i class="lni lni-cog text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors"></i>
+            </a>
+            
+            <div class="mt-2 text-center">
+                <button @click="logout()"
+                    class="w-full flex items-center justify-center gap-2 text-xs font-bold text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 py-2 rounded-lg transition-all uppercase tracking-tighter">
+                    <i class="lni lni-exit"></i><span>Sign Out</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 relative h-full">
+        <!-- Mobile Header -->
+        <div class="lg:hidden h-14 border-b border-gray-100/50 dark:border-gray-800/50 flex items-center justify-between px-4 sticky top-0 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl z-20 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-black font-bold text-sm shadow-sm">
+                    AS</div>
+                <span class="font-semibold text-black dark:text-white">AcademicSync</span>
+            </div>
+            <button @click="sidebarOpen = !sidebarOpen"
+                class="p-2 -mr-2 text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md">
+                <i class="ri-menu-line text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Content Scroller -->
+        <main class="flex-1 overflow-y-auto scroll-smooth p-4 sm:p-6 lg:p-8" id="main-content">
+            <div class="max-w-7xl mx-auto space-y-8 animate-fade-in-up">
+                
+                <!-- Header -->
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-100 dark:border-gray-800 pb-4">
+                    <div>
+                        <h1 class="text-3xl font-bold text-black dark:text-white tracking-tight">Course Catalog</h1>
+                        <p class="text-gray-500 dark:text-gray-400 mt-2">Browse courses organized by semester and academic year.</p>
+                    </div>
+                    
+                    <!-- Search and Filter -->
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="relative">
+                            <i class="lni lni-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" id="course-search" placeholder="Search courses..."
+                                class="w-full sm:w-64 pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white dark:text-white">
+                        </div>
+                        <select id="semester-filter" class="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-600 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white">
+                            <option value="">All Semesters</option>
+                            <option>Spring 2026</option>
+                            <option>Fall 2025</option>
+                            <option>Summer 2025</option>
+                        </select>
+                        <select id="dept-filter" class="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-600 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white">
+                            <option value="">All Departments</option>
+                            <option>Computer Science</option>
+                            <option>Mathematics</option>
+                            <option>Physics</option>
+                            <option>Chemistry</option>
+                            <option>Business</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Enrolled Courses - Dynamic -->
+                <div class="space-y-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center text-lg font-bold border border-green-200 dark:border-green-700">
+                            <i class="lni lni-library"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-black dark:text-white">My Enrolled Courses</h2>
+                            <p class="text-gray-500 dark:text-gray-400" data-course-summary>Loading courses...</p>
+                        </div>
+                    </div>
+
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" data-enrolled-courses>
+                        <div class="col-span-full" data-loading-courses>
+                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-pulse">
+                                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-4"><div class="flex items-center gap-3"><div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-xl shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div></div></div><div class="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-4/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="flex justify-between pt-2"><div class="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div><div class="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div></div></div>
+                                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-4"><div class="flex items-center gap-3"><div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-xl shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div></div></div><div class="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-4/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="flex justify-between pt-2"><div class="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div><div class="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div></div></div>
+                                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-4"><div class="flex items-center gap-3"><div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-xl shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div></div></div><div class="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-4/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="flex justify-between pt-2"><div class="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div><div class="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div></div></div>
+                                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-4"><div class="flex items-center gap-3"><div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-xl shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div></div></div><div class="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-4/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="flex justify-between pt-2"><div class="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div><div class="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div></div></div>
+                                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-4"><div class="flex items-center gap-3"><div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-xl shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div></div></div><div class="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-4/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="flex justify-between pt-2"><div class="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div><div class="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div></div></div>
+                                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-4"><div class="flex items-center gap-3"><div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-xl shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div></div></div><div class="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-4/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="flex justify-between pt-2"><div class="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div><div class="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Custom Scripts -->
+    <script src="../assets/js/api.js?v=2"></script>
+    <script>
+        // Initialize API client
+        const api = new AcademicSyncAPI(window._apiBase || 'http://localhost:5000');
+
+        // Store all courses for re-filtering
+        let allCourses = [];
+
+        const DEPT_COLORS = [
+            { bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-600 dark:text-indigo-400', border: 'border-indigo-200 dark:border-indigo-700' },
+            { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-700' },
+            { bg: 'bg-purple-100 dark:bg-purple-900/30',  text: 'text-purple-600 dark:text-purple-400',  border: 'border-purple-200 dark:border-purple-700' },
+            { bg: 'bg-orange-100 dark:bg-orange-900/30',  text: 'text-orange-600 dark:text-orange-400',  border: 'border-orange-200 dark:border-orange-700' },
+            { bg: 'bg-pink-100 dark:bg-pink-900/30',      text: 'text-pink-600 dark:text-pink-400',      border: 'border-pink-200 dark:border-pink-700' },
+            { bg: 'bg-blue-100 dark:bg-blue-900/30',      text: 'text-blue-600 dark:text-blue-400',      border: 'border-blue-200 dark:border-blue-700' },
+        ];
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (!api.checkAuth()) { window.location.href = 'student-login.html'; return; }
+            const _cu = api.getUserData();
+            if (_cu && _cu.role !== 'student') { api.clearToken(); window.location.href = 'student-login.html'; return; }
+            if (_cu) api.populateSidebar(_cu);
+            await loadCourses();
+        });
+
+        async function loadCourses() {
+            try {
+                const courses = await api.getCourses();
+                allCourses = courses;
+                setupFilters();
+                displayCourses(courses);
+            } catch (error) {
+                console.error('Error loading courses:', error);
+                const grid = document.querySelector('[data-enrolled-courses]');
+                if (grid) grid.innerHTML = '<div class="col-span-full text-center py-12 text-red-500">Failed to load courses. Please refresh.</div>';
+                api.showNotification('Failed to load courses', 'error');
+            }
+        }
+
+        function setupFilters() {
+            const searchEl = document.getElementById('course-search');
+            const semesterEl = document.getElementById('semester-filter');
+            const deptEl = document.getElementById('dept-filter');
+            const applyFilter = () => {
+                const q = (searchEl?.value || '').toLowerCase().trim();
+                const sem = semesterEl?.value || '';
+                const dept = deptEl?.value || '';
+                const filtered = allCourses.filter(c => {
+                    const name = (c.course_name || '').toLowerCase();
+                    const code = (c.course_code || '').toLowerCase();
+                    const faculty = (c.faculty_name || '').toLowerCase();
+                    const department = (c.department || '').toLowerCase();
+                    const semester = (c.semester || '');
+                    if (q && !name.includes(q) && !code.includes(q) && !faculty.includes(q)) return false;
+                    if (sem && !semester.includes(sem)) return false;
+                    if (dept && !department.toLowerCase().includes(dept.toLowerCase())) return false;
+                    return true;
+                });
+                displayCourses(filtered);
+            };
+            searchEl?.addEventListener('input', applyFilter);
+            semesterEl?.addEventListener('change', applyFilter);
+            deptEl?.addEventListener('change', applyFilter);
+        }
+
+        function displayCourses(courses) {
+            const grid    = document.querySelector('[data-enrolled-courses]');
+            const summary = document.querySelector('[data-course-summary]');
+            if (!grid) return;
+
+            if (summary) summary.textContent = courses.length
+                ? `${courses.length} course${courses.length !== 1 ? 's' : ''} enrolled this semester`
+                : 'No courses enrolled yet';
+
+            if (!courses.length) {
+                grid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-400 dark:text-gray-500"><i class="lni lni-library text-4xl block mb-3"></i><p class="font-medium">No enrolled courses yet.</p><p class="text-sm mt-1">Contact your academic advisor to enroll in courses.</p></div>';
+                return;
+            }
+
+            grid.innerHTML = courses.map((course, idx) => {
+                const col   = DEPT_COLORS[idx % DEPT_COLORS.length];
+                const abbr  = (course.course_code || 'CR').substring(0, 2).toUpperCase();
+                const grade = course.grade ? `<span class="ml-auto px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">Grade: ${course.grade}</span>` : '';
+                return `
+                <div class="group bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+                    <div class="p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 rounded-xl ${col.bg} ${col.text} flex items-center justify-center text-lg font-bold border ${col.border}">
+                                ${abbr}
+                            </div>
+                            <div class="flex items-center gap-2">
+                                ${grade}
+                                <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-700">
+                                    ${course.credits || '�'} Credits
+                                </span>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-bold text-black dark:text-white mb-1">${course.course_name || 'Unnamed Course'}</h3>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">${course.course_code || ''}</p>
+                        ${course.description ? `<p class="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">${course.description}</p>` : ''}
+                        <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                            <i class="lni lni-user"></i>
+                            <span>${course.faculty_name || 'TBA'}</span>
+                        </div>
+                    </div>
+                    <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700 flex gap-2">
+                        <a href="course-detail.html?id=${course.id}" class="flex-1 text-center py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-bold hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
+                            View Details
+                        </a>
+                        <button data-drop-id="${course.id}" onclick="dropCourse(${course.id})" class="px-4 py-2.5 rounded-xl border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm font-bold hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            Drop
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        const droppingCourses = new Set();
+        async function dropCourse(courseId) {
+            if (droppingCourses.has(courseId)) return;
+            if (!confirm('Are you sure you want to drop this course?')) return;
+            droppingCourses.add(courseId);
+            const btn = document.querySelector(`[data-drop-id="${courseId}"]`);
+            if (btn) { btn.disabled = true; btn.textContent = 'Dropping...'; }
+            try {
+                await api.dropCourse(courseId);
+                api.showNotification('Successfully dropped course', 'success');
+                await loadCourses();
+            } catch (error) {
+                api.showNotification(error.message || 'Failed to drop course', 'error');
+                droppingCourses.delete(courseId);
+                if (btn) { btn.disabled = false; btn.textContent = 'Drop'; }
+            }
+        }
+
+        async function logout() {
+            try { await api.logout(); } catch (_) {}
+            window.location.href = 'student-login.html';
+        }
+    </script>
+</body>
+</html>

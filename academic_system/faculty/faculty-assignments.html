@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <meta name="description" content="AcademicSync - Faculty Assignment Management">
+    <title>Assignments - Faculty Dashboard - AcademicSync</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db',
+                            400: '#9ca3af', 500: '#6b7280', 600: '#000000', 700: '#1f2937',
+                            800: '#111827', 900: '#000000',
+                        },
+                        gray: {
+                            750: '#2d3748',
+                        }
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #e5e7eb; border-radius: 20px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #374151; }
+    </style>
+</head>
+
+<body class="h-full flex overflow-hidden text-gray-600 font-sans antialiased bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 dark:text-gray-300 transition-colors duration-200"
+      x-data="facultyAssignments()" x-init="init()"
+    @keydown.window.escape="closeAllModals()">
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-300"
+        x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+        x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0" @click="sidebarOpen = false"
+        class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden" aria-hidden="true" x-cloak>
+    </div>
+
+    <!-- Sidebar -->
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+        class="fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-800/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transform transition-transform duration-300 ease-in-out flex flex-col h-full">
+
+        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100/50 dark:border-gray-800/50">
+            <a href="../index.html" class="flex items-center gap-2.5 group">
+                <div class="w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-lg shadow-gray-200/50 dark:shadow-none group-hover:scale-105 transition-transform">
+                    <i class="lni lni-graduation"></i>
+                </div>
+                <span class="font-display font-bold text-xl text-black dark:text-white tracking-tight">AcademicSync</span>
+            </a>
+            <button @click="sidebarOpen = false" aria-label="Close Sidebar"
+                class="lg:hidden text-gray-400 hover:text-black transition-colors">
+                <i class="lni lni-close text-xl"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Faculty Menu</p>
+
+            <a href="faculty-dashboard.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-grid-alt text-lg group-hover:text-black dark:group-hover:text-white"></i> Dashboard
+            </a>
+
+            <a href="faculty-courses.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-library text-lg group-hover:text-black dark:group-hover:text-white"></i> My Courses
+            </a>
+
+            <a href="faculty-schedule.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-calendar text-lg group-hover:text-black dark:group-hover:text-white"></i> Schedule
+            </a>
+
+            <a href="faculty-students.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-users text-lg group-hover:text-black dark:group-hover:text-white"></i> Students
+            </a>
+
+            <a href="faculty-attendance.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-checkmark-circle text-lg group-hover:text-black dark:group-hover:text-white"></i> Attendance
+            </a>
+
+            <a href="faculty-grades.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-clipboard text-lg group-hover:text-black dark:group-hover:text-white"></i> Grades
+            </a>
+
+            <a href="faculty-assignments.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group bg-white/60 dark:bg-white/10 text-black dark:text-white shadow-sm border border-white/40 dark:border-white/5 backdrop-blur-sm"
+                aria-current="page">
+                <i class="lni lni-list text-lg"></i> Assignments
+            </a>
+
+            <a href="faculty-quiz.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-pencil-alt text-lg text-gray-400 dark:text-gray-500 group-hover:text-black dark:group-hover:text-white"></i>
+                Quizzes
+            </a>
+
+            <a href="faculty-resources.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-folder text-lg text-gray-400 dark:text-gray-500 group-hover:text-black dark:group-hover:text-white"></i>
+                Resources
+            </a>
+
+            <a href="faculty-profile.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-user text-lg text-gray-400 dark:text-gray-500 group-hover:text-black dark:group-hover:text-white"></i>
+                Profile
+            </a>
+        </div>
+
+        <div class="p-4 border-t border-gray-100/50 dark:border-gray-800/50 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md">
+            <button @click="toggleDarkMode()" aria-label="Toggle Dark Mode"
+                class="w-full flex items-center justify-center gap-2 mb-3 py-2 rounded-lg bg-white/50 dark:bg-gray-800/50 border border-white/20 dark:border-gray-700/30 text-gray-600 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-800/80 transition-colors shadow-sm">
+                <i class="lni" :class="darkMode ? 'lni-night' : 'lni-sun'"></i>
+                <span class="text-xs font-bold uppercase tracking-wider" x-text="darkMode ? 'Dark Mode' : 'Light Mode'"></span>
+            </button>
+
+            <a href="faculty-profile.html" class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors group">
+                <div class="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-gray-200 dark:border-gray-700 text-gray-400 font-bold text-xs uppercase shadow-sm group-hover:bg-white dark:group-hover:bg-gray-700 group-hover:shadow-md transition-all"
+                     x-text="userInitials"></div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-black dark:text-white truncate" x-text="userName"></p>
+                    <p class="text-xs text-gray-500 truncate" x-text="userDept"></p>
+                </div>
+                <i class="lni lni-cog text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors"></i>
+            </a>
+            
+            <div class="mt-2 text-center">
+                <a href="../index.html"
+                    class="w-full flex items-center justify-center gap-2 text-xs font-bold text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 py-2 rounded-lg transition-all border border-transparent hover:border-gray-200 dark:hover:border-gray-700 uppercase tracking-tighter">
+                    <i class="lni lni-exit"></i><span>Sign Out</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 relative">
+
+        <!-- Mobile Header -->
+        <div class="lg:hidden h-14 border-b border-gray-100/50 dark:border-gray-800/50 flex items-center justify-between px-4 sticky top-0 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl z-20 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-black font-bold text-sm shadow-sm">AS</div>
+                <span class="font-semibold text-black dark:text-white">Assignments</span>
+            </div>
+            <button @click="sidebarOpen = !sidebarOpen"
+                class="p-2 -mr-2 text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md">
+                <i class="ri-menu-line text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Content -->
+        <main class="flex-1 overflow-y-auto scroll-smooth p-4 sm:p-6 lg:p-8" id="main-content">
+
+            <div class="max-w-7xl mx-auto space-y-8 animate-fade-in-up pb-12">
+
+                <!-- Header -->
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div>
+                        <h1 class="text-3xl font-display font-bold text-black dark:text-white tracking-tight">
+                            Assignment Management
+                        </h1>
+                        <p class="text-gray-500 mt-1">Create and manage assignments for <span class="font-bold text-black dark:text-white border-b-2 border-black/20 dark:border-white/20" x-text="courses.length + ' active course' + (courses.length !== 1 ? 's' : '')">…</span>.</p>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <button @click="viewMode = 'active'" :class="viewMode === 'active' ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-gray-500 hover:text-black dark:hover:text-white'" 
+                                class="px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                                Active
+                            </button>
+                            <button @click="viewMode = 'archived'" :class="viewMode === 'archived' ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-gray-500 hover:text-black dark:hover:text-white'" 
+                                class="px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                                Archived
+                            </button>
+                        </div>
+                        <select x-model="selectedCourse" class="px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl text-sm font-bold shadow-sm">
+                            <option value="">All Courses</option>
+                            <template x-for="c in courses" :key="c.id">
+                                <option :value="c.id" x-text="(c.course_code ? c.course_code + ' – ' : '') + c.course_name"></option>
+                            </template>
+                        </select>
+                        <button @click="showCreateModal = true"
+                            class="flex items-center gap-2 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-bold hover:bg-gray-800 dark:hover:bg-gray-200 hover:shadow-lg hover:shadow-gray-200 dark:hover:shadow-none transition-all">
+                            <i class="ri-add-line text-lg"></i>
+                            <span>Create Assignment</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Row -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                                <i class="ri-file-text-line text-lg"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-black dark:text-white" x-text="assignments.filter(a=>a.status==='active'||a.status==='draft').length">0</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Active Assignments</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center">
+                                <i class="ri-time-line text-lg"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-black dark:text-white" x-text="assignments.reduce((s,a)=>s+(a.submissions||0),0)">0</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Submissions</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center">
+                                <i class="ri-checkbox-circle-line text-lg"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-black dark:text-white" x-text="assignments.reduce((s,a)=>s+(a.submissions||0),0) - assignments.reduce((s,a)=>s+(a.graded||0),0)">0</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Pending Grading</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                                <i class="ri-bar-chart-line text-lg"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-black dark:text-white" x-text="(() => { const a=assignments.filter(x=>x.avgGrade); return a.length ? (a.reduce((s,x)=>s+x.avgGrade,0)/a.length).toFixed(1) : '\u2014'; })()">—</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Avg Score</p>
+                    </div>
+                </div>
+
+                <!-- Search & Sort bar -->
+                <div class="flex flex-col sm:flex-row gap-3 items-center">
+                    <div class="relative flex-1 max-w-sm">
+                        <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" x-model="assignmentSearch" placeholder="Search assignments…"
+                               class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                    </div>
+                    <select x-model="assignmentSort" class="py-2.5 pl-3 pr-8 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10">
+                        <option value="created_desc">Newest First</option>
+                        <option value="due_asc">Due Soonest</option>
+                        <option value="due_desc">Due Latest</option>
+                        <option value="subs_desc">Most Submissions</option>
+                        <option value="ungraded">Needs Grading First</option>
+                    </select>
+                    <button x-show="assignmentSearch.trim()" @click="assignmentSearch = ''"
+                            class="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-800 transition-colors flex items-center gap-1.5 shrink-0">
+                        <i class="ri-close-line"></i> Clear
+                    </button>
+                    <span class="text-sm text-gray-400 dark:text-gray-500 shrink-0" x-show="!loading" x-text="filteredAssignments.length + ' assignment' + (filteredAssignments.length !== 1 ? 's' : '')"></span>
+                </div>
+
+                <!-- Loading Skeleton -->
+                <div x-show="loading" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <template x-for="i in 3">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 space-y-4 animate-pulse">
+                            <div class="h-5 bg-gray-100 dark:bg-gray-700 rounded-lg w-3/4"></div>
+                            <div class="h-3 bg-gray-100 dark:bg-gray-700 rounded w-1/2"></div>
+                            <div class="space-y-2 pt-2">
+                                <div class="h-3 bg-gray-100 dark:bg-gray-700 rounded w-full"></div>
+                                <div class="h-3 bg-gray-100 dark:bg-gray-700 rounded w-full"></div>
+                                <div class="h-3 bg-gray-100 dark:bg-gray-700 rounded w-3/4"></div>
+                            </div>
+                            <div class="h-2 bg-gray-100 dark:bg-gray-700 rounded-full w-full mt-2"></div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Assignments Grid -->
+                <template x-if="!loading && filteredAssignments.length === 0">
+                    <div class="text-center py-20">
+                        <div class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="ri-file-text-line text-3xl text-gray-400"></i></div>
+                        <h3 class="font-semibold text-gray-900 dark:text-white mb-1">No assignments yet</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Create your first assignment to get started.</p>
+                        <button @click="showCreateModal = true" class="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-bold">Create Assignment</button>
+                    </div>
+                </template>
+                <div x-show="!loading" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <template x-for="assignment in filteredAssignments" :key="assignment.id">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-black dark:hover:border-white transition-all overflow-hidden group relative"
+                             @click.away="activeDropdown = activeDropdown === assignment.id ? null : activeDropdown">
+                            <!-- Assignment Header -->
+                            <div class="p-6 border-b border-gray-100 dark:border-gray-700">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="flex-1 min-w-0 pr-2">
+                                        <h3 class="font-bold text-black dark:text-white text-lg mb-1 truncate" x-text="assignment.title"></h3>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="assignment.course + ' • ' + assignment.type"></p>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <span class="px-2 py-1 rounded-md text-xs font-bold"
+                                              :class="assignment.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : assignment.status === 'draft' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'"
+                                              x-text="assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1)"></span>
+                                        <!-- Three-dot dropdown -->
+                                        <div class="relative">
+                                            <button @click.stop="activeDropdown = activeDropdown === assignment.id ? null : assignment.id"
+                                                    class="p-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                                                <i class="ri-more-2-line"></i>
+                                            </button>
+                                            <div x-show="activeDropdown === assignment.id"
+                                                 x-transition:enter="transition ease-out duration-100"
+                                                 x-transition:enter-start="opacity-0 scale-95"
+                                                 x-transition:enter-end="opacity-100 scale-100"
+                                                 x-transition:leave="transition ease-in duration-75"
+                                                 x-transition:leave-start="opacity-100 scale-100"
+                                                 x-transition:leave-end="opacity-0 scale-95"
+                                                 @click.away="activeDropdown = null"
+                                                 class="absolute right-0 mt-1 w-44 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-20 overflow-hidden">
+                                                <button @click.stop="openEdit(assignment)"
+                                                        class="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+                                                    <i class="ri-edit-line"></i> Edit
+                                                </button>
+                                                <button @click.stop="openSubmissions(assignment)"
+                                                        class="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+                                                    <i class="ri-eye-line"></i> View Submissions
+                                                </button>
+                                                <button @click.stop="duplicateAssignment(assignment)"
+                                                        class="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+                                                    <i class="ri-file-copy-line"></i> Duplicate
+                                                </button>
+                                                <button @click.stop="toggleStatus(assignment)"
+                                                        class="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+                                                    <i :class="assignment.status === 'archived' ? 'ri-archive-line' : 'ri-archive-2-line'"></i>
+                                                    <span x-text="assignment.status === 'archived' ? 'Restore' : 'Archive'"></span>
+                                                </button>
+                                                <div class="border-t border-gray-100 dark:border-gray-800"></div>
+                                                <button @click.stop="confirmDelete(assignment)"
+                                                        class="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                                    <i class="ri-delete-bin-line"></i> Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between text-sm">
+                                        <span class="text-gray-500 dark:text-gray-400">Due Date</span>
+                                        <span class="font-medium" :class="assignment.dueDateRaw && new Date(assignment.dueDateRaw) < new Date() ? 'text-red-600 dark:text-red-400' : 'text-black dark:text-white'" x-text="dueDateLabel(assignment)"></span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-sm">
+                                        <span class="text-gray-500 dark:text-gray-400">Points</span>
+                                        <span class="font-medium text-black dark:text-white" x-text="assignment.points + ' pts'"></span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-sm">
+                                        <span class="text-gray-500 dark:text-gray-400">Submissions</span>
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="font-medium text-black dark:text-white" x-text="assignment.submissions + (assignment.totalStudents ? '/' + assignment.totalStudents : '') + (assignment.graded ? ' (' + assignment.graded + ' graded)' : '')"></span>
+                                            <span x-show="assignment.submissions > assignment.graded && assignment.submissions > 0"
+                                                  class="px-1.5 py-0.5 bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 rounded-full text-xs font-bold"
+                                                  x-text="(assignment.submissions - assignment.graded) + ' ungraded'"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Progress Bar -->
+                                <div class="mt-4">
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <span class="text-gray-500 dark:text-gray-400">Submission Progress</span>
+                                        <span class="font-medium text-black dark:text-white" x-text="assignment.totalStudents ? Math.round((assignment.submissions / assignment.totalStudents) * 100) + '%' : assignment.submissions + ' submitted'"></span>
+                                    </div>
+                                    <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                                        <div class="bg-black dark:bg-white h-full rounded-full transition-all" :style="`width: ${assignment.totalStudents ? (assignment.submissions / assignment.totalStudents) * 100 : 0}%`"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Assignment Actions -->
+                            <div class="p-4 flex gap-2">
+                                <button @click="openEdit(assignment)" class="flex-1 px-3 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors flex items-center justify-center gap-1.5">
+                                    <i class="ri-edit-line text-sm"></i> Edit
+                                </button>
+                                <button @click="openSubmissions(assignment)" class="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-1.5">
+                                    <i class="ri-user-line text-sm"></i>
+                                    Submissions <span class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full px-1.5 py-0.5 text-xs" x-text="assignment.submissions"></span>
+                                </button>
+                            </div>
+                            <div class="px-4 pb-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                                <span x-text="'Created ' + assignment.createdDate"></span>
+                                <span x-show="assignment.avgGrade" class="font-medium text-black dark:text-white" x-text="'Avg: ' + assignment.avgGrade + ' pts'"></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Edit Assignment Modal -->
+    <div x-show="showEditModal" class="relative z-50" x-cloak>
+        <div x-show="showEditModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+            class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" @click="showEditModal = false"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div x-show="showEditModal" x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:scale-95"
+                    class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 text-left shadow-2xl transition-all w-full max-w-2xl">
+                    <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-bold text-black dark:text-white">Edit Assignment</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5" x-text="editingAssignment?.title"></p>
+                        </div>
+                        <button @click="showEditModal = false" class="text-gray-400 hover:text-gray-900 dark:hover:text-white"><i class="ri-close-line text-xl"></i></button>
+                    </div>
+                    <form class="p-6 space-y-4 max-h-[70vh] overflow-y-auto" @submit.prevent="updateAssignment()">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Assignment Title</label>
+                            <input x-model="editForm.title" type="text" class="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Assignment Type</label>
+                                <select x-model="editForm.type" class="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required>
+                                    <option value="">Select Type</option>
+                                    <option>Homework</option><option>Project</option><option>Lab</option><option>Quiz</option><option>Exam</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Points</label>
+                                <input x-model="editForm.points" type="number" min="1" class="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Description</label>
+                            <textarea x-model="editForm.description" rows="3" class="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder="Assignment instructions..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Due Date</label>
+                            <input x-model="editForm.dueDate" type="datetime-local" class="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                        </div>
+                        <div class="pt-4 flex gap-3">
+                            <button type="button" @click="showEditModal = false" class="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
+                            <button type="submit" :disabled="saving" class="flex-1 px-6 py-2 rounded-lg bg-black dark:bg-white text-white dark:text-black text-sm font-bold hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                <i class="ri-loader-4-line animate-spin" x-show="saving"></i>
+                                <span x-text="saving ? 'Saving...' : 'Save Changes'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submissions Modal -->
+    <div x-show="showSubmissionsModal" class="relative z-50" x-cloak>
+        <div x-show="showSubmissionsModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+            class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" @click="showSubmissionsModal = false"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div x-show="showSubmissionsModal" x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:scale-95"
+                    class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 text-left shadow-2xl transition-all w-full max-w-5xl max-h-[90vh] flex flex-col">
+
+                    <!-- Header -->
+                    <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-start shrink-0">
+                        <div>
+                            <h3 class="text-lg font-bold text-black dark:text-white" x-text="submissionsAssignment?.title"></h3>
+                            <div class="flex items-center gap-4 mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                <span x-text="submissionsAssignment?.course + ' • ' + submissionsAssignment?.type"></span>
+                                <span>• <span x-text="submissionsAssignment?.points"></span> pts max</span>
+                                <span class="text-blue-600 dark:text-blue-400 font-medium">
+                                    <span x-text="submissions.length"></span> submission(s) •
+                                    <span x-text="submissions.filter(s=>s.status==='graded').length"></span> graded
+                                </span>
+                            </div>
+                        </div>
+                        <button @click="showSubmissionsModal = false" class="text-gray-400 hover:text-gray-900 dark:hover:text-white"><i class="ri-close-line text-xl"></i></button>
+                    </div>
+
+                    <!-- Loading -->
+                    <div x-show="submissionsLoading" class="flex items-center justify-center py-16">
+                        <div class="w-8 h-8 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div x-show="!submissionsLoading && submissions.length === 0" class="flex flex-col items-center justify-center py-16 text-center">
+                        <div class="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center mb-3">
+                            <i class="ri-inbox-line text-2xl text-gray-400"></i>
+                        </div>
+                        <p class="font-medium text-gray-900 dark:text-white">No submissions yet</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Students haven't submitted this assignment yet.</p>
+                    </div>
+
+                    <!-- Submissions table -->
+                    <div x-show="!submissionsLoading && submissions.length > 0" class="overflow-y-auto flex-1">
+                        <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="sticky top-0 bg-gray-50 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700">
+                                <tr>
+                                    <th class="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Student</th>
+                                    <th class="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Submitted</th>
+                                    <th class="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Status</th>
+                                    <th class="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">File / Text</th>
+                                    <th class="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 w-28">Grade</th>
+                                    <th class="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Feedback</th>
+                                    <th class="px-4 py-3"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                                <template x-for="sub in submissions" :key="sub.id">
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                        <td class="px-4 py-3">
+                                            <p class="font-medium text-gray-900 dark:text-white" x-text="sub.student_name || 'Student #' + sub.student_id"></p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400" x-text="sub.student_user_id || ''"></p>
+                                        </td>
+                                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400" x-text="sub.submitted_at ? new Date(sub.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '—'"></td>
+                                        <td class="px-4 py-3">
+                                            <span class="px-2 py-1 rounded-full text-xs font-medium"
+                                                  :class="sub.status === 'graded' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : sub.status === 'late' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'"
+                                                  x-text="sub.status.charAt(0).toUpperCase() + sub.status.slice(1)"></span>
+                                        </td>
+                                        <td class="px-4 py-3 max-w-[220px]">
+                                            <template x-if="sub.original_filename">
+                                                <div class="flex items-center gap-1.5 flex-wrap">
+                                                    <button @click="viewSubmissionFile(sub)"
+                                                            class="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium truncate max-w-[140px]"
+                                                            :title="sub.original_filename">
+                                                        <i class="ri-eye-line shrink-0"></i>
+                                                        <span class="truncate" x-text="sub.original_filename"></span>
+                                                    </button>
+                                                    <button @click="window.api.downloadFile(sub.file_path, sub.original_filename).catch(e => window.api?.showNotification(e.message||'Download failed','error'))"
+                                                            class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors shrink-0" title="Download">
+                                                        <i class="ri-download-line text-sm"></i>
+                                                    </button>
+                                                </div>
+                                            </template>
+                                            <div x-show="!sub.original_filename && sub.submission_text" class="group relative">
+                                                <p class="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 cursor-default"
+                                                   x-text="sub.submission_text?.substring(0,100) + (sub.submission_text?.length > 100 ? '…' : '')"></p>
+                                                <div x-show="sub.submission_text?.length > 100"
+                                                     class="hidden group-hover:block absolute z-30 left-0 top-full mt-1 w-72 p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap"
+                                                     x-text="sub.submission_text"></div>
+                                            </div>
+                                            <span x-show="!sub.original_filename && !sub.submission_text" class="text-gray-400 text-sm">—</span>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <div class="flex items-center gap-1">
+                                                <input :x-model="'gradeInputs[' + sub.id + '].grade'"
+                                                       :value="gradeInputs[sub.id]?.grade"
+                                                       @input="gradeInputs[sub.id] = gradeInputs[sub.id] || {}; gradeInputs[sub.id].grade = $event.target.value"
+                                                       type="number" min="0" :max="submissionsAssignment?.points"
+                                                       class="w-16 rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm py-1.5 px-2"
+                                                       :placeholder="submissionsAssignment?.points">
+                                                <span class="text-gray-400 text-xs">/<span x-text="submissionsAssignment?.points"></span></span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <input :value="gradeInputs[sub.id]?.feedback"
+                                                   @input="gradeInputs[sub.id] = gradeInputs[sub.id] || {}; gradeInputs[sub.id].feedback = $event.target.value"
+                                                   type="text"
+                                                   class="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm py-1.5 px-2"
+                                                   placeholder="Optional feedback...">
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <button @click="submitGrade(sub)"
+                                                    class="px-3 py-1.5 bg-black dark:bg-white text-white dark:text-black rounded-lg text-xs font-semibold hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors whitespace-nowrap">
+                                                Save Grade
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                        </div>
+                    </div>
+
+                    <!-- Not Submitted Note -->
+                    <div x-show="!submissionsLoading && submissionsAssignment?.totalStudents > submissions.length"
+                         class="px-6 py-3 border-t border-gray-100 dark:border-gray-800 bg-yellow-50 dark:bg-yellow-900/10 shrink-0">
+                        <p class="text-sm text-yellow-700 dark:text-yellow-400">
+                            <i class="ri-time-line mr-1"></i>
+                            <span class="font-semibold" x-text="(submissionsAssignment?.totalStudents || 0) - submissions.length"></span>
+                            student(s) have not submitted yet
+                        </p>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between shrink-0 flex-wrap gap-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm text-gray-500 dark:text-gray-400" x-show="!submissionsLoading && submissions.length > 0">
+                                <span x-text="submissions.filter(s=>s.status==='graded').length"></span>/<span x-text="submissions.length"></span> graded
+                            </span>
+                            <!-- Export buttons -->
+                            <div x-show="!submissionsLoading && submissions.length > 0" class="flex items-center gap-1.5 ml-2">
+                                <button @click="exportSubmissionsCSV()"
+                                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-300 dark:hover:border-green-700 hover:text-green-700 dark:hover:text-green-400 transition-colors">
+                                    <i class="ri-file-excel-line text-green-600 dark:text-green-400"></i> Export CSV / Excel
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button x-show="submissions.length > 0" @click="saveAllGrades()"
+                                    class="px-5 py-2 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
+                                Save All Grades
+                            </button>
+                            <button @click="showSubmissionsModal = false" class="px-5 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Assignment Modal -->
+    <div x-show="showCreateModal" class="relative z-50" x-cloak>
+        <div x-show="showCreateModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+            class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" @click="showCreateModal = false"></div>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div x-show="showCreateModal" x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 text-left shadow-2xl transition-all w-full max-w-2xl max-h-[90vh]">
+
+                    <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-black dark:text-white">Create New Assignment</h3>
+                        <button @click="showCreateModal = false" class="text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                            <i class="ri-close-line text-xl"></i>
+                        </button>
+                    </div>
+
+                    <form class="p-6 space-y-4 max-h-[70vh] overflow-y-auto" @submit.prevent="createAssignment()">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Assignment Title</label>
+                            <input x-model="assignmentForm.title" type="text" class="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder="e.g. Algorithm Analysis Project" required>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Course</label>
+                                <select x-model="assignmentForm.courseId" class="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required>
+                                    <option value="">Select Course</option>
+                                    <template x-for="c in courses" :key="c.id"><option :value="c.id" x-text="c.course_code + ' - ' + c.course_name"></option></template>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Assignment Type</label>
+                                <select x-model="assignmentForm.type" class="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required>
+                                    <option value="">Select Type</option>
+                                    <option value="Homework">Homework</option>
+                                    <option value="Project">Project</option>
+                                    <option value="Lab">Lab</option>
+                                    <option value="Quiz">Quiz</option>
+                                    <option value="Exam">Exam</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Description</label>
+                            <textarea x-model="assignmentForm.description" rows="4" class="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder="Assignment instructions and requirements..."></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Due Date</label>
+                                <input x-model="assignmentForm.dueDate" type="datetime-local" class="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Points</label>
+                                <input x-model="assignmentForm.points" type="number" min="1" class="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder="100" required>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <h4 class="text-sm font-bold text-gray-900 dark:text-white">Assignment Options</h4>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <label class="flex items-center gap-2">
+                                    <input x-model="assignmentForm.allowLateSubmissions" type="checkbox" class="rounded border-gray-300 dark:border-gray-600">
+                                    <span class="text-sm text-gray-700 dark:text-gray-300">Allow Late Submissions</span>
+                                </label>
+                                
+                                <label class="flex items-center gap-2">
+                                    <input x-model="assignmentForm.plagiarismCheck" type="checkbox" class="rounded border-gray-300 dark:border-gray-600">
+                                    <span class="text-sm text-gray-700 dark:text-gray-300">Plagiarism Detection</span>
+                                </label>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <label class="flex items-center gap-2">
+                                    <input x-model="assignmentForm.hasRubric" type="checkbox" class="rounded border-gray-300 dark:border-gray-600">
+                                    <span class="text-sm text-gray-700 dark:text-gray-300">Attach Rubric</span>
+                                </label>
+                                
+                                <label class="flex items-center gap-2">
+                                    <input x-model="assignmentForm.groupAssignment" type="checkbox" class="rounded border-gray-300 dark:border-gray-600">
+                                    <span class="text-sm text-gray-700 dark:text-gray-300">Group Assignment</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 flex gap-3">
+                            <button type="button" @click="showCreateModal = false" class="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                Cancel
+                            </button>
+                            <button type="button" @click="saveAsDraft()" :disabled="saving" class="px-6 py-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                <i class="ri-loader-4-line animate-spin" x-show="saving"></i>
+                                <span x-text="saving ? 'Saving...' : 'Save as Draft'"></span>
+                            </button>
+                            <button type="submit" :disabled="saving" class="px-6 py-2 rounded-lg bg-black dark:bg-white text-white dark:text-black text-sm font-bold hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                <i class="ri-loader-4-line animate-spin" x-show="saving"></i>
+                                <span x-text="saving ? 'Creating...' : 'Create & Publish'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/api.js?v=2"></script>
+    <script>
+        function facultyAssignments() {
+            return {
+                sidebarOpen: false,
+                showCreateModal: false,
+                showEditModal: false,
+                showSubmissionsModal: false,
+                darkMode: localStorage.getItem('darkMode') === 'true',
+                viewMode: 'active',
+                selectedCourse: '',
+                courses: [],
+                assignments: [],
+                activeDropdown: null,
+                loading: false,
+                userName: 'Faculty',
+                userInitials: 'FA',
+                userDept: '',
+
+                // Edit form state
+                editingAssignment: null,
+                editForm: { title: '', courseId: '', type: '', description: '', dueDate: '', points: '' },
+
+                // Create form state
+                assignmentForm: {
+                    title: '', courseId: '', type: '', description: '', dueDate: '', points: '',
+                    allowLateSubmissions: false, plagiarismCheck: false, hasRubric: false, groupAssignment: false
+                },
+
+                // Submissions state
+                submissionsAssignment: null,
+                submissions: [],
+                submissionsLoading: false,
+                saving: false,
+                gradeInputs: {},
+                duplicatingId: null,
+                assignmentSearch: '',
+                assignmentSort: 'created_desc',
+
+                // File preview state
+                showFilePreview: false,
+                filePreviewSrc: '',
+                filePreviewName: '',
+                filePreviewKind: '', // 'image' | 'pdf' | 'text' | 'code'
+                filePreviewText: '',
+                filePreviewLoading: false,
+
+                get filteredAssignments() {
+                    let list = this.assignments.filter(a => {
+                        const matchesView = this.viewMode === 'active'
+                            ? (a.status === 'active' || a.status === 'draft')
+                            : a.status === 'archived';
+                        const matchesCourse = !this.selectedCourse || a.courseId == this.selectedCourse;
+                        return matchesView && matchesCourse;
+                    });
+                    if (this.assignmentSearch.trim()) {
+                        const q = this.assignmentSearch.toLowerCase();
+                        list = list.filter(a => (a.title||'').toLowerCase().includes(q) || (a.course||'').toLowerCase().includes(q));
+                    }
+                    if (this.assignmentSort === 'due_asc')      list = [...list].sort((a,b) => (a.dueDateRaw||'9999') < (b.dueDateRaw||'9999') ? -1 : 1);
+                    else if (this.assignmentSort === 'due_desc') list = [...list].sort((a,b) => (b.dueDateRaw||'') < (a.dueDateRaw||'') ? -1 : 1);
+                    else if (this.assignmentSort === 'subs_desc') list = [...list].sort((a,b) => (b.submissions||0) - (a.submissions||0));
+                    else if (this.assignmentSort === 'ungraded') list = [...list].sort((a,b) => ((b.submissions||0)-(b.graded||0)) - ((a.submissions||0)-(a.graded||0)));
+                    return list;
+                },
+
+                closeAllModals() { this.showCreateModal = false; this.showEditModal = false; this.showSubmissionsModal = false; },
+
+                async init() {
+                    document.documentElement.classList.toggle('dark', this.darkMode);
+                    this.$watch('darkMode', v => {
+                        document.documentElement.classList.toggle('dark', v);
+                        localStorage.setItem('darkMode', v);
+                    });
+                    this.$watch('showCreateModal', val => { document.body.style.overflow = val ? 'hidden' : ''; });
+                    this.$watch('showEditModal',   val => { document.body.style.overflow = val ? 'hidden' : ''; });
+                    this.$watch('showSubmissionsModal', val => { document.body.style.overflow = val ? 'hidden' : ''; });
+
+                    if (typeof window.api !== 'undefined') {
+                        if (!window.api.checkAuth()) { window.location.href = 'faculty-login.html'; return; }
+                        const user = window.api.getUserData();
+                        if (user && user.role !== 'faculty') { window.api.clearToken(); window.location.href = 'faculty-login.html'; return; }
+                        if (user) {
+                            window.api.populateSidebar(user);
+                            this.userName = user.full_name || user.name || 'Faculty';
+                            this.userInitials = this.userName.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase();
+                            this.userDept = user.department || '';
+                        }
+                        this.loading = true;
+                        try {
+                            const [data, crs] = await Promise.all([
+                                window.api.getFacultyAssignments(),
+                                window.api.getFacultyCourses()
+                            ]);
+                            this.courses = Array.isArray(crs) ? crs : (crs.courses || []);
+                            const list = Array.isArray(data) ? data : (data.assignments || []);
+                            this.assignments = list.map(a => this._map(a));
+                        } catch(e) { console.warn('Could not load assignments:', e); }
+                        finally { this.loading = false; }
+                    }
+                },
+
+                _map(a) {
+                    return {
+                        id:           a.id,
+                        title:        a.title || 'Untitled',
+                        course:       a.course_name || a.course_code || '',
+                        courseId:     a.course_id,
+                        type:         (a.assignment_type||'homework').charAt(0).toUpperCase()+(a.assignment_type||'homework').slice(1),
+                        dueDate:      a.due_date ? new Date(a.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : 'No deadline',
+                        dueDateRaw:   a.due_date || '',
+                        points:       a.total_points || 100,
+                        submissions:  a.submissions_count || 0,
+                        graded:       a.graded_count || 0,
+                        totalStudents: a.total_students || 0,
+                        avgGrade:     a.avg_grade || null,
+                        status:       a.status || 'active',
+                        createdDate:  a.created_at ? new Date(a.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '',
+                        description:  a.description || '',
+                        priority:     a.priority || 'medium'
+                    };
+                },
+
+                async _reload() {
+                    try {
+                        const data = await window.api.getFacultyAssignments();
+                        const list = Array.isArray(data) ? data : (data.assignments || []);
+                        this.assignments = list.map(a => this._map(a));
+                    } catch(e) { console.warn('Reload failed:', e); }
+                },
+
+                toggleDarkMode() { this.darkMode = !this.darkMode; },
+
+                dueDateLabel(a) {
+                    if (!a.dueDateRaw) return a.dueDate;
+                    if (a.status === 'archived') return a.dueDate;
+                    const diff = new Date(a.dueDateRaw) - new Date();
+                    const days = Math.round(diff / 86400000);
+                    if (days < 0) return 'Overdue by ' + Math.abs(days) + ' day' + (Math.abs(days) > 1 ? 's' : '');
+                    if (days === 0) return 'Due today';
+                    if (days === 1) return 'Due tomorrow';
+                    if (days <= 7) return 'Due in ' + days + ' days';
+                    return a.dueDate;
+                },
+
+                resetForm() {
+                    this.assignmentForm = {
+                        title:'', courseId:'', type:'', description:'', dueDate:'', points:'',
+                        allowLateSubmissions:false, plagiarismCheck:false, hasRubric:false, groupAssignment:false
+                    };
+                },
+
+                // ── Create ──────────────────────────────────────────────────────
+                async createAssignment() {
+                    const f = this.assignmentForm;
+                    if (!f.title || !f.courseId || !f.type || !f.dueDate || !f.points) {
+                        window.api?.showNotification('Please fill in all required fields', 'error'); return;
+                    }
+                    this.saving = true;
+                    try {
+                        await window.api.createAssignment({
+                            title: f.title, course_id: parseInt(f.courseId),
+                            assignment_type: f.type.toLowerCase(), description: f.description || '',
+                            due_date: f.dueDate, total_points: parseInt(f.points) || 100, status: 'active'
+                        });
+                        await this._reload();
+                        this.resetForm();
+                        this.showCreateModal = false;
+                        window.api.showNotification('Assignment created & students notified ✓', 'success');
+                    } catch(e) { window.api?.showNotification(e.message || 'Failed to create assignment', 'error'); }
+                    finally { this.saving = false; }
+                },
+
+                async saveAsDraft() {
+                    const f = this.assignmentForm;
+                    if (!f.title || !f.courseId || !f.type) {
+                        window.api?.showNotification('Title, course and type are required', 'error'); return;
+                    }
+                    this.saving = true;
+                    try {
+                        await window.api.createAssignment({
+                            title: f.title, course_id: parseInt(f.courseId),
+                            assignment_type: f.type.toLowerCase(), description: f.description || '',
+                            due_date: f.dueDate || null, total_points: parseInt(f.points) || 100, status: 'draft'
+                        });
+                        await this._reload();
+                        this.resetForm();
+                        this.showCreateModal = false;
+                        window.api.showNotification('Saved as draft', 'success');
+                    } catch(e) { window.api?.showNotification(e.message || 'Failed to save draft', 'error'); }
+                    finally { this.saving = false; }
+                },
+
+                // ── Edit ────────────────────────────────────────────────────────
+                openEdit(a) {
+                    this.editingAssignment = a;
+                    let dueStr = '';
+                    if (a.dueDateRaw) {
+                        try { dueStr = new Date(a.dueDateRaw).toISOString().slice(0, 16); } catch(e) {}
+                    }
+                    this.editForm = {
+                        title: a.title, courseId: a.courseId, type: a.type,
+                        description: a.description || '', dueDate: dueStr, points: a.points
+                    };
+                    this.activeDropdown = null;
+                    this.showEditModal = true;
+                },
+
+                async updateAssignment() {
+                    if (!this.editForm.title || !this.editForm.type) {
+                        window.api?.showNotification('Title and type are required', 'error'); return;
+                    }
+                    this.saving = true;
+                    try {
+                        await window.api.updateAssignment(this.editingAssignment.id, {
+                            title: this.editForm.title,
+                            assignment_type: this.editForm.type.toLowerCase(),
+                            description: this.editForm.description || '',
+                            due_date: this.editForm.dueDate || null,
+                            total_points: parseInt(this.editForm.points) || 100
+                        });
+                        await this._reload();
+                        this.showEditModal = false;
+                        this.editingAssignment = null;
+                        window.api.showNotification('Assignment updated \u2713', 'success');
+                    } catch(e) { window.api?.showNotification(e.message || 'Update failed', 'error'); }
+                    finally { this.saving = false; }
+                },
+
+                // ── Archive / Restore ────────────────────────────────────────────
+                async toggleStatus(a) {
+                    const newStatus = a.status === 'archived' ? 'active' : 'archived';
+                    try {
+                        await window.api.updateAssignment(a.id, { status: newStatus });
+                        const idx = this.assignments.findIndex(x => x.id === a.id);
+                        if (idx !== -1) this.assignments[idx].status = newStatus;
+                        this.activeDropdown = null;
+                        window.api.showNotification(newStatus === 'archived' ? 'Assignment archived' : 'Assignment restored', 'success');
+                    } catch(e) { window.api?.showNotification(e.message || 'Status update failed', 'error'); }
+                },
+
+                // ── Delete ───────────────────────────────────────────────────────
+                async confirmDelete(a) {
+                    this.activeDropdown = null;
+                    if (!confirm(`Delete "${a.title}"?\nThis will delete all student submissions and cannot be undone.`)) return;
+                    try {
+                        await window.api.deleteAssignment(a.id);
+                        this.assignments = this.assignments.filter(x => x.id !== a.id);
+                        window.api.showNotification('Assignment deleted', 'success');
+                    } catch(e) { window.api?.showNotification(e.message || 'Delete failed', 'error'); }
+                },
+
+                // ── Submissions & Grading ────────────────────────────────────────
+                async openSubmissions(a) {
+                    this.submissionsAssignment = a;
+                    this.submissions = [];
+                    this.gradeInputs = {};
+                    this.submissionsLoading = true;
+                    this.showSubmissionsModal = true;
+                    this.activeDropdown = null;
+                    try {
+                        const data = await window.api.getAssignmentSubmissions(a.id);
+                        this.submissions = Array.isArray(data) ? data : (data.submissions || []);
+                        this.submissions.forEach(s => {
+                            this.gradeInputs[s.id] = {
+                                grade:    s.grade !== null && s.grade !== undefined ? String(s.grade) : '',
+                                feedback: s.feedback || ''
+                            };
+                        });
+                    } catch(e) {
+                        window.api?.showNotification(e.message || 'Could not load submissions', 'error');
+                    } finally {
+                        this.submissionsLoading = false;
+                    }
+                },
+
+                async submitGrade(sub) {
+                    const inp = this.gradeInputs[sub.id];
+                    if (!inp || inp.grade === '' || inp.grade === undefined) {
+                        window.api?.showNotification('Please enter a grade', 'error'); return;
+                    }
+                    const grade = parseFloat(inp.grade);
+                    const maxPts = this.submissionsAssignment?.points;
+                    if (isNaN(grade) || grade < 0 || (maxPts && grade > maxPts)) {
+                        window.api?.showNotification(`Grade must be between 0 and ${maxPts}`, 'error'); return;
+                    }
+                    try {
+                        await window.api.gradeSubmission(sub.id, { grade, feedback: inp.feedback || '' });
+                        const idx = this.submissions.findIndex(s => s.id === sub.id);
+                        if (idx !== -1) {
+                            this.submissions[idx].grade = grade;
+                            this.submissions[idx].feedback = inp.feedback || '';
+                            this.submissions[idx].status = 'graded';
+                        }
+                        const aIdx = this.assignments.findIndex(a => a.id === this.submissionsAssignment.id);
+                        if (aIdx !== -1) this.assignments[aIdx].graded = (this.assignments[aIdx].graded || 0) + 1;
+                        window.api.showNotification('Grade saved \u2713', 'success');
+                    } catch(e) { window.api?.showNotification(e.message || 'Grading failed', 'error'); }
+                },
+
+                async saveAllGrades() {
+                    const toSave = this.submissions.filter(s => {
+                        const inp = this.gradeInputs[s.id];
+                        return inp && inp.grade !== '' && inp.grade !== undefined;
+                    });
+                    if (!toSave.length) { window.api?.showNotification('No grades entered to save', 'error'); return; }
+                    for (const sub of toSave) await this.submitGrade(sub);
+                },
+
+                exportSubmissionsCSV(format) {
+                    const a = this.submissionsAssignment;
+                    const rows = [
+                        ['Assignment', 'Course', 'Max Points', 'Due Date'],
+                        [a?.title || '', a?.course || '', a?.points || '', a?.dueDate || ''],
+                        [],
+                        ['Student Name', 'Student ID', 'Submitted At', 'Status', 'File / Text', 'Grade', 'Feedback']
+                    ];
+                    this.submissions.forEach(s => {
+                        rows.push([
+                            s.student_name || ('Student #' + s.student_id),
+                            s.student_user_id || '',
+                            s.submitted_at ? new Date(s.submitted_at).toLocaleString() : '',
+                            s.status ? s.status.charAt(0).toUpperCase() + s.status.slice(1) : '',
+                            s.original_filename || (s.submission_text ? s.submission_text.substring(0, 120).replace(/\n/g, ' ') : ''),
+                            this.gradeInputs[s.id]?.grade !== '' && this.gradeInputs[s.id]?.grade !== undefined ? this.gradeInputs[s.id].grade : (s.grade !== null && s.grade !== undefined ? s.grade : ''),
+                            this.gradeInputs[s.id]?.feedback || s.feedback || ''
+                        ]);
+                    });
+                    const escape = v => { const s = String(v ?? ''); return /[,"\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s; };
+                    const csv = rows.map(r => r.map(escape).join(',')).join('\n');
+                    const bom = '\uFEFF'; // UTF-8 BOM so Excel opens with correct encoding
+                    const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    const safeTitle = (a?.title || 'submissions').replace(/[^a-z0-9]/gi, '_');
+                    link.href = url;
+                    link.download = `${safeTitle}_submissions.csv`;
+                    document.body.appendChild(link);
+                    link.click();
+                    setTimeout(() => { URL.revokeObjectURL(url); link.remove(); }, 10000);
+                    window.api?.showNotification('Report exported \u2713', 'success');
+                },
+
+                duplicateAssignment(a) {
+                    this.assignmentForm = {
+                        title: a.title + ' (Copy)',
+                        courseId: a.courseId,
+                        type: a.type,
+                        description: a.description || '',
+                        dueDate: '',
+                        points: a.points,
+                        allowLateSubmissions: false,
+                        plagiarismCheck: false,
+                        hasRubric: false,
+                        groupAssignment: false
+                    };
+                    this.activeDropdown = null;
+                    this.showCreateModal = true;
+                },
+
+                async viewSubmissionFile(sub) {
+                    const name = sub.original_filename || '';
+                    const ext  = name.split('.').pop().toLowerCase();
+                    const images   = ['png','jpg','jpeg','gif','webp','bmp','svg'];
+                    const texts    = ['txt','md','csv'];
+                    const code     = ['py','js','ts','java','cpp','c','cs','html','css','json','xml','sh','bat','php','rb','go','rs','kt','swift'];
+                    this.filePreviewName    = name;
+                    this.filePreviewSrc     = '';
+                    this.filePreviewText    = '';
+                    this.filePreviewLoading = true;
+                    this.showFilePreview    = true;
+                    try {
+                        const token = window.api.getToken();
+                        const url   = window.api.getFileUrl(sub.file_path);
+                        const res   = await fetch(url, { headers: token ? { 'Authorization': `Bearer ${token}` } : {} });
+                        if (!res.ok) throw new Error(`Server returned ${res.status}`);
+                        if (images.includes(ext)) {
+                            this.filePreviewKind = 'image';
+                            const blob = await res.blob();
+                            this.filePreviewSrc  = URL.createObjectURL(blob);
+                        } else if (ext === 'pdf') {
+                            this.filePreviewKind = 'pdf';
+                            const blob = await res.blob();
+                            this.filePreviewSrc  = URL.createObjectURL(blob);
+                        } else if (texts.includes(ext) || code.includes(ext)) {
+                            this.filePreviewKind = code.includes(ext) ? 'code' : 'text';
+                            this.filePreviewText = await res.text();
+                        } else {
+                            // Unknown type — just download it
+                            this.showFilePreview = false;
+                            const blob = await res.blob();
+                            const a = document.createElement('a');
+                            a.href = URL.createObjectURL(blob);
+                            a.download = name;
+                            document.body.appendChild(a);
+                            a.click();
+                            setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 10000);
+                        }
+                    } catch(e) {
+                        this.showFilePreview = false;
+                        window.api?.showNotification(e.message || 'Could not open file', 'error');
+                    } finally {
+                        this.filePreviewLoading = false;
+                    }
+                }
+            };
+        }
+    </script>
+
+    <!-- File Preview Modal -->
+    <div x-show="showFilePreview" class="relative z-[60]" x-cloak>
+        <div x-show="showFilePreview"
+             x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm" @click="showFilePreview = false"></div>
+        <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+            <div x-show="showFilePreview"
+                 x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                 class="relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl flex flex-col overflow-hidden"
+                 :class="filePreviewKind === 'image' ? 'max-w-3xl w-full' : filePreviewKind === 'pdf' ? 'w-full max-w-5xl h-[90vh]' : 'max-w-3xl w-full max-h-[85vh]'">
+
+                <!-- Header -->
+                <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between shrink-0">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <i class="shrink-0 text-lg"
+                           :class="filePreviewKind==='image' ? 'ri-image-line text-purple-500' : filePreviewKind==='pdf' ? 'ri-file-pdf-line text-red-500' : 'ri-code-s-slash-line text-green-500'"></i>
+                        <p class="font-semibold text-black dark:text-white truncate text-sm" x-text="filePreviewName"></p>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button @click="window.api.downloadFile(filePreviewName.split('/').pop(), filePreviewName).catch(()=>{})"
+                                x-show="filePreviewKind !== ''"
+                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <i class="ri-download-line"></i> Download
+                        </button>
+                        <button @click="showFilePreview = false" class="text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors p-1">
+                            <i class="ri-close-line text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div x-show="filePreviewLoading" class="flex items-center justify-center py-20">
+                    <div class="w-8 h-8 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin"></div>
+                </div>
+
+                <!-- Image preview -->
+                <div x-show="!filePreviewLoading && filePreviewKind === 'image'" class="p-4 flex items-center justify-center bg-gray-50 dark:bg-gray-800/50">
+                    <img :src="filePreviewSrc" :alt="filePreviewName"
+                         class="max-w-full max-h-[70vh] object-contain rounded-lg shadow-sm">
+                </div>
+
+                <!-- PDF preview -->
+                <div x-show="!filePreviewLoading && filePreviewKind === 'pdf'" class="flex-1 overflow-hidden">
+                    <iframe :src="filePreviewSrc" class="w-full h-full border-0" :title="filePreviewName"></iframe>
+                </div>
+
+                <!-- Text / code preview -->
+                <div x-show="!filePreviewLoading && (filePreviewKind === 'text' || filePreviewKind === 'code')" class="flex-1 overflow-auto custom-scrollbar">
+                    <pre class="p-5 text-sm font-mono text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words" x-text="filePreviewText"></pre>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

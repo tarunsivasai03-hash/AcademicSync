@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <meta name="description" content="AcademicSync - Faculty Student Management">
+    <title>Students - Faculty Dashboard - AcademicSync</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db',
+                            400: '#9ca3af', 500: '#6b7280', 600: '#000000', 700: '#1f2937',
+                            800: '#111827', 900: '#000000',
+                        },
+                        gray: {
+                            750: '#2d3748',
+                        }
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #e5e7eb; border-radius: 20px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #374151; }
+    </style>
+</head>
+
+<body class="h-full flex overflow-hidden text-gray-600 font-sans antialiased bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 dark:text-gray-300 transition-colors duration-200"
+      x-data="facultyStudents()"
+    @keydown.window.escape="closeAllModals()">
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-300"
+        x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+        x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0" @click="sidebarOpen = false"
+        class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden" aria-hidden="true" x-cloak>
+    </div>
+
+    <!-- Sidebar -->
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+        class="fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-800/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transform transition-transform duration-300 ease-in-out flex flex-col h-full">
+
+        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100/50 dark:border-gray-800/50">
+            <a href="../index.html" class="flex items-center gap-2.5 group">
+                <div class="w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-lg shadow-gray-200/50 dark:shadow-none group-hover:scale-105 transition-transform">
+                    <i class="lni lni-graduation"></i>
+                </div>
+                <span class="font-display font-bold text-xl text-black dark:text-white tracking-tight">AcademicSync</span>
+            </a>
+            <button @click="sidebarOpen = false" aria-label="Close Sidebar"
+                class="lg:hidden text-gray-400 hover:text-black transition-colors">
+                <i class="lni lni-close text-xl"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Faculty Menu</p>
+
+            <a href="faculty-dashboard.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-grid-alt text-lg group-hover:text-black dark:group-hover:text-white"></i> Dashboard
+            </a>
+
+            <a href="faculty-courses.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-library text-lg group-hover:text-black dark:group-hover:text-white"></i> My Courses
+            </a>
+
+            <a href="faculty-schedule.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-calendar text-lg group-hover:text-black dark:group-hover:text-white"></i> Schedule
+            </a>
+
+            <a href="faculty-students.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group bg-white/60 dark:bg-white/10 text-black dark:text-white shadow-sm border border-white/40 dark:border-white/5 backdrop-blur-sm"
+                aria-current="page">
+                <i class="lni lni-users text-lg"></i> Students
+            </a>
+
+            <a href="faculty-attendance.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-checkmark-circle text-lg group-hover:text-black dark:group-hover:text-white"></i> Attendance
+            </a>
+
+            <a href="faculty-grades.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-clipboard text-lg group-hover:text-black dark:group-hover:text-white"></i> Grades
+            </a>
+
+            <a href="faculty-assignments.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-list text-lg group-hover:text-black dark:group-hover:text-white"></i> Assignments
+            </a>
+            <a href="faculty-quiz.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-pencil-alt text-lg group-hover:text-black dark:group-hover:text-white"></i> Quizzes
+            </a>
+            <a href="faculty-resources.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-folder text-lg group-hover:text-black dark:group-hover:text-white"></i> Resources
+            </a>
+            <a href="faculty-profile.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-gray-700 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-black dark:hover:text-white hover:backdrop-blur-sm">
+                <i class="lni lni-user text-lg group-hover:text-black dark:group-hover:text-white"></i> Profile
+            </a>        </div>
+
+        <div class="p-4 border-t border-gray-100/50 dark:border-gray-800/50 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md">
+            <button @click="toggleDarkMode()" aria-label="Toggle Dark Mode"
+                class="w-full flex items-center justify-center gap-2 mb-3 py-2 rounded-lg bg-white/50 dark:bg-gray-800/50 border border-white/20 dark:border-gray-700/30 text-gray-600 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-800/80 transition-colors shadow-sm">
+                <i class="lni" :class="darkMode ? 'lni-night' : 'lni-sun'"></i>
+                <span class="text-xs font-bold uppercase tracking-wider" x-text="darkMode ? 'Dark Mode' : 'Light Mode'"></span>
+            </button>
+
+            <a href="faculty-profile.html" class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors group">
+                <div class="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-gray-200 dark:border-gray-700 text-gray-400 font-bold text-xs uppercase shadow-sm group-hover:bg-white dark:group-hover:bg-gray-700 group-hover:shadow-md transition-all">
+                    SJ</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-black dark:text-white truncate">Dr. Sarah Johnson</p>
+                    <p class="text-xs text-gray-500 truncate">Computer Science</p>
+                </div>
+                <i class="lni lni-cog text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors"></i>
+            </a>
+            
+            <div class="mt-2 text-center">
+                <a href="../index.html"
+                    class="w-full flex items-center justify-center gap-2 text-xs font-bold text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 py-2 rounded-lg transition-all border border-transparent hover:border-gray-200 dark:hover:border-gray-700 uppercase tracking-tighter">
+                    <i class="lni lni-exit"></i><span>Sign Out</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 relative">
+
+        <!-- Mobile Header -->
+        <div class="lg:hidden h-14 border-b border-gray-100/50 dark:border-gray-800/50 flex items-center justify-between px-4 sticky top-0 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl z-20 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-black font-bold text-sm shadow-sm">AS</div>
+                <span class="font-semibold text-black dark:text-white">Students</span>
+            </div>
+            <button @click="sidebarOpen = !sidebarOpen"
+                class="p-2 -mr-2 text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md">
+                <i class="ri-menu-line text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Content -->
+        <main class="flex-1 overflow-y-auto scroll-smooth p-4 sm:p-6 lg:p-8" id="main-content">
+            <!-- Error boundary -->
+            <div x-show="initError" x-cloak class="mb-6 p-4 rounded-xl border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-900/20 flex items-start gap-3">
+                <i class="lni lni-warning text-red-500 mt-0.5 shrink-0 text-lg"></i>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-red-700 dark:text-red-300" x-text="initError"></p>
+                    <button @click="initError = ''; init()" class="mt-1.5 text-xs font-bold text-red-600 dark:text-red-400 hover:underline">Try again</button>
+                </div>
+                <button @click="initError = ''" aria-label="Dismiss error" class="text-red-300 hover:text-red-500 shrink-0"><i class="lni lni-close text-xs"></i></button>
+            </div>
+            <!-- Skeleton loading -->
+            <div x-show="loading" class="max-w-7xl mx-auto pb-12 animate-pulse space-y-6">
+                <div class="flex items-center justify-between">
+                    <div class="space-y-2"><div class="h-8 w-40 bg-gray-200 dark:bg-gray-700 rounded-xl"></div><div class="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div></div>
+                    <div class="flex gap-2"><div class="h-10 w-28 bg-gray-200 dark:bg-gray-700 rounded-xl"></div><div class="h-10 w-28 bg-gray-200 dark:bg-gray-700 rounded-xl"></div></div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div class="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between"><div class="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded-xl"></div></div>
+                    <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                        <div class="flex items-center gap-4 p-4"><div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-2/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/4 bg-gray-200 dark:bg-gray-700 rounded"></div></div><div class="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div><div class="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div></div>
+                        <div class="flex items-center gap-4 p-4"><div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-3/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/3 bg-gray-200 dark:bg-gray-700 rounded"></div></div><div class="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div><div class="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div></div>
+                        <div class="flex items-center gap-4 p-4"><div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/4 bg-gray-200 dark:bg-gray-700 rounded"></div></div><div class="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div><div class="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div></div>
+                        <div class="flex items-center gap-4 p-4"><div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-2/5 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-1/3 bg-gray-200 dark:bg-gray-700 rounded"></div></div><div class="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div><div class="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div></div>
+                        <div class="flex items-center gap-4 p-4"><div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full shrink-0"></div><div class="flex-1 space-y-2"><div class="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-3 w-2/5 bg-gray-200 dark:bg-gray-700 rounded"></div></div><div class="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div><div class="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto space-y-8 animate-fade-in-up pb-12" x-show="!loading">
+
+                <!-- Header -->
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div>
+                        <h1 class="text-3xl font-display font-bold text-black dark:text-white tracking-tight">
+                            My Students
+                        </h1>
+                        <p class="text-gray-500 mt-1">Manage <span class="font-bold text-black dark:text-white border-b-2 border-black/20 dark:border-white/20" x-text="students.length + ' students'">— students</span> across your courses.</p>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 shadow-sm">
+                            <i class="ri-search-line text-gray-400"></i>
+                            <input x-model="searchQuery" type="text" placeholder="Search students..." class="bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-400 border-none outline-none flex-1 min-w-[200px]">
+                        </div>
+                        <select x-model="selectedCourse" class="px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl text-sm font-bold shadow-sm">
+                            <option value="">All Courses</option>
+                            <template x-for="c in courses" :key="c.id">
+                                <option :value="c.course_name" x-text="c.course_code + ' - ' + c.course_name"></option>
+                            </template>
+                        </select>
+
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-6">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                                <i class="ri-user-line text-lg"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-black dark:text-white" x-text="students.length">—</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Students</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center">
+                                <i class="ri-checkbox-circle-line text-lg"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-black dark:text-white" x-text="avgAttendance + '%'">—</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Avg Attendance</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                                <i class="ri-bar-chart-line text-lg"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-black dark:text-white" x-text="avgGrade">—</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Avg Grade</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center">
+                                <i class="ri-alert-line text-lg"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-black dark:text-white" x-text="atRisk">—</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">At Risk</p>
+                    </div>
+                </div>
+
+                <!-- Students Table -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-black dark:bg-white text-white dark:text-black flex items-center justify-center">
+                                <i class="ri-user-fill"></i>
+                            </div>
+                            <h2 class="text-lg font-bold text-black dark:text-white">Student Roster</h2>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button @click="viewMode = 'grid'" :class="viewMode === 'grid' ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-gray-400 hover:text-black dark:hover:text-white'" 
+                                class="p-2 rounded-lg transition-colors">
+                                <i class="ri-grid-line"></i>
+                            </button>
+                            <button @click="viewMode = 'list'" :class="viewMode === 'list' ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-gray-400 hover:text-black dark:hover:text-white'" 
+                                class="p-2 rounded-lg transition-colors">
+                                <i class="ri-list-line"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Grid View -->
+                    <div x-show="viewMode === 'grid'" class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            <template x-for="student in filteredStudents" :key="student.id">
+                                <div class="bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:shadow-md hover:border-black dark:hover:border-white transition-all cursor-pointer group"
+                                     @click="selectStudent(student)">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold text-sm border border-gray-200 dark:border-gray-600"
+                                             x-text="student.initials">
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <h3 class="font-bold text-black dark:text-white text-sm truncate" x-text="student.name"></h3>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400" x-text="student.id"></p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="space-y-2 text-xs">
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-500 dark:text-gray-400">Grade</span>
+                                            <span class="font-medium text-black dark:text-white" x-text="student.grade + '%'"></span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-500 dark:text-gray-400">Attendance</span>
+                                            <span class="font-medium text-black dark:text-white" x-text="student.attendance + '%'"></span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-500 dark:text-gray-400">Course</span>
+                                            <span class="font-medium text-black dark:text-white text-right max-w-[120px] truncate" :title="student.courses.join(', ')" x-text="student.courses.length > 1 ? student.courses[0] + ' +' + (student.courses.length-1) : (student.courses[0] || '—')"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-3 flex items-center gap-2">
+                                        <div class="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                                            <div class="h-full rounded-full" :class="student.grade >= 80 ? 'bg-green-500' : student.grade >= 70 ? 'bg-yellow-500' : 'bg-red-500'" 
+                                                 :style="`width: ${student.grade}%`"></div>
+                                        </div>
+                                        <span class="text-xs font-medium" :class="student.grade >= 80 ? 'text-green-600 dark:text-green-400' : student.grade >= 70 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'" 
+                                              x-text="student.grade >= 80 ? 'Good' : student.grade >= 70 ? 'Fair' : 'Risk'"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- List View -->
+                    <div x-show="viewMode === 'list'" class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-gray-50/50 dark:bg-gray-900/50">
+                                <tr class="text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200/60 dark:border-gray-700/60">
+                                    <th class="px-6 py-4">Student</th>
+                                    <th class="px-6 py-4">Course</th>
+                                    <th class="px-6 py-4">Grade</th>
+                                    <th class="px-6 py-4">Attendance</th>
+                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 py-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                                <template x-for="student in filteredStudents" :key="student.id">
+                                    <tr class="group hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-4">
+                                                <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold text-sm border border-gray-200 dark:border-gray-600"
+                                                     x-text="student.initials">
+                                                </div>
+                                                <div>
+                                                    <p class="font-bold text-gray-800 dark:text-gray-200" x-text="student.name"></p>
+                                                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400" x-text="student.email"></p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex flex-wrap gap-1">
+                                                <template x-for="cn in student.courses" :key="cn">
+                                                    <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs font-medium" x-text="cn"></span>
+                                                </template>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-bold text-black dark:text-white" x-text="student.grade + '%'"></span>
+                                                <div class="w-12 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                    <div class="h-full rounded-full" :class="student.grade >= 80 ? 'bg-green-500' : student.grade >= 70 ? 'bg-yellow-500' : 'bg-red-500'" 
+                                                         :style="`width: ${student.grade}%`"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="font-medium text-gray-600 dark:text-gray-400" x-text="student.attendance + '%'"></span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-2 py-1 rounded-md text-xs font-bold" :class="student.grade >= 80 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : student.grade >= 70 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'" 
+                                                  x-text="student.grade >= 80 ? 'Good' : student.grade >= 70 ? 'Fair' : 'At Risk'">
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <button @click="selectStudent(student)" class="text-gray-400 hover:text-black dark:hover:text-white transition-colors p-2">
+                                                <i class="ri-more-2-line"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Student Detail Modal -->
+    <div x-show="selectedStudentData" class="relative z-50" x-cloak>
+        <div x-show="selectedStudentData" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+            class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" @click="selectedStudentData = null"></div>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div x-show="selectedStudentData" x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 text-left shadow-2xl transition-all w-full max-w-2xl">
+
+                    <template x-if="selectedStudentData">
+                        <div>
+                            <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold text-lg border border-gray-200 dark:border-gray-600"
+                                         x-text="selectedStudentData.initials">
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-black dark:text-white" x-text="selectedStudentData.name"></h3>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="selectedStudentData.email"></p>
+                                    </div>
+                                </div>
+                                <button @click="selectedStudentData = null" class="text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                                    <i class="ri-close-line text-xl"></i>
+                                </button>
+                            </div>
+
+                            <div class="p-6 space-y-6">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Student ID</label>
+                                        <p class="text-gray-600 dark:text-gray-400" x-text="selectedStudentData.id"></p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Enrolled Courses</label>
+                                        <div class="flex flex-wrap gap-1.5">
+                                            <template x-for="cn in (selectedStudentData.courses || [selectedStudentData.course])" :key="cn">
+                                                <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs font-medium" x-text="cn"></span>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Current Grade</label>
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-2xl font-bold text-black dark:text-white" x-text="selectedStudentData.grade + '%'"></span>
+                                            <div class="flex-1 h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                <div class="h-full rounded-full" :class="selectedStudentData.grade >= 80 ? 'bg-green-500' : selectedStudentData.grade >= 70 ? 'bg-yellow-500' : 'bg-red-500'" 
+                                                     :style="`width: ${selectedStudentData.grade}%`"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-900 dark:text-white mb-2">Attendance</label>
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-2xl font-bold text-black dark:text-white" x-text="selectedStudentData.attendance + '%'"></span>
+                                            <div class="flex-1 h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                <div class="h-full bg-blue-500 rounded-full" :style="`width: ${selectedStudentData.attendance}%`"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-3">
+                                    <button class="flex-1 rounded-lg bg-black dark:bg-white px-4 py-2 text-sm font-bold text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200">
+                                        Update Grade
+                                    </button>
+                                    <button class="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                        Send Message
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/api.js?v=2"></script>
+    <script>
+        function facultyStudents() {
+            return {
+                sidebarOpen: false,
+                loading: true,
+                initError: '',
+                darkMode: localStorage.getItem('darkMode') === 'true',
+                searchQuery: '',
+                selectedCourse: '',
+                viewMode: 'list',
+                selectedStudentData: null,
+
+                courses: [],   // [{id, course_code, course_name}]
+                students: [],  // deduplicated: one entry per student
+
+                // ── Computed stats ─────────────────────────────────────────
+                get totalStudents() { return this.students.length; },
+
+                get avgGrade() {
+                    const graded = this.students.filter(s => s.grade > 0);
+                    if (!graded.length) return '—';
+                    return (graded.reduce((s, x) => s + x.grade, 0) / graded.length).toFixed(1);
+                },
+                get atRisk() {
+                    return this.students.filter(s => s.grade > 0 && s.grade < 70).length;
+                },
+
+                // ── Filtered lists ─────────────────────────────────────────
+                get filteredStudents() {
+                    return this.students.filter(student => {
+                        const q = this.searchQuery.toLowerCase();
+                        const matchesSearch = !q ||
+                            student.name.toLowerCase().includes(q) ||
+                            student.id.toLowerCase().includes(q) ||
+                            student.email.toLowerCase().includes(q);
+                        const matchesCourse = !this.selectedCourse ||
+                            student.courses.includes(this.selectedCourse);
+                        return matchesSearch && matchesCourse;
+                    });
+                },
+
+                closeAllModals() {},
+
+
+                async init() {
+                    document.documentElement.classList.toggle('dark', this.darkMode);
+                    this.$watch('darkMode', v => {
+                        document.documentElement.classList.toggle('dark', v);
+                        localStorage.setItem('darkMode', v);
+                    });
+                    this.$watch('selectedStudentData', val => { document.body.style.overflow = val ? 'hidden' : ''; });
+
+                    if (typeof window.api === 'undefined') return;
+                    if (!window.api.checkAuth()) { window.location.href = 'faculty-login.html'; return; }
+                    const user = window.api.getUserData();
+                    if (user && user.role !== 'faculty') { window.api.clearToken(); window.location.href = 'faculty-login.html'; return; }
+                    if (user) window.api.populateSidebar(user);
+
+                    // Load courses for filter dropdowns
+                    try {
+                        const courseList = await window.api.getFacultyCourses();
+                        this.courses = Array.isArray(courseList) ? courseList : [];
+                    } catch(e) { window.api?.showNotification('Could not load courses', 'error'); this.initError = 'Could not load student data. Please try again.'; }
+
+                    // Load & deduplicate students
+                    try {
+                        const raw = await window.api.getFacultyStudents();
+                        const list = Array.isArray(raw) ? raw : (raw.students || []);
+                        const map = {};
+                        for (const s of list) {
+                            const uid = s.user_id;
+                            if (!map[uid]) {
+                                const name = s.full_name || 'Unknown';
+                                const parts = name.trim().split(/\s+/);
+                                map[uid] = {
+                                    id: uid,
+                                    numericId: s.id,
+                                    name,
+                                    email: s.email || '',
+                                    initials: parts.map(p => p[0]).join('').substring(0, 2).toUpperCase(),
+                                    courses: [],
+                                    courseIds: [],
+                                    course: '',
+                                    grade: s.gpa ? Math.round(s.gpa * 10) : (s.grade || 0),
+                                    attendance: s.attendance_pct || 0,
+                                };
+                            }
+                            if (s.course_name && !map[uid].courses.includes(s.course_name)) {
+                                map[uid].courses.push(s.course_name);
+                            }
+                            if (s.course_id && !map[uid].courseIds.includes(s.course_id)) {
+                                map[uid].courseIds.push(s.course_id);
+                            }
+                        }
+                        this.students = Object.values(map).map(s => ({ ...s, course: s.courses[0] || '' }));
+                    } catch(e) { window.api?.showNotification('Could not load students', 'error'); this.initError = 'Could not load student data. Please try again.'; }
+                    this.loading = false;
+                },
+
+                toggleDarkMode() { this.darkMode = !this.darkMode; },
+
+                selectStudent(student) { this.selectedStudentData = { ...student }; },
+
+
+            }
+        }
+    </script>
+</body>
+</html>

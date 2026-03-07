@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <title>Analytics - AcademicSync</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { fontFamily: { sans: ['Inter','sans-serif'] } } }
+        }
+    </script>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/components/scrollbar.css">
+    <script src="../assets/js/api.js?v=2"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+        .skeleton { background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; }
+        .dark .skeleton { background: linear-gradient(90deg,#374151 25%,#4b5563 50%,#374151 75%); background-size:200% 100%; }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+        .custom-scrollbar::-webkit-scrollbar { width:6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background:transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color:#e5e7eb; border-radius:20px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color:#374151; }
+        .bar-track { height:28px; background:#f3f4f6; border-radius:8px; overflow:hidden; }
+        .dark .bar-track { background:#374151; }
+        .bar-fill { height:100%; border-radius:8px; transition:width 0.7s cubic-bezier(.4,0,.2,1); }
+    </style>
+</head>
+
+<body class="h-full flex overflow-hidden font-sans antialiased bg-gray-50 dark:bg-gray-900 dark:text-gray-300 transition-colors duration-200"
+    x-data="analyticsPage()" x-init="init()" :class="darkMode ? 'dark' : ''" x-cloak>
+
+    <!-- Sidebar overlay -->
+    <div x-show="sidebarOpen" @click="sidebarOpen=false"
+        class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"></div>
+
+    <!-- Sidebar -->
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+        class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-lg transform transition-transform duration-300 lg:static lg:translate-x-0 flex flex-col h-full">
+
+        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100 dark:border-gray-800">
+            <a href="../index.html" class="flex items-center gap-2.5 group">
+                <div class="w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow group-hover:scale-105 transition-transform">
+                    <i class="lni lni-graduation"></i>
+                </div>
+                <span class="font-bold text-xl text-black dark:text-white tracking-tight">AcademicSync</span>
+            </a>
+            <button @click="sidebarOpen=false" aria-label="Close sidebar" class="lg:hidden text-gray-400 hover:text-black dark:hover:text-white transition-colors"><i class="lni lni-close text-xl"></i></button>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Main</p>
+            <a href="admin-dashboard.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/70 hover:text-black dark:hover:text-white transition-colors">
+                <i class="lni lni-grid-alt text-base shrink-0"></i> Dashboard
+            </a>
+            <a href="manage-users.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/70 hover:text-black dark:hover:text-white transition-colors">
+                <i class="lni lni-users text-base shrink-0"></i> Users
+            </a>
+            <a href="admin-courses.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/70 hover:text-black dark:hover:text-white transition-colors">
+                <i class="lni lni-book text-base shrink-0"></i> Courses
+            </a>
+            <a href="departments.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/70 hover:text-black dark:hover:text-white transition-colors">
+                <i class="lni lni-building text-base shrink-0"></i> Departments
+            </a>
+            <a href="admin-analytics.html" aria-current="page"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium bg-black dark:bg-white text-white dark:text-black shadow-sm">
+                <i class="lni lni-bar-chart text-base shrink-0"></i> Analytics
+            </a>
+            <div class="pt-4 pb-1">
+                <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">System</p>
+            </div>
+            <a href="system-settings.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/70 hover:text-black dark:hover:text-white transition-colors">
+                <i class="lni lni-cog text-base shrink-0"></i> System Settings
+            </a>
+            <a href="post-announcement.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/70 hover:text-black dark:hover:text-white transition-colors">
+                <i class="lni lni-bullhorn text-base shrink-0"></i> Announcements
+            </a>
+            <a href="admin-settings.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/70 hover:text-black dark:hover:text-white transition-colors">
+                <i class="lni lni-cog-2 text-base shrink-0"></i> Account Settings
+            </a>
+            <a href="admin-profile.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/70 hover:text-black dark:hover:text-white transition-colors">
+                <i class="lni lni-user text-base shrink-0"></i> Profile
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-gray-100 dark:border-gray-800">
+            <button @click="darkMode=!darkMode; localStorage.setItem('darkMode',darkMode)"
+                class="w-full flex items-center justify-center gap-2 mb-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xs font-bold uppercase tracking-wider">
+                <i class="lni" :class="darkMode ? 'lni-sun' : 'lni-night'"></i>
+                <span x-text="darkMode ? 'Light Mode' : 'Dark Mode'"></span>
+            </button>
+            <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <div class="w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold text-xs uppercase" x-text="userInitials"></div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-black dark:text-white truncate" x-text="userName"></p>
+                    <p class="text-xs text-gray-500">Admin</p>
+                </div>
+            </div>
+            <button @click="logout()" class="mt-2 w-full flex items-center justify-center gap-2 text-xs font-bold text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 py-2 rounded-lg transition-all uppercase tracking-tighter">
+                <i class="lni lni-exit"></i> Sign Out
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="flex-1 flex flex-col min-w-0">
+        <!-- Mobile header -->
+        <div class="lg:hidden h-14 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between px-4 sticky top-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md z-20">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-black font-bold text-sm">AS</div>
+                <span class="font-semibold text-black dark:text-white">AcademicSync</span>
+            </div>
+            <button @click="sidebarOpen=!sidebarOpen" aria-label="Open sidebar" class="p-2 -mr-2 text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md">
+                <i class="ri-menu-line text-xl"></i>
+            </button>
+        </div>
+
+        <main class="flex-1 overflow-y-auto scroll-smooth p-4 sm:p-6 lg:p-8 custom-scrollbar" id="main-content">
+            <!-- Error boundary -->
+            <div x-show="initError" x-cloak class="mb-6 p-4 rounded-xl border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-900/20 flex items-start gap-3">
+                <i class="lni lni-warning text-red-500 mt-0.5 shrink-0 text-lg"></i>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-red-700 dark:text-red-300" x-text="initError"></p>
+                    <button @click="initError = ''; init()" class="mt-1.5 text-xs font-bold text-red-600 dark:text-red-400 hover:underline">Try again</button>
+                </div>
+                <button @click="initError = ''" aria-label="Dismiss error" class="text-red-300 hover:text-red-500 shrink-0"><i class="lni lni-close text-xs"></i></button>
+            </div>
+            <div class="max-w-6xl mx-auto space-y-8 pb-12">
+
+                <!-- Page header -->
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                    <div>
+                        <h1 class="text-3xl font-bold text-black dark:text-white tracking-tight">Analytics &amp; Reports</h1>
+                        <p class="text-gray-500 mt-1 text-sm">System-wide academic statistics and trends.</p>
+                    </div>
+                    <!-- Export buttons -->
+                    <div class="flex items-center gap-2">
+                        <button @click="exportCSV('enrollment')"
+                            :disabled="loading || enrollmentTrends.length === 0"
+                            class="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                            <i class="lni lni-download"></i> Enrollment CSV
+                        </button>
+                        <button @click="exportCSV('grades')"
+                            :disabled="loading || Object.keys(gradeDist).length === 0"
+                            class="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                            <i class="lni lni-download"></i> Grades CSV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stat cards -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Loading skeletons -->
+                    <template x-if="loading">
+                        <template x-for="n in [1,2,3,4]" :key="n">
+                            <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-3">
+                                <div class="skeleton h-3 w-1/2 rounded"></div>
+                                <div class="skeleton h-8 w-2/3 rounded"></div>
+                            </div>
+                        </template>
+                    </template>
+                    <template x-if="!loading">
+                        <template x-for="card in statCards" :key="card.label">
+                            <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
+                                <p class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2" x-text="card.label"></p>
+                                <p class="text-3xl font-bold text-black dark:text-white" x-text="card.value"></p>
+                                <p x-show="card.sub" class="text-xs text-gray-400 mt-1" x-text="card.sub"></p>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+
+                <!-- Charts row -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                    <!-- Enrollment Trend -->
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-5">
+                            <div>
+                                <h2 class="font-semibold text-black dark:text-white">Enrollment Trend</h2>
+                                <p class="text-xs text-gray-400 mt-0.5">New enrollments per month (last 12 months)</p>
+                            </div>
+                            <div class="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                                <i class="lni lni-trend-up text-blue-600 dark:text-blue-400"></i>
+                            </div>
+                        </div>
+
+                        <!-- Loading -->
+                        <template x-if="loading">
+                            <div class="space-y-3">
+                                <template x-for="n in [1,2,3,4,5,6]" :key="n">
+                                    <div class="flex items-center gap-3">
+                                        <div class="skeleton h-3 w-14 rounded shrink-0"></div>
+                                        <div class="skeleton h-7 rounded flex-1"></div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template x-if="!loading">
+                            <div>
+                                <template x-if="enrollmentTrends.length === 0">
+                                    <p class="text-center text-gray-400 py-8">No enrollment data available.</p>
+                                </template>
+                                <div class="space-y-2.5" x-show="enrollmentTrends.length > 0">
+                                    <template x-for="row in enrollmentTrends" :key="row.month">
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-xs text-gray-400 dark:text-gray-500 w-16 shrink-0 font-mono" x-text="fmtMonth(row.month)"></span>
+                                            <div class="flex-1 bar-track">
+                                                <div class="bar-fill bg-gradient-to-r from-blue-500 to-blue-400"
+                                                    :style="'width:' + ((row.count / maxEnrollment) * 100).toFixed(1) + '%'"></div>
+                                            </div>
+                                            <span class="text-xs font-bold text-gray-600 dark:text-gray-300 w-7 text-right shrink-0" x-text="row.count"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                                <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between text-xs text-gray-400">
+                                    <span x-text="'12-month total: ' + enrollmentTotal + ' enrollments'"></span>
+                                    <span x-text="'Peak: ' + peakMonth"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Grade Distribution -->
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-5">
+                            <div>
+                                <h2 class="font-semibold text-black dark:text-white">Grade Distribution</h2>
+                                <p class="text-xs text-gray-400 mt-0.5">Grade breakdown across all courses</p>
+                            </div>
+                            <div class="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                                <i class="lni lni-clipboard text-purple-600 dark:text-purple-400"></i>
+                            </div>
+                        </div>
+
+                        <!-- Loading -->
+                        <template x-if="loading">
+                            <div class="space-y-3">
+                                <template x-for="n in [1,2,3,4,5]" :key="n">
+                                    <div class="flex items-center gap-3">
+                                        <div class="skeleton h-3 w-8 rounded shrink-0"></div>
+                                        <div class="skeleton h-7 rounded flex-1"></div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template x-if="!loading">
+                            <div>
+                                <template x-if="Object.keys(gradeDist).length === 0">
+                                    <p class="text-center text-gray-400 py-8">No grade data available.</p>
+                                </template>
+                                <div class="space-y-2.5" x-show="Object.keys(gradeDist).length > 0">
+                                    <template x-for="g in gradeRows" :key="g.grade">
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-xs font-bold w-8 shrink-0 text-right"
+                                                :class="gradeColor(g.grade)" x-text="g.grade"></span>
+                                            <div class="flex-1 bar-track">
+                                                <div class="bar-fill"
+                                                    :class="gradeBarColor(g.grade)"
+                                                    :style="'width:' + ((g.count / maxGrade) * 100).toFixed(1) + '%'"></div>
+                                            </div>
+                                            <span class="text-xs font-bold text-gray-600 dark:text-gray-300 w-7 text-right shrink-0" x-text="g.count"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                                <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between text-xs text-gray-400">
+                                    <span x-text="'Total grades: ' + gradeTotal"></span>
+                                    <span x-text="passRate > 0 ? 'Pass rate: ' + passRate + '%' : ''"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- User breakdown table -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                    <h2 class="font-semibold text-black dark:text-white mb-4">System Summary</h2>
+                    <template x-if="loading">
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            <template x-for="n in [1,2,3,4]" :key="n">
+                                <div class="space-y-2">
+                                    <div class="skeleton h-3 w-3/4 rounded"></div>
+                                    <div class="skeleton h-6 w-1/2 rounded"></div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template x-if="!loading">
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                            <template x-for="item in summaryItems" :key="item.label">
+                                <div class="flex flex-col gap-1">
+                                    <span class="text-xs text-gray-400 font-medium uppercase tracking-wide" x-text="item.label"></span>
+                                    <span class="text-2xl font-bold text-black dark:text-white" x-text="item.value"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+<script>
+function analyticsPage() {
+    return {
+        darkMode: false,
+        sidebarOpen: false,
+        loading: true,
+        initError: '',
+        userName: '—',
+        userInitials: 'A',
+        enrollmentTrends: [],
+        gradeDist: {},
+        stats: {},
+
+        get maxEnrollment() {
+            if (!this.enrollmentTrends.length) return 1;
+            return Math.max(...this.enrollmentTrends.map(r => r.count), 1);
+        },
+
+        get enrollmentTotal() {
+            return this.enrollmentTrends.reduce((s, r) => s + (r.count || 0), 0);
+        },
+
+        get peakMonth() {
+            if (!this.enrollmentTrends.length) return '—';
+            const peak = this.enrollmentTrends.reduce((a, b) => b.count > a.count ? b : a, this.enrollmentTrends[0]);
+            return this.fmtMonth(peak.month) + ' (' + peak.count + ')';
+        },
+
+        get gradeRows() {
+            const order = ['A','A-','B+','B','B-','C+','C','C-','D','F'];
+            const all = Object.entries(this.gradeDist).map(([grade, count]) => ({ grade, count }));
+            all.sort((a, b) => {
+                const ia = order.indexOf(a.grade), ib = order.indexOf(b.grade);
+                return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+            });
+            return all;
+        },
+
+        get maxGrade() {
+            const vals = Object.values(this.gradeDist);
+            return Math.max(...vals, 1);
+        },
+
+        get gradeTotal() {
+            return Object.values(this.gradeDist).reduce((s, v) => s + v, 0);
+        },
+
+        get passRate() {
+            if (!this.gradeTotal) return 0;
+            const failing = (this.gradeDist['F'] || 0) + (this.gradeDist['D'] || 0);
+            return ((1 - failing / this.gradeTotal) * 100).toFixed(0);
+        },
+
+        get statCards() {
+            const s = this.stats || {};
+            return [
+                { label: 'Total Students',  value: (s.total_students  ?? '—').toLocaleString(), sub: 'enrolled' },
+                { label: 'Total Faculty',   value: (s.total_faculty   ?? '—').toLocaleString(), sub: 'active' },
+                { label: 'Active Courses',  value: (s.active_courses  ?? s.total_courses ?? '—').toLocaleString(), sub: 'this semester' },
+                { label: 'Pending Tasks',   value: (s.pending_tasks   ?? s.total_assignments ?? '—').toLocaleString(), sub: 'assignments' },
+            ];
+        },
+
+        get summaryItems() {
+            const s = this.stats || {};
+            return [
+                { label: 'Departments',    value: s.total_departments ?? '—' },
+                { label: 'Enrollments',    value: this.enrollmentTotal || (s.total_enrollments ?? '—') },
+                { label: 'Graded Entries', value: this.gradeTotal || '—' },
+                { label: 'Grade Pass Rate', value: this.passRate > 0 ? this.passRate + '%' : '—' },
+            ];
+        },
+
+        fmtMonth(m) {
+            if (!m) return '—';
+            const [y, mo] = m.split('-');
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return (months[parseInt(mo) - 1] || mo) + ' ' + y.slice(2);
+        },
+
+        gradeColor(grade) {
+            if (grade.startsWith('A')) return 'text-green-600 dark:text-green-400';
+            if (grade.startsWith('B')) return 'text-blue-600 dark:text-blue-400';
+            if (grade.startsWith('C')) return 'text-yellow-600 dark:text-yellow-400';
+            if (grade === 'D')         return 'text-orange-600 dark:text-orange-400';
+            return 'text-red-600 dark:text-red-400';
+        },
+
+        gradeBarColor(grade) {
+            if (grade.startsWith('A')) return 'bg-gradient-to-r from-green-500 to-green-400';
+            if (grade.startsWith('B')) return 'bg-gradient-to-r from-blue-500 to-blue-400';
+            if (grade.startsWith('C')) return 'bg-gradient-to-r from-yellow-500 to-yellow-400';
+            if (grade === 'D')         return 'bg-gradient-to-r from-orange-500 to-orange-400';
+            return 'bg-gradient-to-r from-red-500 to-red-400';
+        },
+
+        exportCSV(type) {
+            let rows, filename;
+            if (type === 'enrollment') {
+                rows   = [['Month','Enrollments'], ...this.enrollmentTrends.map(r => [r.month, r.count])];
+                filename = 'enrollment-trends.csv';
+            } else {
+                rows   = [['Grade','Count'], ...this.gradeRows.map(r => [r.grade, r.count])];
+                filename = 'grade-distribution.csv';
+            }
+            const csv  = rows.map(r => r.join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href = url; a.download = filename; a.click();
+            URL.revokeObjectURL(url);
+        },
+
+        async init() {
+            this.darkMode = localStorage.getItem('darkMode') === 'true';
+            document.documentElement.classList.toggle('dark', this.darkMode);
+            this.$watch('darkMode', val => {
+                document.documentElement.classList.toggle('dark', val);
+                localStorage.setItem('darkMode', String(val));
+            });
+            if (!window.api?.checkAuth()) { window.location.href = 'admin-login.html'; return; }
+            const u = window.api.getUserData();
+            if (u) {
+                if (u.role !== 'admin') { window.api.clearToken(); window.location.href = 'admin-login.html'; return; }
+                this.userName     = u.full_name || u.user_id || '—';
+                this.userInitials = (u.full_name || u.user_id || 'A').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+            }
+            try {
+                const [trends, dist, stats] = await Promise.all([
+                    window.api.getEnrollmentTrends().catch(() => []),
+                    window.api.getGradeDistribution().catch(() => ({})),
+                    window.api.getAdminDashboardStats().catch(() => ({})),
+                ]);
+                this.enrollmentTrends = Array.isArray(trends) ? trends : [];
+                this.gradeDist        = (dist && typeof dist === 'object') ? dist : {};
+                this.stats            = (stats && typeof stats === 'object') ? stats : {};
+            } catch(e) {
+                window.api?.showNotification('Could not load analytics data', 'error');
+                this.initError = 'Could not load analytics data. Please try again.';
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        logout() {
+            window.api?.logout().then(() => { window.location.href = 'admin-login.html'; }).catch(() => { window.location.href = 'admin-login.html'; });
+        }
+    };
+}
+</script>
+</body>
+</html>

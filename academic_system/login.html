@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <meta name="description" content="AcademicSync - Smart Academic Management">
+    <title>Login - AcademicSync</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db',
+                            400: '#9ca3af', 500: '#6b7280', 600: '#000000', 700: '#1f2937',
+                            800: '#111827', 900: '#000000',
+                        },
+                        gray: {
+                            50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db',
+                            400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151',
+                            800: '#1f2937', 900: '#111827',
+                        }
+                    },
+                    boxShadow: {
+                        'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                        'DEFAULT': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                        'md': '0 4px 12px rgba(0, 0, 0, 0.05)',
+                        'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03)',
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                        'blob': 'blob 7s infinite',
+                        'head-shake': 'headShake 0.5s ease-in-out',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        headShake: {
+                            '0%': { transform: 'translateX(0)' },
+                            '6.5%': { transform: 'translateX(-6px) rotateY(-9deg)' },
+                            '18.5%': { transform: 'translateX(5px) rotateY(7deg)' },
+                            '31.5%': { transform: 'translateX(-3px) rotateY(-5deg)' },
+                            '43.5%': { transform: 'translateX(2px) rotateY(3deg)' },
+                            '50%': { transform: 'translateX(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Alpine.js -->
+    <!-- Custom JS -->
+    <script src="assets/js/main.js" defer></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+
+<body
+    class="h-full flex overflow-hidden text-gray-600 font-sans antialiased bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors duration-200"
+    x-data="layout">
+
+    <!-- Theme Toggle -->
+    <button @click="darkMode = !darkMode"
+        class="fixed top-6 right-6 z-50 p-3 rounded-full bg-white/10 backdrop-blur-md border border-gray-200 dark:border-gray-700 shadow-lg text-gray-600 dark:text-gray-300 hover:scale-110 active:scale-95 transition-all">
+        <i class="lni lni-sun text-xl" x-show="!darkMode"></i>
+        <i class="lni lni-night text-xl" x-show="darkMode" style="display: none;"></i>
+    </button>
+    <div class="flex-1 flex flex-col min-w-0 bg-white dark:bg-gray-900 relative transition-colors duration-200">
+        <main class="flex-1 overflow-y-auto scroll-smooth p-0" id="main-content">
+            <div
+                class="min-h-screen relative flex items-center justify-center p-4 overflow-hidden bg-white dark:bg-gray-900 transition-colors">
+
+                <!-- Background Elements -->
+                <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                    <div
+                        class="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-gray-100 rounded-full blur-[100px] animate-blob">
+                    </div>
+                    <div
+                        class="absolute top-[20%] -right-[10%] w-[40%] h-[60%] bg-gray-200/50 rounded-full blur-[100px] animate-blob animation-delay-2000">
+                    </div>
+                    <div
+                        class="absolute -bottom-[20%] left-[20%] w-[60%] h-[40%] bg-gray-100 rounded-full blur-[100px] animate-blob animation-delay-4000">
+                    </div>
+                </div>
+
+                <!-- Role Selection Cards -->
+                <div class="relative w-full max-w-4xl animate-fade-in-up">
+                    <div class="text-center mb-12">
+                        <a href="index.html"
+                            class="inline-flex items-center gap-2.5 mb-6 group cursor-pointer hover:-translate-y-0.5 transition-transform">
+                            <div
+                                class="w-12 h-12 bg-black dark:bg-white rounded-xl flex items-center justify-center text-white dark:text-black shadow-lg shadow-gray-200 dark:shadow-none">
+                                <i class="lni lni-graduation text-2xl"></i>
+                            </div>
+                            <span
+                                class="font-display font-bold text-2xl text-black dark:text-white tracking-tight">AcademicSync</span>
+                        </a>
+                        <h2 class="text-3xl font-display font-bold text-black dark:text-white mb-2">Select your Role
+                        </h2>
+                        <p class="text-gray-500 dark:text-gray-400">Choose how you want to log in to the system.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Student Card -->
+                        <a href="student/student-login.html" class="portal-card"
+                            class="group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                            <div
+                                class="absolute inset-0 bg-blue-50 dark:bg-blue-900/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity">
+                            </div>
+                            <div class="relative z-10 flex flex-col items-center">
+                                <div
+                                    class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
+                                    <i class="lni lni-user"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-black dark:text-white mb-2">Student</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 text-center">Access courses, view
+                                    grades, and manage tasks.</p>
+                            </div>
+                        </a>
+
+                        <!-- Faculty Card -->
+                        <a href="faculty/faculty-login.html" class="portal-card"
+                            class="group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                            <div
+                                class="absolute inset-0 bg-emerald-50 dark:bg-emerald-900/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity">
+                            </div>
+                            <div class="relative z-10 flex flex-col items-center">
+                                <div
+                                    class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
+                                    <i class="lni lni-briefcase"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-black dark:text-white mb-2">Faculty</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 text-center">Manage classes, grading,
+                                    and resources.</p>
+                            </div>
+                        </a>
+
+                        <!-- Admin Card -->
+                        <a href="admin/admin-login.html" class="portal-card"
+                            class="group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                            <div
+                                class="absolute inset-0 bg-purple-50 dark:bg-purple-900/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity">
+                            </div>
+                            <div class="relative z-10 flex flex-col items-center">
+                                <div
+                                    class="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
+                                    <i class="lni lni-protection"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-black dark:text-white mb-2">Admin</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 text-center">System configuration and
+                                    user management.</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Custom Scripts -->
+    <script src="assets/js/api.js?v=2"></script>
+    <script>
+        // Initialize API client
+        const api = new AcademicSyncAPI(window._apiBase || 'http://localhost:5000');
+
+        // Only auto-redirect if the backend confirms the token is still valid
+        document.addEventListener('DOMContentLoaded', async function () {
+            if (api.checkAuth()) {
+                try {
+                    const res = await api.getCurrentUser();
+                    const user = res.user || res;
+                    if (user && user.role) {
+                        api.setUserData(user); // refresh stored data
+                        switch (user.role) {
+                            case 'student':
+                                window.location.href = 'student/student-dashboard.html';
+                                break;
+                            case 'faculty':
+                                window.location.href = 'faculty/faculty-dashboard.html';
+                                break;
+                            case 'admin':
+                                window.location.href = 'admin/admin-dashboard.html';
+                                break;
+                        }
+                    }
+                } catch (_) {
+                    // Token is expired or invalid — clear it and show login normally
+                    api.clearToken();
+                }
+            }
+        });
+
+        // Add click handlers for portal selection
+        document.querySelectorAll('.portal-card').forEach(card => {
+            card.addEventListener('click', function (e) {
+                e.preventDefault();
+                const href = this.getAttribute('href');
+                if (href) {
+                    // Add smooth transition effect
+                    document.body.style.opacity = '0.8';
+                    setTimeout(() => {
+                        window.location.href = href;
+                    }, 200);
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
