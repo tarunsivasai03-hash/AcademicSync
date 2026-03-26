@@ -9,8 +9,11 @@
  *   window.api  ← ready to use immediately
  */
 class AcademicSyncAPI {
-  constructor(baseUrl = 'http://localhost:5000') {
-    this.baseUrl = baseUrl.replace(/\/$/, '');
+  constructor() {
+    this.baseUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://localhost:5000'
+      : 'https://academicsync-1.onrender.com';
+    this.baseUrl = this.baseUrl.replace(/\/$/, '');
     this.TOKEN_KEY = 'academicsync_token';
     this.USER_KEY = 'academicsync_user';
 
@@ -646,22 +649,12 @@ class FormValidator {
 // Use window.api (not const api) so pages that declare their own `const api`
 // don't get a "already declared" SyntaxError from sharing the global lexical scope.
 //
-// ─── Production backend URL ───────────────────────────────────────────────────
-// When deploying to Vercel (or any CDN), set this to your hosted Flask API URL.
-// e.g. 'https://academicsync-api.onrender.com'
-// Leave empty ('') to fall back to auto-detection (localhost / LAN).
-const PRODUCTION_API_URL = '';
-
 // Auto-detects the API host so LAN / Wi-Fi testing on a phone works without
 // any manual config: when the page is opened via a LAN IP (e.g. 192.168.x.x)
 // the API calls automatically go to that same IP on port 5000.
-const _isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const _isLAN   = /^192\.168\.|^10\.|^172\.(1[6-9]|2\d|3[01])\./.test(window.location.hostname);
-const _apiBase = PRODUCTION_API_URL
-  ? PRODUCTION_API_URL
-  : (_isLocal || _isLAN)
-    ? `http://${window.location.hostname}:5000`
-    : 'http://localhost:5000'; // fallback — update PRODUCTION_API_URL above
+const _apiBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:5000'
+  : `http://${window.location.hostname}:5000`;
 window._apiBase = _apiBase;  // expose for pages that create their own AcademicSyncAPI instance
 window.api = new AcademicSyncAPI(_apiBase);
 

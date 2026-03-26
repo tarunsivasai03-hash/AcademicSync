@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="en" class="h-full bg-white antialiased">
 
 <head>
@@ -318,11 +318,11 @@
                                     <div class="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center font-bold text-xs text-gray-600 dark:text-gray-300 uppercase shrink-0"
                                         x-text="(act.user_name || act.user || '?').slice(0,2)"></div>
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate" x-text="act.user_name || act.user || '—'"></p>
-                                        <p class="text-xs text-gray-400 truncate" x-text="act.action || act.description || '—'"></p>
+                                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate" x-text="act.user_name || act.user || '--'"></p>
+                                        <p class="text-xs text-gray-400 truncate" x-text="act.action || act.description || '--'"></p>
                                     </div>
                                     <div class="shrink-0 text-right space-y-1">
-                                        <p class="text-xs text-gray-400" x-text="act.timestamp ? new Date(act.timestamp).toLocaleDateString() : '—'"></p>
+                                        <p class="text-xs text-gray-400" x-text="act.timestamp ? new Date(act.timestamp).toLocaleDateString() : '--'"></p>
                                         <span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-full capitalize"
                                             :class="{
                                                 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300': act.user_role === 'admin',
@@ -377,7 +377,7 @@
                                         }"
                                         x-text="(u.full_name || u.user_id || '?').slice(0,2)"></div>
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate" x-text="u.full_name || u.user_id || '—'"></p>
+                                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate" x-text="u.full_name || u.user_id || '--'"></p>
                                         <p class="text-xs text-gray-400 capitalize truncate" x-text="u.role || 'user'"></p>
                                     </div>
                                 </div>
@@ -415,7 +415,7 @@
             isLoading: true,
             toasts: [],
             _toastId: 0,
-            userName: 'Loading…',
+            userName: 'Loading...',
             userInitials: '?',
             statCards: [],
             activities: [],
@@ -468,17 +468,17 @@
                     if (statsRes.status === 'fulfilled') {
                         const s = statsRes.value;
                         this.statCards = [
-                            { label: 'Total Users',    value: s.users?.total    ?? s.total_users     ?? '—', icon: 'lni lni-users',       badge: null },
-                            { label: 'Students',       value: s.users?.students ?? s.active_students ?? '—', icon: 'lni lni-graduation',   badge: null },
-                            { label: 'Faculty',        value: s.users?.faculty  ?? s.total_faculty   ?? '—', icon: 'lni lni-pencil-alt',   badge: null },
-                            { label: 'Active Courses', value: s.courses_count   ?? s.total_courses   ?? '—', icon: 'lni lni-book',         badge: null },
+                            { label: 'Total Users',    value: s.users?.total    ?? s.total_users     ?? '--', icon: 'lni lni-users',       badge: null },
+                            { label: 'Students',       value: s.users?.students ?? s.active_students ?? '--', icon: 'lni lni-graduation',   badge: null },
+                            { label: 'Faculty',        value: s.users?.faculty  ?? s.total_faculty   ?? '--', icon: 'lni lni-pencil-alt',   badge: null },
+                            { label: 'Active Courses', value: s.courses_count   ?? s.total_courses   ?? '--', icon: 'lni lni-book',         badge: null },
                         ];
                     } else {
                         this.statCards = [
-                            { label: 'Total Users',    value: '—', icon: 'lni lni-users',     badge: null },
-                            { label: 'Students',       value: '—', icon: 'lni lni-graduation', badge: null },
-                            { label: 'Faculty',        value: '—', icon: 'lni lni-pencil-alt', badge: null },
-                            { label: 'Active Courses', value: '—', icon: 'lni lni-book',       badge: null },
+                            { label: 'Total Users',    value: '--', icon: 'lni lni-users',     badge: null },
+                            { label: 'Students',       value: '--', icon: 'lni lni-graduation', badge: null },
+                            { label: 'Faculty',        value: '--', icon: 'lni lni-pencil-alt', badge: null },
+                            { label: 'Active Courses', value: '--', icon: 'lni lni-book',       badge: null },
                         ];
                         this.addToast('Warning', 'Could not load dashboard statistics.', 'warning');
                     }

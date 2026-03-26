@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="h-full bg-white antialiased">
 
 <head>
@@ -181,7 +181,7 @@
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Search</label>
                         <div class="relative">
                             <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                            <input type="text" x-model="filter.search" placeholder="Code or name�"
+                            <input type="text" x-model="filter.search" placeholder="Code or name..."
                                 class="w-full pl-9 pr-3 py-2.5 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-black dark:text-white placeholder-gray-400 focus:outline-none focus:border-black dark:focus:border-white transition-colors">
                         </div>
                     </div>
@@ -221,19 +221,19 @@
             <!-- Stats strip -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm text-center">
-                    <p class="text-2xl font-bold text-black dark:text-white" x-text="isLoading ? '�' : statTotal"></p>
+                    <p class="text-2xl font-bold text-black dark:text-white" x-text="isLoading ? '--' : statTotal"></p>
                     <p class="text-xs text-gray-400 mt-1 uppercase tracking-wider">Total Courses</p>
                 </div>
                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm text-center">
-                    <p class="text-2xl font-bold text-black dark:text-white" x-text="isLoading ? '�' : statActive"></p>
+                    <p class="text-2xl font-bold text-black dark:text-white" x-text="isLoading ? '--' : statActive"></p>
                     <p class="text-xs text-gray-400 mt-1 uppercase tracking-wider">Active</p>
                 </div>
                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm text-center">
-                    <p class="text-2xl font-bold text-black dark:text-white" x-text="isLoading ? '�' : statEnrolled"></p>
+                    <p class="text-2xl font-bold text-black dark:text-white" x-text="isLoading ? '--' : statEnrolled"></p>
                     <p class="text-xs text-gray-400 mt-1 uppercase tracking-wider">Total Enrolled</p>
                 </div>
                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm text-center">
-                    <p class="text-2xl font-bold text-black dark:text-white" x-text="isLoading ? '�' : statSemesters"></p>
+                    <p class="text-2xl font-bold text-black dark:text-white" x-text="isLoading ? '--' : statSemesters"></p>
                     <p class="text-xs text-gray-400 mt-1 uppercase tracking-wider">Semesters</p>
                 </div>
             </div>
@@ -287,8 +287,8 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="px-5 py-4 text-sm text-gray-600 dark:text-gray-400 hidden md:table-cell" x-text="c.semester || '�'"></td>
-                                        <td class="px-5 py-4 text-sm text-gray-600 dark:text-gray-400 hidden lg:table-cell" x-text="c.department || '�'"></td>
+                                        <td class="px-5 py-4 text-sm text-gray-600 dark:text-gray-400 hidden md:table-cell" x-text="c.semester || '--'"></td>
+                                        <td class="px-5 py-4 text-sm text-gray-600 dark:text-gray-400 hidden lg:table-cell" x-text="c.department || '--'"></td>
                                         <td class="px-5 py-4 text-sm hidden lg:table-cell">
                                             <span x-show="c.faculty_name" class="text-gray-600 dark:text-gray-400" x-text="c.faculty_name"></span>
                                             <span x-show="!c.faculty_name" class="text-gray-300 dark:text-gray-600">Unassigned</span>
@@ -365,7 +365,7 @@
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Academic Year</label>
                         <select x-model="form.yearId"
                             class="w-full px-3 py-2.5 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white transition-colors">
-                            <option value="">� Select Year �</option>
+                            <option value="">-- Select Year --</option>
                             <template x-for="y in allYears" :key="y.id">
                                 <option :value="String(y.id)" x-text="y.year_label"></option>
                             </template>
@@ -375,7 +375,7 @@
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Semester</label>
                         <select x-model="form.semesterId"
                             class="w-full px-3 py-2.5 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white transition-colors">
-                            <option value="">� Select Semester �</option>
+                            <option value="">-- Select Semester --</option>
                             <template x-for="s in modalSemesters" :key="s.id">
                                 <option :value="String(s.id)" x-text="s.name"></option>
                             </template>
@@ -387,7 +387,7 @@
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Department</label>
                         <select x-model="form.deptId"
                             class="w-full px-3 py-2.5 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white transition-colors">
-                            <option value="">� Select Dept �</option>
+                            <option value="">-- Select Dept --</option>
                             <template x-for="d in allDepts" :key="d.id">
                                 <option :value="String(d.id)" x-text="d.name"></option>
                             </template>
@@ -403,7 +403,7 @@
                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Assign Faculty</label>
                     <select x-model="form.facultyId"
                         class="w-full px-3 py-2.5 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white transition-colors">
-                        <option value="">� Unassigned �</option>
+                        <option value="">-- Unassigned --</option>
                         <template x-for="f in allFaculty" :key="f.user_id">
                             <option :value="String(f.user_id)" x-text="`${f.full_name} (${f.user_id})`"></option>
                         </template>
@@ -411,7 +411,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Description</label>
-                    <textarea x-model="form.description" rows="2" placeholder="Short course description�"
+                    <textarea x-model="form.description" rows="2" placeholder="Short course description..."
                         class="w-full px-3 py-2.5 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white transition-colors resize-none"></textarea>
                 </div>
                 <div class="flex justify-end gap-3 pt-2">
@@ -419,7 +419,7 @@
                     <button type="submit" :disabled="isSubmitting"
                         class="flex items-center gap-2 px-5 py-2.5 text-sm font-bold bg-black dark:bg-white text-white dark:text-black rounded-xl hover:bg-gray-800 dark:hover:bg-gray-200 transition-all shadow-sm disabled:opacity-60">
                         <svg x-show="isSubmitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                        <span x-text="isSubmitting ? 'Saving�' : (isEditing ? 'Save Changes' : 'Add Course')"></span>
+                        <span x-text="isSubmitting ? 'Saving...' : (isEditing ? 'Save Changes' : 'Add Course')"></span>
                     </button>
                 </div>
             </form>
@@ -436,7 +436,7 @@
                 <button @click="doDelete()" :disabled="isDeleting"
                     class="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-red-500 hover:bg-red-600 text-white rounded-xl transition-all disabled:opacity-60">
                     <svg x-show="isDeleting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                    <span x-text="isDeleting ? 'Deleting�' : 'Delete'"></span>
+                    <span x-text="isDeleting ? 'Deleting...' : 'Delete'"></span>
                 </button>
             </div>
         </div>
@@ -641,3 +641,4 @@
 </body>
 
 </html>
+

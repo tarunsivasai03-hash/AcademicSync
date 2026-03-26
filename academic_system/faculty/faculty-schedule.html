@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="h-full bg-white antialiased">
 
 <head>
@@ -790,7 +790,7 @@
                     const friday = new Date(monday);
                     friday.setDate(monday.getDate() + 4);
                     const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                    this.weekDisplay = `${fmt(monday)} � ${fmt(friday)}, ${friday.getFullYear()}`;
+                    this.weekDisplay = `${fmt(monday)} - ${fmt(friday)}, ${friday.getFullYear()}`;
                 },
 
                 getClassesForTimeAndDay(time, day) {
@@ -919,7 +919,7 @@
                             }
                             this._api.showNotification('Class added to schedule.', 'success');
                         } catch (e) {
-                            this._api.showNotification('Saved locally � API error: ' + e.message, 'warning');
+                            this._api.showNotification('Saved locally - API error: ' + e.message, 'warning');
                         }
                     }
 
@@ -970,7 +970,7 @@
                             }
                             this._api.showNotification('Office hours saved.', 'success');
                         } catch (e) {
-                            this._api.showNotification('Saved locally � API error: ' + e.message, 'warning');
+                            this._api.showNotification('Saved locally - API error: ' + e.message, 'warning');
                         }
                     }
 
@@ -997,7 +997,7 @@
                             await this._api.deleteScheduleSession(officeHour.id);
                             this._api.showNotification('Office hours removed.', 'success');
                         } catch (e) {
-                            this._api.showNotification('Removed locally � API error: ' + e.message, 'warning');
+                            this._api.showNotification('Removed locally - API error: ' + e.message, 'warning');
                         }
                     }
                 },

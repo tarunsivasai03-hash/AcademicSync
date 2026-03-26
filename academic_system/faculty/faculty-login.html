@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="h-full bg-white antialiased">
 
 <head>
@@ -167,7 +167,7 @@
 
             const origText = btn.textContent;
             btn.disabled = true;
-            btn.textContent = 'Signing in�';
+            btn.textContent = 'Signing in...';
 
             try {
                 const response = await api.login({ user_id: userID, password });
@@ -181,7 +181,7 @@
                     return;
                 }
 
-                api.showNotification('Login successful! Redirecting�', 'success');
+                api.showNotification('Login successful! Redirecting...', 'success');
                 setTimeout(() => { window.location.href = 'faculty-dashboard.html'; }, 900);
 
             } catch (error) {

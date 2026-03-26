@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="h-full bg-white antialiased">
 
 <head>
@@ -181,7 +181,7 @@
                     <div class="flex items-center gap-4 mb-5">
                         <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 flex items-center justify-center text-xl font-bold text-gray-500 dark:text-gray-300 uppercase shadow-sm" x-text="userInitials"></div>
                         <div>
-                            <p class="text-lg font-bold text-black dark:text-white" x-text="profile.fullName || 'Loading�'"></p>
+                            <p class="text-lg font-bold text-black dark:text-white" x-text="profile.fullName || 'Loading...'"></p>
                             <p class="text-sm text-gray-500" x-text="profile.email"></p>
                             <span class="inline-block mt-1 px-2 py-0.5 text-xs font-semibold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg">Administrator</span>
                         </div>
@@ -203,7 +203,7 @@
                             class="flex items-center gap-2 px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-bold hover:bg-gray-800 dark:hover:bg-gray-200 transition-all shadow-sm hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed">
                             <svg x-show="isSavingProfile" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
                             <i x-show="!isSavingProfile" class="lni lni-save"></i>
-                            <span x-text="isSavingProfile ? 'Saving�' : 'Save Changes'"></span>
+                            <span x-text="isSavingProfile ? 'Saving...' : 'Save Changes'"></span>
                         </button>
                     </div>
                 </div>
@@ -254,7 +254,7 @@
                                 class="flex items-center gap-2 px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-bold hover:bg-gray-800 dark:hover:bg-gray-200 transition-all shadow-sm hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed">
                                 <svg x-show="isChangingPwd" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
                                 <i x-show="!isChangingPwd" class="lni lni-lock"></i>
-                                <span x-text="isChangingPwd ? 'Updating�' : 'Update Password'"></span>
+                                <span x-text="isChangingPwd ? 'Updating...' : 'Update Password'"></span>
                             </button>
                         </div>
                     </form>
@@ -459,3 +459,4 @@
     </script>
 </body>
 </html>
+

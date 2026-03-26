@@ -1,18 +1,33 @@
 services:
   - type: web
-    name: academicsync-api
-    runtime: python
+    name: academicsync-backend
+    env: python
+    plan: free
+    repo: https://github.com/Sufiyan999/smart_academic_system.git # Optional: Your repo URL
+    branch: main # Or your default branch
     rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn "app:create_app('production')" --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    buildFilter:
+      paths:
+      - backend/**
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn \"app:create_app('production')\" --bind 0.0.0.0:$PORT"
     envVars:
+      - key: FLASK_APP
+        value: app
       - key: FLASK_ENV
         value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: academicsync-db
+          property: internalConnectionString
       - key: SECRET_KEY
         generateValue: true
       - key: JWT_SECRET_KEY
         generateValue: true
-      - key: CORS_ORIGINS
-        value: "*"
-      - key: DATABASE_URL
-        value: sqlite:///academic_system_prod.db
+
+  - type: pserv
+    name: academicsync-db
+    env: postgres
+    plan: free
+    postgres:
+      version: "14"

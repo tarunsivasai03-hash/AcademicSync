@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="h-full bg-white antialiased">
 
 <head>
@@ -241,7 +241,7 @@
                             </div>
                             <div>
                                 <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Learning Resources</h1>
-                                <p class="text-gray-400 mt-0.5 text-sm">Course materials shared by your instructors � study at your own pace.</p>
+                                <p class="text-gray-400 mt-0.5 text-sm">Course materials shared by your instructors - study at your own pace.</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2 px-4 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white/80 text-sm backdrop-blur-sm flex-shrink-0">
@@ -375,7 +375,7 @@
                                         <template x-for="resource in getFilteredCourseResources(course.name)" :key="resource.id">
                                             <div class="group flex flex-col rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg hover:shadow-gray-200/60 dark:hover:shadow-gray-900/60 hover:-translate-y-1 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 overflow-hidden">
 
-                                                <!-- Card Top � icon + type badge -->
+                                                <!-- Card Top - icon + type badge -->
                                                 <div class="flex items-center justify-between px-4 pt-4 pb-3">
                                                     <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm"
                                                          :class="getResourceIcon(resource.type).bg">
@@ -476,7 +476,7 @@
 
                     // Use a local helper so we never depend on 'this' inside map callbacks
                     const fmtBytes = (b) => {
-                        if (!b) return '�';
+                        if (!b) return '--';
                         const k = 1024, sz = ['B','KB','MB','GB'];
                         const i = Math.floor(Math.log(b) / Math.log(k));
                         return (b / Math.pow(k, i)).toFixed(1) + ' ' + sz[i];

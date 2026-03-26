@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="en" class="h-full bg-white antialiased dark">
 
 <head>
@@ -196,7 +196,7 @@
                                     <option value="">Select a course...</option>
                                     <option value="all">All My Courses (all enrolled students)</option>
                                     <template x-for="c in courses" :key="c.id">
-                                        <option :value="c.id" x-text="c.code + ' — ' + c.name + ' (' + c.students + ' students)'"></option>
+                                        <option :value="c.id" x-text="c.code + ' - ' + c.name + ' (' + c.students + ' students)'"></option>
                                     </template>
                                 </select>
                                 <p x-show="!courses.length" class="text-xs text-gray-400 mt-1">No courses loaded yet.</p>
@@ -785,7 +785,7 @@
                                 const endMin   = eh * 60 + em;
                                 const nowMin   = now.getHours() * 60 + now.getMinutes();
                                 return {
-                                    time:     end ? `${fmt12(start)} – ${fmt12(end)}` : fmt12(start),
+                                    time:     end ? `${fmt12(start)} - ${fmt12(end)}` : fmt12(start),
                                     title:    s.course_name || s.title || 'Class',
                                     location: s.room || s.location || '',
                                     type:     s.session_type === 'office_hours' ? 'meeting' : 'lecture',
