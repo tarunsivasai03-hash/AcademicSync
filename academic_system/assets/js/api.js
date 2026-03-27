@@ -12,7 +12,7 @@ class AcademicSyncAPI {
   constructor() {
     this.baseUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
       ? 'http://localhost:5000'
-      : 'https://academicsync-1.onrender.com';
+      : 'https://academicsync.onrender.com';
     this.baseUrl = this.baseUrl.replace(/\/$/, '');
     this.TOKEN_KEY = 'academicsync_token';
     this.USER_KEY = 'academicsync_user';
