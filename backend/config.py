@@ -70,10 +70,9 @@ class ProductionConfig(Config):
     DEBUG = False
     JWT_COOKIE_SECURE = True
     JWT_COOKIE_CSRF_PROTECT = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "DATABASE_URL",
-        f"sqlite:///{os.path.join(BASE_DIR, 'academic_system_prod.db')}",
-    )
+    # Force production to use the DATABASE_URL from the environment.
+    # No fallback to SQLite is allowed in production.
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
 
 
 class TestingConfig(Config):
